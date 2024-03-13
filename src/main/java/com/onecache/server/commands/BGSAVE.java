@@ -19,15 +19,15 @@ import com.onecache.core.support.Memcached;
 public class BGSAVE implements MemcachedCommand {
 
   @Override
-  public void parse(long inBuffer) throws IllegalFormatException {
+  public boolean parse(long inBuffer, int bufferSize) throws IllegalFormatException {
     // TODO Auto-generated method stub
-    
+    return false;
   }
 
   @Override
-  public void execute(Memcached support, long outBuffer, int outBufferSize) {
+  public int execute(Memcached support, long outBuffer, int outBufferSize) {
     // TODO Auto-generated method stub
-    
+    return 0;
   }
 
 }

@@ -22,15 +22,18 @@ import com.onecache.core.util.CacheConfig;
 /** Class which keeps all the configuration parameters for Onecache server */
 public class OnecacheConf {
 
-
   public static final String CONF_SERVER_PORT = "onecache.server-port";
   public static final String CONF_SERVER_ADDRESS = "onecache.server-address";
   public static final String CONF_THREAD_POOL_SIZE = "onecache.thread-pool-size";
+  public static final String CONF_IO_BUFFER_SIZE = "onecache.io-buffer-size";
+  
 
   public static final int DEFAULT_SERVER_PORT = 11211;
   public static final String DEFAULT_SERVER_ADDRESS = "127.0.0.1";
   public static final int DEFAULT_THREAD_POOL_SIZE =
       Math.max(1, Runtime.getRuntime().availableProcessors() / 4);
+
+  public static final int DEFAULT_IO_BUFFER_SIZE = 1024 * 1204;
 
   private static OnecacheConf conf;
   private CacheConfig cacheConfig;
@@ -131,6 +134,25 @@ public class OnecacheConf {
   public void setThreadPoolSize(int size) {
     Properties props = this.cacheConfig.getProperties();
     props.setProperty(CONF_THREAD_POOL_SIZE, Integer.toString(size));
+  }
+  
+  /**
+   * I/O buffer size
+   * @return buffer size
+   */
+  public int getIOBufferSize() {
+    Properties props = this.cacheConfig.getProperties();
+    String ssize = (String) props.getOrDefault(CONF_IO_BUFFER_SIZE, Integer.toString(DEFAULT_IO_BUFFER_SIZE));
+    return Integer.parseInt(ssize);
+  }
+  
+  /**
+   * I/O buffer size
+   * @param buffer size
+   */
+  public void setIOBufferSize(int size) {
+    Properties props = this.cacheConfig.getProperties();
+    props.setProperty(CONF_IO_BUFFER_SIZE, Integer.toString(size));
   }
   
   /**

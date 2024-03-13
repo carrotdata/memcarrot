@@ -16,7 +16,6 @@ package com.onecache.server;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.StandardSocketOptions;
-import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
@@ -27,51 +26,46 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.onecache.core.support.Memcached;
-import com.onecache.server.util.Utils;
 
 /** Carrot node server (single thread) */
 public class OnecacheServer {
   private static final Logger log = LogManager.getLogger(OnecacheServer.class);
 
-  static int bufferSize = 256 * 1024;
-  /*
-   * Input buffer
-   */
-  static ThreadLocal<ByteBuffer> inBuf =
-      new ThreadLocal<ByteBuffer>() {
-        @Override
-        protected ByteBuffer initialValue() {
-          return ByteBuffer.allocateDirect(bufferSize);
-        }
-      };
-
-  /*
-   * Output buffer
-   */
-  static ThreadLocal<ByteBuffer> outBuf =
-      new ThreadLocal<ByteBuffer>() {
-        @Override
-        protected ByteBuffer initialValue() {
-          return ByteBuffer.allocateDirect(bufferSize);
-        }
-      };
-
-  private String host;
-  private int port;
-  private Memcached memcached;
-  /** Executor service (request handlers) */
+  /** 
+   * Executor service (request handlers)
+   **/
   static RequestHandlers service;
+
   /**
-   *
+   * Host name
+   */
+  private String host;
+  /**
+   * Host port
+   */
+  private int port;
+  /**
+   * Memcached support
+   */
+  private Memcached memcached;
+  
+  /**
+   * Buffer size
+   */
+  private int bufferSize;
+  /**
+   * Constructor
    * @param host
    * @param port
+   * @throws IOException 
    */
-  public OnecacheServer(String host, int port) {
+  public OnecacheServer(String host, int port) throws IOException {
     this.port = port;
     this.host = host;
+    this.bufferSize = OnecacheConf.getConf().getIOBufferSize();
   }
 
-
+  
   public void runNodeServer() throws IOException {
     // Create memcached support instance
     memcached = new Memcached();
@@ -115,7 +109,6 @@ public class OnecacheServer {
               RequestHandlers.Attachment att = (RequestHandlers.Attachment) key.attachment();
               if (att != null && att.inUse()) return;
               // process request
-              //processRequest(key);
               service.submit(key);
             }
           } catch (IOException e) {
@@ -134,116 +127,10 @@ public class OnecacheServer {
     }
   }
 
-  long totalReqTime = 0;
-  int ricCount = 0;
-  int iter = 0;
-
-  /**
-   * Process incoming request
-   *
-   * @param key selection key for a socket channel
-   */
-  private void processRequest(SelectionKey key) {
-    long startTime = System.nanoTime();
-    if (key.attachment() == null) {
-      key.attach(new RequestHandlers.Attachment());
-    }
-
-    SocketChannel channel = (SocketChannel) key.channel();
-    // Read request first
-    ByteBuffer in = inBuf.get();
-    ByteBuffer out = outBuf.get();
-    in.clear();
-    out.clear();
-
-    try {
-      long startCounter = System.nanoTime();
-      long max_wait_ns = 100000000; // 100ms
-      long startClock = 0;
-
-      while (true) {
-        iter++;
-        int num = channel.read(in);
-
-        if (num < 0) {
-          // End-Of-Stream - socket was closed, cancel the key
-          key.cancel();
-          break;
-        } else if (num == 0) {
-          if (System.nanoTime() - startCounter > max_wait_ns) {
-            break;
-          }
-          continue;
-        }
-        // Try to parse
-        int oldPos = in.position();
-        if (startClock == 0) startClock = System.nanoTime();
-        if (!requestIsComplete(in)) {
-          // restore position
-          in.position(oldPos);
-          in.limit(in.capacity());
-          continue;
-        }
-
-        ricCount++;
-
-        in.position(oldPos);
-        // Process request
-        boolean shutdown = CommandProcessor.process(memcached, in, out);
-
-        // TODO: this is poor man terminator - FIXME
-        if (shutdown) {
-          shutdownNode();
-        }
-        // send response back
-        out.flip();
-        while (out.hasRemaining()) {
-          channel.write(out);
-        }
-        break;
-      }
-    } catch (IOException e) {
-      String msg = e.getMessage();
-      if (!msg.equals("Connection reset by peer")) {
-        // TODO
-        log.error("StackTrace: ", e);
-      }
-      key.cancel();
-    } finally {
-      // Release selection key - ready for the next request
-      release(key);
-    }
-    totalReqTime += System.nanoTime() - startTime;
-  }
-
-  private void shutdownNode() {
-    System.exit(0);
-  }
-
-  /**
-   * Release key - mark it not in use
-   *
-   * @param key
-   */
-  void release(SelectionKey key) {
-    RequestHandlers.Attachment att = (RequestHandlers.Attachment) key.attachment();
-    att.setInUse(false);
-  }
-
-  /**
-   * Checks if request is complete
-   *
-   * @param in input data buffer
-   * @return true - complete, false - otherwise
-   */
-  private boolean requestIsComplete(ByteBuffer in) {
-    return Utils.requestIsComplete(in);
-  }
-
   private void startRequestHandlers() throws IOException {
     OnecacheConf conf = OnecacheConf.getConf();
     int numThreads = conf.getThreadPoolSize();
-    service = RequestHandlers.create(memcached, numThreads);
+    service = RequestHandlers.create(memcached, numThreads, bufferSize);
     service.start();
   }
 }

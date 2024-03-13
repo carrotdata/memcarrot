@@ -13,21 +13,10 @@
 */
 package com.onecache.server.commands;
 
-import com.onecache.server.support.IllegalFormatException;
-import com.onecache.core.support.Memcached;
+public class GAT extends GET {
 
-public class GAT implements MemcachedCommand {
-
-  @Override
-  public void parse(long inBuffer) throws IllegalFormatException {
-    // TODO Auto-generated method stub
-    
-  }
-
-  @Override
-  public void execute(Memcached support, long outBuffer, int outBufferSize) {
-    // TODO Auto-generated method stub
-    
-  }
+ public GAT() {
+   this.isTouch = true;
+ }
 
 }

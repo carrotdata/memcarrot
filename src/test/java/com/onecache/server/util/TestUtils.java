@@ -64,6 +64,9 @@ public class TestUtils {
     return bytes;
   }
   
+  public static String randomString(int size) {
+    return com.onecache.core.util.Utils.getRandomStr(new Random(), size);
+  }
   
   /**
    * Creates new byte array and fill it with random data

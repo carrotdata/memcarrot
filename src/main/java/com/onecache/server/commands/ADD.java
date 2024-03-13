@@ -13,29 +13,25 @@
 */
 package com.onecache.server.commands;
 
-import com.onecache.server.support.IllegalFormatException;
 import com.onecache.core.support.Memcached;
+import com.onecache.core.support.Memcached.OpResult;
+import com.onecache.core.util.UnsafeAccess;
 
-public class ADD implements MemcachedCommand {
-
-  long keyPtr;
-  int keySize;
-  long valPtr;
-  int valSize;
-  int flags;
-  long exptime;
-  boolean noreply;
-  
-  @Override
-  public void parse(long inBuffer) throws IllegalFormatException {
-    // TODO Auto-generated method stub
-    
-  }
+public class ADD extends StorageCommand {
 
   @Override
-  public void execute(Memcached support, long outBuffer, int outBufferSize) {
-    
-    support.add(keyPtr, keySize, valPtr, valSize, flags, exptime);
+  public int execute(Memcached support, long outBuffer, int outBufferSize) {
+    OpResult result = support.add(keyPtr, keySize, valPtr, valSize, (int) flags, exptime);
+    if (!this.noreply) {
+      if (result == OpResult.NOT_STORED) {
+        UnsafeAccess.copy(NOT_STORED, outBuffer, 12 /* NOT_STORED\r\n length */);
+        return 12;
+      } else {
+        UnsafeAccess.copy(STORED, outBuffer, 8 /* STORED\r\n length */);
+        return 8;
+      }
+    }
+    return 0;
   }
 
 }

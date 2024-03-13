@@ -16,7 +16,7 @@ package com.onecache.server.commands;
 import com.onecache.server.support.IllegalFormatException;
 import com.onecache.core.support.Memcached;
 
-public class GETS implements MemcachedCommand {
+public class GETS extends GET {
 
   /*
    * Retrieval command:
@@ -62,16 +62,7 @@ deleted by a client).
 
    */
 
-  @Override
-  public void parse(long inBuffer) throws IllegalFormatException {
-    // TODO Auto-generated method stub
-    
+  public GETS() {
+    this.isCAS = true;
   }
-
-  @Override
-  public void execute(Memcached support, long outBuffer, int outBufferSize) {
-    // TODO Auto-generated method stub
-    
-  }
-
 }

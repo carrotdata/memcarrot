@@ -16,6 +16,7 @@ package com.onecache.server.util;
 import java.nio.ByteBuffer;
 
 import com.onecache.core.util.UnsafeAccess;
+import com.onecache.server.support.IllegalFormatException;
 
 public class Utils {
   public static boolean requestIsComplete(ByteBuffer buf) {
@@ -48,5 +49,27 @@ public class Utils {
       return System.currentTimeMillis() + exptime  * 1000;
     }
     return exptime * 1000;
+  }
+  
+  public static int nextTokenStart(long ptr, int limit) {
+    int off = 0;
+    while(UnsafeAccess.toByte(ptr + off) == (byte) ' ') {
+      off++;
+      if (off == limit) {
+        throw new IllegalFormatException("malformed command");
+      }
+    }
+    return off;
+  }
+  
+  public static int nextTokenEnd(long ptr, int limit) {
+    int off = 0;
+    while(UnsafeAccess.toByte(ptr + off) != (byte) ' ' && UnsafeAccess.toByte(ptr + off) != (byte) '\r') {
+      off++;
+      if (off == limit) {
+        throw new IllegalFormatException("malformed command");
+      }
+    }
+    return off;
   }
 }

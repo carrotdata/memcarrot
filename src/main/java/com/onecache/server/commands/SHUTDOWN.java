@@ -14,20 +14,47 @@
 package com.onecache.server.commands;
 
 import com.onecache.server.support.IllegalFormatException;
-import com.onecache.core.support.Memcached;
 
+import java.io.IOException;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import com.onecache.core.support.Memcached;
+import com.onecache.core.util.UnsafeAccess;
+
+/**
+ * 
+ * Format : shutdown\r\n
+ * Reply: OK shutting down the server\r\n, OK shutdown is in progress\r\
+ */
 public class SHUTDOWN implements MemcachedCommand {
+  private static final Logger log = LogManager.getLogger(SHUTDOWN.class);
 
   @Override
-  public void parse(long inBuffer) throws IllegalFormatException {
-    // TODO Auto-generated method stub
-    
+  public boolean parse(long inBuffer, int bufferSize) throws IllegalFormatException {
+    if (bufferSize != SHUTDOWNCMD.length + 2) {
+      throw new IllegalFormatException("malformed request");
+    }
+    return true;
   }
 
   @Override
-  public void execute(Memcached support, long outBuffer, int outBufferSize) {
-    // TODO Auto-generated method stub
-    
+  public int execute(Memcached support, long outBuffer, int outBufferSize) {
+    int size = 0;
+    String msg = null;
+    try {
+      support.getCache().shutdown();
+      msg = support.getCache().shutdownStatusMsg();
+    } catch (IOException e) {
+      msg = "SERVER_ERROR " + e.getMessage() + "\r\n";
+      // TODO log the error
+      log.error(e);
+    }
+    size  = msg.length();
+    byte[] buf = msg.getBytes();
+    UnsafeAccess.copy(buf, 0, outBuffer, buf.length);
+    return size;
   }
 
 }

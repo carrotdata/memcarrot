@@ -14,10 +14,10 @@
 package com.onecache.server.commands;
 
 
+import com.onecache.core.support.Memcached;
 import com.onecache.core.util.UnsafeAccess;
 import com.onecache.server.support.IllegalFormatException;
-import com.onecache.core.support.Memcached;
-import com.onecache.server.support.UnsupportedCommand;
+import com.onecache.server.util.Utils;
 
 
 public interface MemcachedCommand {
@@ -36,42 +36,42 @@ public interface MemcachedCommand {
   public final static byte[] INCRCMD = "incr".getBytes();
   public final static byte[] DECRCMD = "decr".getBytes();
   public final static byte[] DELETECMD = "delete".getBytes();
-  
+  public final static byte[] SHUTDOWNCMD = "shutdown".getBytes();
 
+  public final static long NOREPLY = UnsafeAccess.allocAndCopy("noreply", 0, 7);
   
+  public final static long STORED = UnsafeAccess.allocAndCopy("STORED\r\n", 0, 8);
+  public final static long NOT_STORED = UnsafeAccess.allocAndCopy("NOT_STORED\r\n", 0, 12);
+  public final static long EXISTS = UnsafeAccess.allocAndCopy("EXISTS\r\n", 0, 8);
+  public final static long NOT_FOUND = UnsafeAccess.allocAndCopy("NOT_FOUND\r\n", 0, 11);
+  public final static long ERROR = UnsafeAccess.allocAndCopy("ERROR\r\n", 0, 11);
+  public final static long TOUCHED = UnsafeAccess.allocAndCopy("TOUCHED\r\n", 0, 9);
+  public final static long DELETED = UnsafeAccess.allocAndCopy("DELETED\r\n", 0, 9);
+
+
   /**
-   * Each command MUST implement this method
-   *
-   * @param support memcached support
-   * @param inBufferPtr input buffer (Memcached request)
-   * @param outBufferPtr output buffer (Memcached command output)
-   * @param outBufferSize output buffer size
+   * Execute command, write response to the buffer
+   * @param support mamcached object
+   * @param outBuffer address of the buffer
+   * @param bufferSize size 
+   * @return total bytes written
    */
-  public default void execute(Memcached support, long inBufferPtr, long outBufferPtr, int outBufferSize) 
-    throws IllegalFormatException, UnsupportedCommand
-  {
-    
-    MemcachedCommand cmd = CommandParser.parse(inBufferPtr);
-    cmd.execute(support, outBufferPtr, outBufferSize);
-  }
-
-  public void execute(Memcached support, long outBuffer, int outBufferSize);
+  public int execute(Memcached support, long outBuffer, int bufferSize);
   
-  public default long nextTokenStart(long ptr) {
-    while(UnsafeAccess.toByte(ptr) == (byte) ' ') ptr++;
-    return ptr;
+  public default int nextTokenStart(long ptr, int limit) {
+   return Utils.nextTokenStart(ptr, limit);
   }
   
-  public default long nextTokenEnd(long ptr) {
-    while(UnsafeAccess.toByte(ptr) != (byte) ' ' && UnsafeAccess.toByte(ptr) != (byte) '\r') ptr++;
-    return ptr;
+  public default int nextTokenEnd(long ptr, int limit) {
+    return Utils.nextTokenEnd(ptr, limit);
   }
   
   /**
    * Parse command from native buffer
    * @param inBuffer buffer address in memory
-   * @throws IllegalFormatException
+   * @return true on complete parsing, false - command is incomplete
+   * @throws IllegalFormatException on command format error
    */
-  public void parse(long inBuffer) throws IllegalFormatException;
+  public boolean parse(long inBuffer, int bufferSize) throws IllegalFormatException;
   
 }

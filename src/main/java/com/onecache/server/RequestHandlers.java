@@ -24,6 +24,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.onecache.core.support.Memcached;
+import com.onecache.core.util.UnsafeAccess;
+import com.onecache.server.support.IllegalFormatException;
+import com.onecache.server.support.UnsupportedCommand;
 import com.onecache.server.util.Utils;
 
 public class RequestHandlers {
@@ -62,15 +65,15 @@ public class RequestHandlers {
    */
   WorkThread[] workers;
 
-  private RequestHandlers(Memcached store, int numThreads) {
+  private RequestHandlers(Memcached store, int numThreads, int bufferSize) {
     workers = new WorkThread[numThreads];
     for (int i = 0; i < numThreads; i++) {
-      workers[i] = new WorkThread(store);
+      workers[i] = new WorkThread(store, bufferSize);
     }
   }
 
-  public static RequestHandlers create(Memcached store, int numThreads) {
-    return new RequestHandlers(store, numThreads);
+  public static RequestHandlers create(Memcached store, int numThreads, int bufferSize) {
+    return new RequestHandlers(store, numThreads, bufferSize);
   }
 
   public void start() {
@@ -108,30 +111,26 @@ class WorkThread extends Thread {
    */
   private static final long BUSY_LOOP_MAX = 10000;
 
-  static int bufferSize = 256 * 1024;
-
   /*
    * Input buffer
    */
-  static ThreadLocal<ByteBuffer> inBuf =
-      new ThreadLocal<ByteBuffer>() {
-        @Override
-        protected ByteBuffer initialValue() {
-          return ByteBuffer.allocateDirect(bufferSize);
-        }
-      };
+  ByteBuffer inBuf;
 
+  /**
+   * Address of input buffer
+   */
+  long in_ptr;
+  
   /*
    * Output buffer
    */
-  static ThreadLocal<ByteBuffer> outBuf =
-      new ThreadLocal<ByteBuffer>() {
-        @Override
-        protected ByteBuffer initialValue() {
-          return ByteBuffer.allocateDirect(bufferSize);
-        }
-      };
+  ByteBuffer outBuf;
 
+  /**
+   * Output buffer address
+   */
+  long out_ptr;
+  
   /*
    * Data store
    */
@@ -145,15 +144,33 @@ class WorkThread extends Thread {
    */
   private volatile boolean busy = false;
 
+  private int bufferSize;
   /**
    * Default constructor
    *
    * @param store data store
    */
-  WorkThread(Memcached store) {
+  WorkThread(Memcached store, int bufferSize) {
     this.store = store;
+    this.bufferSize = bufferSize;
   }
 
+  private ByteBuffer getInputBuffer() {
+    if (inBuf == null) {
+      inBuf = ByteBuffer.allocateDirect(bufferSize);
+      in_ptr = UnsafeAccess.address(inBuf);
+    }
+    return inBuf;
+  }
+  
+  private ByteBuffer getOutputBuffer() {
+    if (outBuf == null) {
+      outBuf = ByteBuffer.allocateDirect(bufferSize);
+      out_ptr = UnsafeAccess.address(outBuf);
+    }
+    return outBuf;
+  }
+  
   /**
    * Is thread busy working?
    *
@@ -215,20 +232,23 @@ class WorkThread extends Thread {
     // infinite loop
     while (true) {
       SelectionKey key = null;
-      busy = false;
+      // Double busy set to false
+      //busy = false;
+      // Can it override
       key = waitForKey();
       // We are busy now
       busy = true;
+
       SocketChannel channel = (SocketChannel) key.channel();
       // Read request first
-      ByteBuffer in = inBuf.get();
-      ByteBuffer out = outBuf.get();
+      ByteBuffer in = getInputBuffer();
+      ByteBuffer out = getOutputBuffer();
       in.clear();
       out.clear();
 
       try {
         long startCounter = System.nanoTime();
-        long max_wait_ns = 100000000; // 100ms
+        long max_wait_ns = 100000000; // 100ms - FIXME - make it configurable
 
         while (true) {
           int num = channel.read(in);
@@ -238,28 +258,25 @@ class WorkThread extends Thread {
             break;
           } else if (num == 0) {
             if (System.nanoTime() - startCounter > max_wait_ns) {
+              // FIXME: Request timeout
               break;
+            }
+            if (inBuf.remaining() == 0) {
+              //TDOD: we need multi buffer support
             }
             continue;
           }
           // Try to parse
           int oldPos = in.position();
-          if (!requestIsComplete(in)) {
-            // restore position
-            in.position(oldPos);
+          // Process request using buffer's addresses
+          int responseLength = CommandProcessor.process(store, in_ptr, oldPos, out_ptr, bufferSize);
+          if (responseLength < 0) {
+            // command is incomplete
             continue;
           }
-          in.position(oldPos);
-          // Process request
-          CommandProcessor.process(store, in, out);
-          // send response back
-          out.flip();
-          int limit = out.limit();
-          byte[] bb = new byte[limit];
-          out.get(bb);
-          log.debug("SERVER:\n{}", new String(bb));
+          out.limit(responseLength);
           out.position(0);
-          out.limit(limit);
+          // send response back
           while (out.hasRemaining()) {
             channel.write(out);
           }
@@ -271,6 +288,7 @@ class WorkThread extends Thread {
           // TODO
           log.error("StackTrace: ", e);
         }
+        key.cancel();
       } finally {
         // Release selection key - ready for the next request
         release(key);
@@ -279,9 +297,5 @@ class WorkThread extends Thread {
         busy = false;
       }
     }
-  }
-
-  private boolean requestIsComplete(ByteBuffer in) {
-    return Utils.requestIsComplete(in);
   }
 }
