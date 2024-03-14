@@ -39,6 +39,9 @@ public abstract class RetrievalCommand extends AbstractMemcachedCommand{
   public boolean parse(long inBuffer, int bufferSize) throws IllegalFormatException {
     try {
       int count = calculateNumberOfKeys(inBuffer, bufferSize);
+      if (isTouch) {
+        count --; // we counted 'expire' also
+      }
       // TODO optimize
       keys = new long[count];
       keySizes = new int[count];
@@ -93,16 +96,12 @@ public abstract class RetrievalCommand extends AbstractMemcachedCommand{
     int count = 0;
     int start = 0;
     int end = 0;
-    while(toByte(inBuffer + start) != '\r' && start < inBufferSize) {
+    while(toByte(inBuffer + end) != '\r' && end < inBufferSize) {
       start = nextTokenStart(inBuffer + end, inBufferSize - end);
-      if (end > 0) {
-        throwIfNotEquals(start, 1, "malformed request");
-      }
       start += end;
       end = nextTokenEnd(inBuffer + start, inBufferSize- start);
-      throwIfEquals(end, 0, "malformed request");
-
       end += start;
+      if (end == start) break;
       count++;
     }
     return count;

@@ -116,14 +116,11 @@ public abstract class StorageCommand extends AbstractMemcachedCommand{
           && bufferSize - start >= 9 /* noreply\r\n */) {
         if (compareTo(inBuffer + start, 7, NOREPLY, 7) == 0) {
           this.noreply = true;
-          end += start + 7;
+          end = start + 7;
         } else {
           new IllegalFormatException("malformed request");
         }
       } else if (UnsafeAccess.toByte(inBuffer + start) == 'n') {
-        new IllegalFormatException("malformed request");
-      }
-      if (end < bufferSize - 2) {
         new IllegalFormatException("malformed request");
       }
       // skip \r\n

@@ -20,7 +20,7 @@ import org.junit.Test;
 import com.onecache.server.util.TestUtils;
 import static org.junit.Assert.*;
 
-public class TestCommandParser extends TestParserBase{
+public class TestCommandParser extends TestBase{
 
   private void testStorageCommand(byte[] cmd, boolean withCAS, boolean withNoreply, FaultType type) {
     Random r = new Random();
@@ -29,11 +29,13 @@ public class TestCommandParser extends TestParserBase{
     int valueMax = 1000;
     int valueMin = 100;
     for (int i = 0; i < 1000; i++) {
+      inputBuffer.clear();
       String key = TestUtils.randomString(keyMin + r.nextInt(keyMax - keyMin));
       int vsize = valueMin + r.nextInt(valueMax  - valueMin);
       byte[] value = new byte [vsize];
       r.nextBytes(value);
-      int flags = r.nextInt();
+      // Must be positive
+      int flags = Math.abs(r.nextInt());
       long expire = r.nextLong();
       long cas = r.nextLong();
       writeStorageCommand(cmd, key, value, flags, expire, cas, withCAS, withNoreply, type, inputBuffer);
@@ -65,11 +67,12 @@ public class TestCommandParser extends TestParserBase{
     int numKeysMin = 1;
     
     for (int i = 0; i < 1000; i++) {
+      inputBuffer.clear();
       int numKeys = numKeysMin + r.nextInt(numKeysMax - numKeysMin);
       String[] keys = new String[numKeys];
       for (int j = 0; j < numKeys; j++) {
-        keys[i] = TestUtils.randomString(keyMin + r.nextInt(keyMax - keyMin));
-      }
+        keys[j] = TestUtils.randomString(keyMin + r.nextInt(keyMax - keyMin));
+      }      
       long expire = r.nextLong();
       writeRetrievalCommand(cmd, keys, expire, withExpire,  type, inputBuffer);
       MemcachedCommand c = CommandParser.parse(inputPtr, inputBuffer.position());
@@ -81,7 +84,7 @@ public class TestCommandParser extends TestParserBase{
       RetrievalCommand rc = (RetrievalCommand) c;
       equalsKeys(keys, rc);
       if (withExpire) {
-        assertEquals (expire, rc.cas);
+        assertEquals (expire, rc.exptime);
       }
 
     }
@@ -164,7 +167,7 @@ public class TestCommandParser extends TestParserBase{
   public void testGETCommand() {
     byte[] cmd = "get".getBytes();
     testRetrievalCommand(cmd, false, FaultType.NONE);
-    testRetrievalCommand(cmd, false, FaultType.NONE);
+    testRetrievalCommand(cmd, false, FaultType.INCOMPLETE);
   }
   
   
@@ -172,21 +175,21 @@ public class TestCommandParser extends TestParserBase{
   public void testGETSCommand() {
     byte[] cmd = "get".getBytes();
     testRetrievalCommand(cmd, false, FaultType.NONE);
-    testRetrievalCommand(cmd, false, FaultType.NONE);
+    testRetrievalCommand(cmd, false, FaultType.INCOMPLETE);
   }
   
   @Test
   public void testGATCommand() {
     byte[] cmd = "gat".getBytes();
-    testRetrievalCommand(cmd, false, FaultType.NONE);
-    testRetrievalCommand(cmd, false, FaultType.NONE);
+    testRetrievalCommand(cmd, true, FaultType.NONE);
+    testRetrievalCommand(cmd, true, FaultType.INCOMPLETE);
   }
   
   @Test
   public void testGATSCommand() {
     byte[] cmd = "gats".getBytes();
-    testRetrievalCommand(cmd, false, FaultType.NONE);
-    testRetrievalCommand(cmd, false, FaultType.NONE);
+    testRetrievalCommand(cmd, true, FaultType.NONE);
+    testRetrievalCommand(cmd, true, FaultType.INCOMPLETE);
   }
   
   @Test
@@ -195,6 +198,7 @@ public class TestCommandParser extends TestParserBase{
     int keyMax = 100;
     int keyMin = 10;
     for (int i = 0; i < 1000; i++) {
+      inputBuffer.clear();
       String key = TestUtils.randomString(keyMin + r.nextInt(keyMax - keyMin));
       boolean withNoreply = r.nextBoolean();
       FaultType type = r.nextBoolean()? FaultType.NONE: FaultType.INCOMPLETE;
@@ -221,6 +225,7 @@ public class TestCommandParser extends TestParserBase{
     int keyMax = 100;
     int keyMin = 10;
     for (int i = 0; i < 1000; i++) {
+      inputBuffer.clear();
       String key = TestUtils.randomString(keyMin + r.nextInt(keyMax - keyMin));
       boolean withNoreply = r.nextBoolean();
       FaultType type = r.nextBoolean()? FaultType.NONE: FaultType.INCOMPLETE;
@@ -245,6 +250,7 @@ public class TestCommandParser extends TestParserBase{
     int keyMax = 100;
     int keyMin = 10;
     for (int i = 0; i < 1000; i++) {
+      inputBuffer.clear();
       String key = TestUtils.randomString(keyMin + r.nextInt(keyMax - keyMin));
       boolean withNoreply = r.nextBoolean();
       FaultType type = r.nextBoolean()? FaultType.NONE: FaultType.INCOMPLETE;
@@ -271,6 +277,7 @@ public class TestCommandParser extends TestParserBase{
     int keyMax = 100;
     int keyMin = 10;
     for (int i = 0; i < 1000; i++) {
+      inputBuffer.clear();
       String key = TestUtils.randomString(keyMin + r.nextInt(keyMax - keyMin));
       boolean withNoreply = r.nextBoolean();
       FaultType type = r.nextBoolean()? FaultType.NONE: FaultType.INCOMPLETE;
@@ -293,6 +300,7 @@ public class TestCommandParser extends TestParserBase{
   
   @Test
   public void testSHUTDOWNCommand() {
+    inputBuffer.clear();
     writeShutdown(FaultType.NONE, inputBuffer);
     MemcachedCommand c = CommandParser.parse(inputPtr, inputBuffer.position());
     assertTrue (c instanceof SHUTDOWN);

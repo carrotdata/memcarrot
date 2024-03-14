@@ -108,7 +108,7 @@ public class CommandParser {
       } else if (compareTo(buf, len, add_cmd, len) == 0) {
         cmd = new ADD();
       } else if (compareTo(buf, len, cas_cmd, len) == 0) {
-        cmd = new ADD();
+        cmd = new CAS();
       } else {
         throw new UnsupportedCommand(new String(toBytes(buf, len)));
       }

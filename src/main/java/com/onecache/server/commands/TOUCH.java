@@ -72,15 +72,13 @@ public class TOUCH extends AbstractMemcachedCommand {
       this.exptime = strToLongDirect(inBuffer + start, end - start);
       // check noreply
       start = nextTokenStart(inBuffer + end, bufferSize - end);
-      throwIfNotEquals(start, 1, "malformed request");
-
       start += end;
       // start = 0 ?
       if (UnsafeAccess.toByte(inBuffer + start) == 'n'
           && bufferSize - start == 9 /* noreply\r\n */) {
         if (compareTo(inBuffer + start, 7, NOREPLY, 7) == 0) {
           this.noreply = true;
-          end += start + 7;
+          end = start + 7;
         } else {
           new IllegalFormatException("malformed request");
         }
