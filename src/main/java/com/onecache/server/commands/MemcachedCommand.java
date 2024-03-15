@@ -47,6 +47,12 @@ public interface MemcachedCommand {
   public final static long ERROR = UnsafeAccess.allocAndCopy("ERROR\r\n", 0, 11);
   public final static long TOUCHED = UnsafeAccess.allocAndCopy("TOUCHED\r\n", 0, 9);
   public final static long DELETED = UnsafeAccess.allocAndCopy("DELETED\r\n", 0, 9);
+  
+  public final static String CLIENT_ERROR = "CLIENT_ERROR ";
+  public final static String SERVER_ERROR = "SERVER_ERROR ";
+  public final static String CRLF = "\r\n";
+
+  public final static String NUMBER_FORMAT_ERROR = "CLIENT_ERROR number format error\r\n";
 
 
   /**

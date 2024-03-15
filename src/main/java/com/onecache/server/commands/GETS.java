@@ -13,8 +13,9 @@
 */
 package com.onecache.server.commands;
 
-import com.onecache.server.support.IllegalFormatException;
 import com.onecache.core.support.Memcached;
+import com.onecache.core.support.Memcached.Record;
+import com.onecache.core.util.UnsafeAccess;
 
 public class GETS extends GET {
 
@@ -64,5 +65,23 @@ deleted by a client).
 
   public GETS() {
     this.isCAS = true;
+  }
+  
+  @Override
+  public int execute(Memcached support, long outBuffer, int outBufferSize) {
+    int outSize = 0;
+    int count = this.keys.length;
+    for (int i = 0; i < count; i++) {
+      Record r = support.gets(keys[i], keySizes[i]);
+      if (r.value == null) continue;
+      int size = r.write(keys[i], keySizes[i], outBuffer + outSize, outBufferSize - outSize, isCAS);
+      if (size > outBufferSize - outSize - 5 /*END\r\n*/) {
+        break;
+      }
+      outSize += size;
+    }
+    UnsafeAccess.copy(END, outBuffer + outSize, 5);
+    outSize += 5;
+    return outSize;
   }
 }

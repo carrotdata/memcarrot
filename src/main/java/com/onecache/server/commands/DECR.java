@@ -65,20 +65,35 @@ public class DECR extends INCR {
 
   @Override
   public int execute(Memcached support, long outBuffer, int outBufferSize) {
-    long result = support.decr(keyPtr, keySize, exptime);
-    if (!this.noreply) {
-      if (result >= 0) {
-        int size = com.onecache.core.util.Utils.longToStrDirect(outBuffer, outBufferSize, result);
-        outBuffer  += size;
-        // Add \r\n
-        crlf(outBuffer);
-        return size + 2;
-      } else {
-        UnsafeAccess.copy(NOT_FOUND, outBuffer, 11 /* NOT_FOUND\r\n length */);
-        return 11;
+    try {
+      long result = support.decr(keyPtr, keySize, value);
+      if (!this.noreply) {
+        if (result >= 0) {
+          int size = com.onecache.core.util.Utils.longToStrDirect(outBuffer, outBufferSize, result);
+          outBuffer += size;
+          // Add \r\n
+          crlf(outBuffer);
+          return size + 2;
+        } else {
+          UnsafeAccess.copy(NOT_FOUND, outBuffer, 11 /* NOT_FOUND\r\n length */);
+          return 11;
+        }
       }
-    }
-    return 0;  
+      return 0;
+    } catch (NumberFormatException e) {
+      if (!this.noreply) {
+        String msg = NUMBER_FORMAT_ERROR;
+        UnsafeAccess.copy(msg.getBytes(), 0, outBuffer, msg.length());
+        return msg.length();
+      }
+    } catch (IllegalArgumentException e) {
+      if (!this.noreply) {
+        String msg = CLIENT_ERROR + e.getMessage() + CRLF;
+        UnsafeAccess.copy(msg.getBytes(), 0, outBuffer, msg.length());
+        return msg.length();
+      }
+    } 
+    return 0;
   }
 
 }

@@ -69,6 +69,7 @@ public class TestBase {
     INCOMPLETE,
     WRONG_COMMAND,
     FLAGS_NOT_NUMBER,
+    VALUE_NOT_NUMBER,
     EXPTIME_NOT_NUMBER,
     CAS_NOT_NUMBER,
     NO_FLAGS,
@@ -220,8 +221,12 @@ public class TestBase {
       }
     }
     // Try long value
-    long value = com.onecache.core.util.Utils.strToLongDirect(buf, size - 2);
-    return Long.valueOf(value);
+    try {
+      long value = com.onecache.core.util.Utils.strToLongDirect(buf, size - 2);
+      return Long.valueOf(value);
+    } catch (NumberFormatException e) {
+      return new String(com.onecache.core.util.Utils.toBytes(buf, size));
+    }
   }
   
   public static List<KeyRecord> readRetrievalCommandResponse(long buf, int size, boolean withCAS){
@@ -235,7 +240,8 @@ public class TestBase {
     }
     int off = 0;
     while(off < size - 5) {
-      off = readKeyRecordInto(result, buf + off, size - off, withCAS);
+      int $off = readKeyRecordInto(result, buf + off, size - off, withCAS);
+      off += $off;
     }
     // last 5
     if (compareTo(END, 0, 5, buf + off, 5) == 0) {
@@ -320,7 +326,7 @@ public class TestBase {
       UnsafeAccess.copy(valPtr, r.value, 0, valSize);
       result.add(KeyRecord.of(keyPtr, keySize, r));
       
-      return end + valSize + 2;
+      return 6 + end + valSize + 2;
     } catch (NumberFormatException e) {
       throw new IllegalFormatException("not a number");
     }
@@ -396,43 +402,41 @@ public class TestBase {
     }
   }
   
-  public static void writeIncrCommand(String key, long v, 
-      boolean noreply, FaultType fault, ByteBuffer inputBuffer) {
+  public static void writeIncrCommand(String key, long v, boolean noreply, FaultType fault,
+      ByteBuffer inputBuffer) {
     byte[] cmd = "incr".getBytes();
-    if (fault == FaultType.NONE || fault == FaultType.INCOMPLETE) {
-      inputBuffer.put(cmd);
+    inputBuffer.put(cmd);
+    space(inputBuffer);
+    inputBuffer.put(key.getBytes());
+    space(inputBuffer);
+    String s = fault != FaultType.VALUE_NOT_NUMBER? Long.toString(v): "some";
+    inputBuffer.put(s.getBytes());
+    if (noreply) {
       space(inputBuffer);
-      inputBuffer.put(key.getBytes());
-      space(inputBuffer);
-      String s = Long.toString(v);
-      inputBuffer.put(s.getBytes());
-      if (noreply) {
-        space(inputBuffer);
-        inputBuffer.put("noreply".getBytes());
-      }
-      crlf(inputBuffer);
+      inputBuffer.put("noreply".getBytes());
     }
+    crlf(inputBuffer);
+
     if (fault == FaultType.INCOMPLETE) {
       makeIncomplete(inputBuffer);
     }
   }
   
-  public static void writeDecrCommand(String key, long v, 
-      boolean noreply, FaultType fault, ByteBuffer inputBuffer) {
+  public static void writeDecrCommand(String key, long v, boolean noreply, FaultType fault,
+      ByteBuffer inputBuffer) {
     byte[] cmd = "decr".getBytes();
-    if (fault == FaultType.NONE || fault == FaultType.INCOMPLETE) {
-      inputBuffer.put(cmd);
+    inputBuffer.put(cmd);
+    space(inputBuffer);
+    inputBuffer.put(key.getBytes());
+    space(inputBuffer);
+    String s = fault != FaultType.VALUE_NOT_NUMBER ? Long.toString(v) : "some";
+    inputBuffer.put(s.getBytes());
+    if (noreply) {
       space(inputBuffer);
-      inputBuffer.put(key.getBytes());
-      space(inputBuffer);
-      String s = Long.toString(v);
-      inputBuffer.put(s.getBytes());
-      if (noreply) {
-        space(inputBuffer);
-        inputBuffer.put("noreply".getBytes());
-      }
-      crlf(inputBuffer);
+      inputBuffer.put("noreply".getBytes());
     }
+    crlf(inputBuffer);
+
     if (fault == FaultType.INCOMPLETE) {
       makeIncomplete(inputBuffer);
     }

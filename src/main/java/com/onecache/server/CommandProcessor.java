@@ -43,7 +43,7 @@ public class CommandProcessor {
       UnsafeAccess.copy(buf, 0, outPtr, buf.length);
       return buf.length;
     } catch (IllegalFormatException eee){
-      String msg = "CLIENT_ERROR " + eee.getMessage();
+      String msg = "CLIENT_ERROR " + eee.getMessage() + "\r\n";
       byte[] buf = msg.getBytes();
       UnsafeAccess.copy(buf, 0, outPtr, buf.length);
       return buf.length;
