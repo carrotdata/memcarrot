@@ -667,6 +667,131 @@ public class TestSimpleClient {
     
   }
   
+  @Test
+  public void testIncrGetMulti() throws IOException {
+    String key = "KEY:";
+    long start = System.currentTimeMillis();
+    
+    // Check INCR non-existent key
+    Object res = client.incr(key.getBytes(), 1, false);
+    assertTrue(res instanceof ResponseCode);
+    assertTrue(((ResponseCode) res) == ResponseCode.NOT_FOUND);
+    
+    // Insert some value
+    client.add(key.getBytes(), "some".getBytes(), 0, 100, false);
+    
+    // Check format
+    res = client.incr(key.getBytes(), 1, false);
+    assertTrue(res instanceof ResponseCode);
+    assertTrue(((ResponseCode) res) == ResponseCode.CLIENT_ERROR);
+    
+    // Insert some numeric value
+    client.add(key.getBytes(), "10".getBytes(), 0, 100, false);
+    
+    // Check negative increment
+    res = client.incr(key.getBytes(), -1, false);
+    assertTrue(res instanceof ResponseCode);
+    assertTrue(((ResponseCode) res) == ResponseCode.CLIENT_ERROR);
+    
+    int n = 100_000;
+    for (int i = 0; i < n; i++) {
+      boolean noreply = true;
+      ResponseCode code = client.add((key + i).getBytes(), "0".getBytes(), 0, 100, noreply);
+      assertTrue(code == null);
+    }
+    long end  = System.currentTimeMillis();
+    logger.info("ADD Time={}ms", end - start);
+    
+    for (int i = 0; i < n; i++) {
+      boolean noreply = false;
+      res = client.incr((key + i).getBytes(), 10, noreply);
+      assertTrue(res instanceof Long);
+      assertEquals(10L, ((Long) res).longValue());
+    }
+    start = System.currentTimeMillis();
+    logger.info("INCR Time={}ms", start - end);
+
+    for (int i = 0; i < n; i++) {
+      boolean noreply = true;
+      res = client.incr((key + i).getBytes(), 10, noreply);
+      assertTrue(res == null);
+    }
+    end  = System.currentTimeMillis();
+    logger.info("INCR Time={}ms", end - start);
+    
+    for (int i = 0; i < n; i++) {
+      boolean noreply = false;
+      res = client.incr((key + i).getBytes(), 10, noreply);
+      assertTrue(res instanceof Long);
+      assertEquals(30L, ((Long) res).longValue());
+    }
+    start = System.currentTimeMillis();
+    logger.info("INCR Time={}ms", start - end);
+    
+  }
+  
+  @Test
+  public void testDecrGetMulti() throws IOException {
+    String key = "KEY:";
+    long start = System.currentTimeMillis();
+    
+    // Check DECR non-existent key
+    Object res = client.decr(key.getBytes(), 1, false);
+    assertTrue(res instanceof ResponseCode);
+    assertTrue(((ResponseCode) res) == ResponseCode.NOT_FOUND);
+    
+    // Insert some value
+    client.add(key.getBytes(), "some".getBytes(), 0, 100, false);
+    
+    // Check format
+    res = client.decr(key.getBytes(), 1, false);
+    assertTrue(res instanceof ResponseCode);
+    assertTrue(((ResponseCode) res) == ResponseCode.CLIENT_ERROR);
+    
+    // Insert some numeric value
+    client.add(key.getBytes(), "10".getBytes(), 0, 100, false);
+    
+    // Check negative increment
+    res = client.decr(key.getBytes(), -1, false);
+    assertTrue(res instanceof ResponseCode);
+    assertTrue(((ResponseCode) res) == ResponseCode.CLIENT_ERROR);
+    
+    int n = 100_000;
+    for (int i = 0; i < n; i++) {
+      boolean noreply = true;
+      ResponseCode code = client.add((key + i).getBytes(), "20".getBytes(), 0, 100, noreply);
+      assertTrue(code == null);
+    }
+    long end  = System.currentTimeMillis();
+    logger.info("ADD Time={}ms", end - start);
+    
+    for (int i = 0; i < n; i++) {
+      boolean noreply = false;
+      res = client.decr((key + i).getBytes(), 10, noreply);
+      assertTrue(res instanceof Long);
+      assertEquals(10L, ((Long) res).longValue());
+    }
+    start = System.currentTimeMillis();
+    logger.info("DECR Time={}ms", start - end);
+
+    for (int i = 0; i < n; i++) {
+      boolean noreply = true;
+      res = client.decr((key + i).getBytes(), 9, noreply);
+      assertTrue(res == null);
+    }
+    end  = System.currentTimeMillis();
+    logger.info("DECR Time={}ms", end - start);
+    
+    for (int i = 0; i < n; i++) {
+      boolean noreply = false;
+      res = client.decr((key + i).getBytes(), 10, noreply);
+      assertTrue(res instanceof Long);
+      assertEquals(0L, ((Long) res).longValue());
+    }
+    start = System.currentTimeMillis();
+    logger.info("DECR Time={}ms", start - end);
+  }
+  
   private byte[][] getBatch(int batchNumber, int batchSize) {
     byte[][] batch = new byte[batchSize][];
     for (int i = 0; i < batchSize; i++) {
