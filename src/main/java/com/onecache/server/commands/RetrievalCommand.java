@@ -30,13 +30,15 @@ public abstract class RetrievalCommand extends AbstractMemcachedCommand{
  
   static final long VALUE = UnsafeAccess.allocAndCopy("VALUE", 0, 5);
   static final long END = UnsafeAccess.allocAndCopy("END\r\n", 0, 5);
-  
+  public static long parseTime = 0;
   boolean isTouch;
   long[] keys;
   int[] keySizes;
   
   @Override
   public boolean parse(long inBuffer, int bufferSize) throws IllegalFormatException {
+    long t1 = System.nanoTime();
+
     try {
       int count = calculateNumberOfKeys(inBuffer, bufferSize);
       if (isTouch) {
@@ -86,9 +88,13 @@ public abstract class RetrievalCommand extends AbstractMemcachedCommand{
       if (UnsafeAccess.toByte(inBuffer + end) != '\n') {
         throw new IllegalFormatException("'\r\n' was expected");
       }
+      end++;
+      this.consumed = end;
       return true;
     } catch (NumberFormatException e) {
       throw new IllegalFormatException("not a number");
+    } finally{
+      parseTime += System.nanoTime() - t1;
     }
   }
   

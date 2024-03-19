@@ -15,7 +15,10 @@ package com.onecache.server.commands;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Random;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -30,7 +33,8 @@ import static org.junit.Assert.*;
 import static com.onecache.core.util.Utils.compareTo;
 
 public class TestCommandExecution extends TestBase{
-  
+  private static final Logger log = LogManager.getLogger(TestCommandExecution.class);
+
   Memcached support;
   
   @Before
@@ -61,8 +65,10 @@ public class TestCommandExecution extends TestBase{
     int flags = 1111;
     long expire = System.currentTimeMillis() + 1000;
     writeStorageCommand(cmd, key, value.getBytes(), flags, expire, 0, false, false, FaultType.NONE, inputBuffer);
+    int bufSize = inputBuffer.position();
     MemcachedCommand c = CommandParser.parse(inputPtr, inputBuffer.position());
     assertTrue(c instanceof SET);
+    assertEquals(bufSize, c.inputConsumed());
     SET sc = (SET) c;
     
     int size = sc.execute(support, outputPtr, bufferSize);
@@ -72,7 +78,9 @@ public class TestCommandExecution extends TestBase{
     
     inputBuffer.clear();
     writeStorageCommand(cmd, key, value.getBytes(), flags, expire, 0, false, true, FaultType.NONE, inputBuffer);
+    bufSize = inputBuffer.position();
     c = CommandParser.parse(inputPtr, inputBuffer.position());
+    assertEquals(bufSize, c.inputConsumed());
     assertTrue(c instanceof SET);
     sc = (SET) c;
     size = sc.execute(support, outputPtr, bufferSize);
@@ -94,7 +102,10 @@ public class TestCommandExecution extends TestBase{
     int flags = 1111;
     long expire = System.currentTimeMillis() + 1000;
     writeStorageCommand(cmd, key, value.getBytes(), flags, expire, 0, false, false, FaultType.NONE, inputBuffer);
+    
+    int bufSize = inputBuffer.position();
     MemcachedCommand c = CommandParser.parse(inputPtr, inputBuffer.position());
+    assertEquals(bufSize, c.inputConsumed());
     assertTrue(c instanceof ADD);
     ADD sc = (ADD) c;
     
@@ -105,7 +116,10 @@ public class TestCommandExecution extends TestBase{
     
     inputBuffer.clear();
     writeStorageCommand(cmd, key, value.getBytes(), flags, expire, 0, false, false, FaultType.NONE, inputBuffer);
+    bufSize = inputBuffer.position();
     c = CommandParser.parse(inputPtr, inputBuffer.position());
+    assertEquals(bufSize, c.inputConsumed());
+
     assertTrue(c instanceof ADD);
     sc = (ADD) c;
     size = sc.execute(support, outputPtr, bufferSize);
@@ -132,7 +146,10 @@ public class TestCommandExecution extends TestBase{
     int flags = 1111;
     long expire = System.currentTimeMillis() + 1000;
     writeStorageCommand(cmd, key, value.getBytes(), flags, expire, 0, false, false, FaultType.NONE, inputBuffer);
+    
+    int bufSize = inputBuffer.position();
     MemcachedCommand c = CommandParser.parse(inputPtr, inputBuffer.position());
+    assertEquals(bufSize, c.inputConsumed());
     assertTrue(c instanceof REPLACE);
     REPLACE sc = (REPLACE) c;
     
@@ -143,7 +160,10 @@ public class TestCommandExecution extends TestBase{
     
     inputBuffer.clear();
     writeStorageCommand(set, key, value.getBytes(), flags, expire, 0, false, false, FaultType.NONE, inputBuffer);
+    bufSize = inputBuffer.position();
     c = CommandParser.parse(inputPtr, inputBuffer.position());
+    assertEquals(bufSize, c.inputConsumed());
+
     assertTrue(c instanceof SET);
     SET s = (SET) c;
     size = s.execute(support, outputPtr, bufferSize);
@@ -156,7 +176,11 @@ public class TestCommandExecution extends TestBase{
     flags = 1112;
     expire = System.currentTimeMillis() + 1000;
     writeStorageCommand(cmd, key, value.getBytes(), flags, expire, 0, false, false, FaultType.NONE, inputBuffer);
+    
+    bufSize = inputBuffer.position();
     c = CommandParser.parse(inputPtr, inputBuffer.position());
+    assertEquals(bufSize, c.inputConsumed());
+    
     assertTrue(c instanceof REPLACE);
     sc = (REPLACE) c;
     
@@ -184,8 +208,9 @@ public class TestCommandExecution extends TestBase{
     int flags = 1111;
     long expire = System.currentTimeMillis() + 1000;
     writeStorageCommand(cmd, key, value.getBytes(), flags, expire, 0, false, false, FaultType.NONE, inputBuffer);
+    int bufSize = inputBuffer.position();
     MemcachedCommand c = CommandParser.parse(inputPtr, inputBuffer.position());
-    assertTrue(c instanceof APPEND);
+    assertEquals(bufSize, c.inputConsumed());    assertTrue(c instanceof APPEND);
     APPEND sc = (APPEND) c;
     
     int size = sc.execute(support, outputPtr, bufferSize);
@@ -195,7 +220,11 @@ public class TestCommandExecution extends TestBase{
     
     inputBuffer.clear();
     writeStorageCommand(set, key, value.getBytes(), flags, expire, 0, false, false, FaultType.NONE, inputBuffer);
+    
+    bufSize = inputBuffer.position();
     c = CommandParser.parse(inputPtr, inputBuffer.position());
+    assertEquals(bufSize, c.inputConsumed());
+    
     assertTrue(c instanceof SET);
     SET s = (SET) c;
     size = s.execute(support, outputPtr, bufferSize);
@@ -208,7 +237,11 @@ public class TestCommandExecution extends TestBase{
     flags = 1112;
     expire = System.currentTimeMillis() + 1000;
     writeStorageCommand(cmd, key, value1.getBytes(), flags, expire, 0, false, false, FaultType.NONE, inputBuffer);
+    
+    bufSize = inputBuffer.position();
     c = CommandParser.parse(inputPtr, inputBuffer.position());
+    assertEquals(bufSize, c.inputConsumed());
+    
     assertTrue(c instanceof APPEND);
     sc = (APPEND) c;
     
@@ -236,7 +269,9 @@ public class TestCommandExecution extends TestBase{
     int flags = 1111;
     long expire = System.currentTimeMillis() + 1000;
     writeStorageCommand(cmd, key, value.getBytes(), flags, expire, 0, false, false, FaultType.NONE, inputBuffer);
+    int bufSize = inputBuffer.position();
     MemcachedCommand c = CommandParser.parse(inputPtr, inputBuffer.position());
+    assertEquals(bufSize, c.inputConsumed());
     assertTrue(c instanceof PREPEND);
     PREPEND sc = (PREPEND) c;
     
@@ -247,7 +282,10 @@ public class TestCommandExecution extends TestBase{
     
     inputBuffer.clear();
     writeStorageCommand(set, key, value.getBytes(), flags, expire, 0, false, false, FaultType.NONE, inputBuffer);
+    bufSize = inputBuffer.position();
     c = CommandParser.parse(inputPtr, inputBuffer.position());
+    assertEquals(bufSize, c.inputConsumed());
+    
     assertTrue(c instanceof SET);
     SET s = (SET) c;
     size = s.execute(support, outputPtr, bufferSize);
@@ -260,7 +298,9 @@ public class TestCommandExecution extends TestBase{
     flags = 1112;
     expire = System.currentTimeMillis() + 1000;
     writeStorageCommand(cmd, key, value1.getBytes(), flags, expire, 0, false, false, FaultType.NONE, inputBuffer);
+    bufSize = inputBuffer.position();
     c = CommandParser.parse(inputPtr, inputBuffer.position());
+    assertEquals(bufSize, c.inputConsumed());
     assertTrue(c instanceof PREPEND);
     sc = (PREPEND) c;
     
@@ -284,11 +324,19 @@ public class TestCommandExecution extends TestBase{
     inputBuffer.clear();
     byte[] cmd = "set".getBytes();
     String key = TestUtils.randomString(20);
-    String value = TestUtils.randomString(200);
+    long seed = System.currentTimeMillis();//1710527677110L
+    Random rnd = new Random(seed);
+    String value = TestUtils.randomString(rnd, 200);
+    byte[] bvalue = value.getBytes();
+    
     int flags = 1111;
     long expire = System.currentTimeMillis() + 1000000;
     writeStorageCommand(cmd, key, value.getBytes(), flags, expire, 0, false, false, FaultType.NONE, inputBuffer);
+    
+    int bufSize = inputBuffer.position();
     MemcachedCommand c = CommandParser.parse(inputPtr, inputBuffer.position());
+    assertEquals(bufSize, c.inputConsumed()); 
+    
     assertTrue(c instanceof SET);
     SET sc = (SET) c;
     
@@ -300,22 +348,33 @@ public class TestCommandExecution extends TestBase{
     inputBuffer.clear();
     
     writeRetrievalCommand(gets, new String[] {key}, 0, false, FaultType.NONE, inputBuffer);
+    
+    bufSize = inputBuffer.position();
     c = CommandParser.parse(inputPtr, inputBuffer.position());
+    assertEquals(bufSize, c.inputConsumed());
+    
     assertTrue(c instanceof GETS);
     GETS g = (GETS) c;
     
     size = g.execute(support, outputPtr, bufferSize);
+        
     assertTrue(size > 0);
     List<KeyRecord> values = readRetrievalCommandResponse(outputPtr, size, true);
     assertEquals(1, values.size());
     KeyRecord kr = values.get(0);
+    Record r = kr.record;
+    assertTrue(compareTo(bvalue, 0, bvalue.length,r.value, r.offset, r.size) == 0);
+    
     long $cas = kr.record.cas;
     
     inputBuffer.clear();
     value = value + 1;
     writeStorageCommand(cas, key, value.getBytes(), flags, expire, $cas, true, false, FaultType.NONE, inputBuffer);
     
+    bufSize = inputBuffer.position();
     c = CommandParser.parse(inputPtr, inputBuffer.position());
+    assertEquals(bufSize, c.inputConsumed());
+    
     assertTrue(c instanceof CAS);
     CAS cs = (CAS) c;
     
@@ -328,7 +387,10 @@ public class TestCommandExecution extends TestBase{
     inputBuffer.clear();
     
     writeRetrievalCommand(gets, new String[] {key}, 0, false, FaultType.NONE, inputBuffer);
+    bufSize = inputBuffer.position();
     c = CommandParser.parse(inputPtr, inputBuffer.position());
+    assertEquals(bufSize, c.inputConsumed());
+    
     assertTrue(c instanceof GETS);
     g = (GETS) c;
     
@@ -338,14 +400,17 @@ public class TestCommandExecution extends TestBase{
     assertEquals(1, values.size());
     kr = values.get(0);
     
-    byte[] bvalue = value.getBytes();
+    bvalue = value.getBytes();
     assertTrue(compareTo(bvalue, 0, bvalue.length, kr.record.value, kr.record.offset, kr.record.size) == 0);
     
     // CAS with wrong cas
     inputBuffer.clear();
     writeStorageCommand(cas, key, value.getBytes(), flags, expire, $cas/2, true, false, FaultType.NONE, inputBuffer);
     
+    bufSize = inputBuffer.position();
     c = CommandParser.parse(inputPtr, inputBuffer.position());
+    assertEquals(bufSize, c.inputConsumed());
+    
     assertTrue(c instanceof CAS);
     cs = (CAS) c;
     
@@ -358,7 +423,10 @@ public class TestCommandExecution extends TestBase{
     inputBuffer.clear();
     writeStorageCommand(cas, key + 1, value.getBytes(), flags, expire, $cas/2, true, false, FaultType.NONE, inputBuffer);
     
+    bufSize = inputBuffer.position();
     c = CommandParser.parse(inputPtr, inputBuffer.position());
+    assertEquals(bufSize, c.inputConsumed());
+    
     assertTrue(c instanceof CAS);
     cs = (CAS) c;
     
@@ -378,7 +446,11 @@ public class TestCommandExecution extends TestBase{
     int flags = 1111;
     long expire = System.currentTimeMillis() + 1000000;
     writeStorageCommand(cmd, key, value.getBytes(), flags, expire, 0, false, false, FaultType.NONE, inputBuffer);
+    
+    int bufSize = inputBuffer.position();
     MemcachedCommand c = CommandParser.parse(inputPtr, inputBuffer.position());
+    assertEquals(bufSize, c.inputConsumed());
+    
     assertTrue(c instanceof SET);
     SET sc = (SET) c;
     
@@ -389,7 +461,11 @@ public class TestCommandExecution extends TestBase{
     
     inputBuffer.clear();
     writeRetrievalCommand(get, new String[] {key}, 0, false, FaultType.NONE, inputBuffer);
+    
+    bufSize = inputBuffer.position();
     c = CommandParser.parse(inputPtr, inputBuffer.position());
+    assertEquals(bufSize, c.inputConsumed());
+    
     assertTrue(c instanceof GET);
     GET g = (GET) c;
     
@@ -406,7 +482,11 @@ public class TestCommandExecution extends TestBase{
     // get 3 keys, 2 - nonexistent
     inputBuffer.clear();
     writeRetrievalCommand(get, new String[] {key, key + "1", key + "2"}, 0, false, FaultType.NONE, inputBuffer);
+    
+    bufSize = inputBuffer.position();
     c = CommandParser.parse(inputPtr, inputBuffer.position());
+    assertEquals(bufSize, c.inputConsumed());
+    
     assertTrue(c instanceof GET);
     g = (GET) c;
     
@@ -428,7 +508,11 @@ public class TestCommandExecution extends TestBase{
     
     inputBuffer.clear();
     writeStorageCommand(cmd, key2, value2.getBytes(), flags2, expire2, 0, false, false, FaultType.NONE, inputBuffer);
+    
+    bufSize = inputBuffer.position();
     c = CommandParser.parse(inputPtr, inputBuffer.position());
+    assertEquals(bufSize, c.inputConsumed());
+    
     assertTrue(c instanceof SET);
     sc = (SET) c;
     
@@ -440,7 +524,11 @@ public class TestCommandExecution extends TestBase{
     // get 4 keys, 2 - nonexistent
     inputBuffer.clear();
     writeRetrievalCommand(get, new String[] {key, key2, key + "1", key + "2"}, 0, false, FaultType.NONE, inputBuffer);
+    
+    bufSize = inputBuffer.position();
     c = CommandParser.parse(inputPtr, inputBuffer.position());
+    assertEquals(bufSize, c.inputConsumed());
+    
     assertTrue(c instanceof GET);
     g = (GET) c;
     
@@ -471,7 +559,10 @@ public class TestCommandExecution extends TestBase{
     int flags = 1111;
     long expire = System.currentTimeMillis() + 1000000;
     writeStorageCommand(cmd, key, value.getBytes(), flags, expire, 0, false, false, FaultType.NONE, inputBuffer);
+    int bufSize = inputBuffer.position();
     MemcachedCommand c = CommandParser.parse(inputPtr, inputBuffer.position());
+    assertEquals(bufSize, c.inputConsumed());
+    
     assertTrue(c instanceof SET);
     SET sc = (SET) c;
     
@@ -482,7 +573,11 @@ public class TestCommandExecution extends TestBase{
     
     inputBuffer.clear();
     writeRetrievalCommand(gets, new String[] {key}, 0, false, FaultType.NONE, inputBuffer);
+    
+    bufSize = inputBuffer.position();
     c = CommandParser.parse(inputPtr, inputBuffer.position());
+    assertEquals(bufSize, c.inputConsumed());
+    
     assertTrue(c instanceof GET);
     GETS g = (GETS) c;
     
@@ -500,7 +595,10 @@ public class TestCommandExecution extends TestBase{
     // get 3 keys, 2 - nonexistent
     inputBuffer.clear();
     writeRetrievalCommand(gets, new String[] {key, key + "1", key + "2"}, 0, false, FaultType.NONE, inputBuffer);
+    bufSize = inputBuffer.position();
     c = CommandParser.parse(inputPtr, inputBuffer.position());
+    assertEquals(bufSize, c.inputConsumed());
+
     assertTrue(c instanceof GET);
     g = (GETS) c;
     
@@ -523,7 +621,9 @@ public class TestCommandExecution extends TestBase{
     
     inputBuffer.clear();
     writeStorageCommand(cmd, key2, value2.getBytes(), flags2, expire2, 0, false, false, FaultType.NONE, inputBuffer);
+    bufSize = inputBuffer.position();
     c = CommandParser.parse(inputPtr, inputBuffer.position());
+    assertEquals(bufSize, c.inputConsumed());
     assertTrue(c instanceof SET);
     sc = (SET) c;
     
@@ -535,7 +635,9 @@ public class TestCommandExecution extends TestBase{
     // get 4 keys, 2 - nonexistent
     inputBuffer.clear();
     writeRetrievalCommand(gets, new String[] {key, key2, key + "1", key + "2"}, 0, false, FaultType.NONE, inputBuffer);
+    bufSize = inputBuffer.position();
     c = CommandParser.parse(inputPtr, inputBuffer.position());
+    assertEquals(bufSize, c.inputConsumed());
     assertTrue(c instanceof GET);
     g = (GETS) c;
     
@@ -569,7 +671,9 @@ public class TestCommandExecution extends TestBase{
     int flags = 1111;
     long expire = System.currentTimeMillis() + 1000000;
     writeStorageCommand(cmd, key, value.getBytes(), flags, expire, 0, false, false, FaultType.NONE, inputBuffer);
+    int bufSize = inputBuffer.position();
     MemcachedCommand c = CommandParser.parse(inputPtr, inputBuffer.position());
+    assertEquals(bufSize, c.inputConsumed());
     assertTrue(c instanceof SET);
     SET sc = (SET) c;
     
@@ -581,7 +685,9 @@ public class TestCommandExecution extends TestBase{
     long newExpire = expire + 100000;
     inputBuffer.clear();
     writeRetrievalCommand(gat, new String[] {key}, newExpire, true, FaultType.NONE, inputBuffer);
+    bufSize = inputBuffer.position();
     c = CommandParser.parse(inputPtr, inputBuffer.position());
+    assertEquals(bufSize, c.inputConsumed());
     assertTrue(c instanceof GAT);
     GAT g = (GAT) c;
     
@@ -604,7 +710,9 @@ public class TestCommandExecution extends TestBase{
     inputBuffer.clear();
     newExpire = newExpire + 10000;
     writeRetrievalCommand(gat, new String[] {key, key + "1", key + "2"}, newExpire, true, FaultType.NONE, inputBuffer);
+    bufSize = inputBuffer.position();
     c = CommandParser.parse(inputPtr, inputBuffer.position());
+    assertEquals(bufSize, c.inputConsumed());
     assertTrue(c instanceof GAT);
     g = (GAT) c;
     
@@ -629,7 +737,9 @@ public class TestCommandExecution extends TestBase{
     
     inputBuffer.clear();
     writeStorageCommand(cmd, key2, value2.getBytes(), flags2, expire2, 0, false, false, FaultType.NONE, inputBuffer);
+    bufSize = inputBuffer.position();
     c = CommandParser.parse(inputPtr, inputBuffer.position());
+    assertEquals(bufSize, c.inputConsumed());
     assertTrue(c instanceof SET);
     sc = (SET) c;
     
@@ -642,7 +752,9 @@ public class TestCommandExecution extends TestBase{
     // get 4 keys, 2 - nonexistent
     inputBuffer.clear();
     writeRetrievalCommand(gat, new String[] {key, key2, key + "1", key + "2"}, newExpire, true, FaultType.NONE, inputBuffer);
+    bufSize = inputBuffer.position();
     c = CommandParser.parse(inputPtr, inputBuffer.position());
+    assertEquals(bufSize, c.inputConsumed());
     assertTrue(c instanceof GAT);
     g = (GAT) c;
     
@@ -679,7 +791,9 @@ public class TestCommandExecution extends TestBase{
     int flags = 1111;
     long expire = System.currentTimeMillis() + 1000000;
     writeStorageCommand(cmd, key, value.getBytes(), flags, expire, 0, false, false, FaultType.NONE, inputBuffer);
+    int bufSize = inputBuffer.position();
     MemcachedCommand c = CommandParser.parse(inputPtr, inputBuffer.position());
+    assertEquals(bufSize, c.inputConsumed());
     assertTrue(c instanceof SET);
     SET sc = (SET) c;
     
@@ -691,7 +805,11 @@ public class TestCommandExecution extends TestBase{
     long newExpire = expire + 100000;
     inputBuffer.clear();
     writeRetrievalCommand(gats, new String[] {key}, newExpire, true, FaultType.NONE, inputBuffer);
+    
+    bufSize = inputBuffer.position();
     c = CommandParser.parse(inputPtr, inputBuffer.position());
+    assertEquals(bufSize, c.inputConsumed());
+
     assertTrue(c instanceof GATS);
     GATS g = (GATS) c;
     
@@ -715,7 +833,11 @@ public class TestCommandExecution extends TestBase{
     inputBuffer.clear();
     newExpire = newExpire + 10000;
     writeRetrievalCommand(gats, new String[] {key, key + "1", key + "2"}, newExpire, true, FaultType.NONE, inputBuffer);
+
+    bufSize = inputBuffer.position();
     c = CommandParser.parse(inputPtr, inputBuffer.position());
+    assertEquals(bufSize, c.inputConsumed());
+
     assertTrue(c instanceof GATS);
     g = (GATS) c;
     
@@ -741,7 +863,9 @@ public class TestCommandExecution extends TestBase{
     
     inputBuffer.clear();
     writeStorageCommand(cmd, key2, value2.getBytes(), flags2, expire2, 0, false, false, FaultType.NONE, inputBuffer);
+    bufSize = inputBuffer.position();
     c = CommandParser.parse(inputPtr, inputBuffer.position());
+    assertEquals(bufSize, c.inputConsumed());
     assertTrue(c instanceof SET);
     sc = (SET) c;
     
@@ -754,7 +878,9 @@ public class TestCommandExecution extends TestBase{
     // get 4 keys, 2 - nonexistent
     inputBuffer.clear();
     writeRetrievalCommand(gats, new String[] {key, key2, key + "1", key + "2"}, newExpire, true, FaultType.NONE, inputBuffer);
+    bufSize = inputBuffer.position();
     c = CommandParser.parse(inputPtr, inputBuffer.position());
+    assertEquals(bufSize, c.inputConsumed());
     assertTrue(c instanceof GATS);
     g = (GATS) c;
     
@@ -793,7 +919,9 @@ public class TestCommandExecution extends TestBase{
     int flags = 1111;
     long expire = System.currentTimeMillis() + 1000000;
     writeStorageCommand(cmd, key, value.getBytes(), flags, expire, 0, false, false, FaultType.NONE, inputBuffer);
+    int bufSize = inputBuffer.position();
     MemcachedCommand c = CommandParser.parse(inputPtr, inputBuffer.position());
+    assertEquals(bufSize, c.inputConsumed());
     assertTrue(c instanceof SET);
     SET sc = (SET) c;
     
@@ -806,7 +934,9 @@ public class TestCommandExecution extends TestBase{
     
     long newExpire = expire + 10000;
     writeTouchCommand(key, newExpire, false, FaultType.NONE, inputBuffer);
+    bufSize = inputBuffer.position();
     c = CommandParser.parse(inputPtr, inputBuffer.position());
+    assertEquals(bufSize, c.inputConsumed());
     assertTrue(c instanceof TOUCH);
     TOUCH t = (TOUCH) c;
     
@@ -824,7 +954,9 @@ public class TestCommandExecution extends TestBase{
     inputBuffer.clear();
     newExpire = expire + 10000;
     writeTouchCommand(key + 1, newExpire, false, FaultType.NONE, inputBuffer);
+    bufSize = inputBuffer.position();
     c = CommandParser.parse(inputPtr, inputBuffer.position());
+    assertEquals(bufSize, c.inputConsumed());
     assertTrue(c instanceof TOUCH);
     t = (TOUCH) c;
     
@@ -847,7 +979,9 @@ public class TestCommandExecution extends TestBase{
     
     inputBuffer.clear();
     writeDeleteCommand(key, false, FaultType.NONE, inputBuffer);
+    int bufSize = inputBuffer.position();
     MemcachedCommand c = CommandParser.parse(inputPtr, inputBuffer.position());
+    assertEquals(bufSize, c.inputConsumed());
     assertTrue(c instanceof DELETE);
     DELETE d = (DELETE) c;
     int size = d.execute(support, outputPtr, bufferSize);
@@ -857,7 +991,9 @@ public class TestCommandExecution extends TestBase{
     inputBuffer.clear();
 
     writeStorageCommand(cmd, key, value.getBytes(), flags, expire, 0, false, false, FaultType.NONE, inputBuffer);
+    bufSize = inputBuffer.position();
     c = CommandParser.parse(inputPtr, inputBuffer.position());
+    assertEquals(bufSize, c.inputConsumed());
     assertTrue(c instanceof SET);
     SET sc = (SET) c;
     
@@ -868,7 +1004,9 @@ public class TestCommandExecution extends TestBase{
     
     inputBuffer.clear();
     writeDeleteCommand(key, false, FaultType.NONE, inputBuffer);
+    bufSize = inputBuffer.position();
     c = CommandParser.parse(inputPtr, inputBuffer.position());
+    assertEquals(bufSize, c.inputConsumed());
     assertTrue(c instanceof DELETE);
     d = (DELETE) c;
     size = d.execute(support, outputPtr, bufferSize);
@@ -892,7 +1030,9 @@ public class TestCommandExecution extends TestBase{
     
     inputBuffer.clear();
     writeIncrCommand(key, 10, false, FaultType.NONE, inputBuffer);
+    int bufSize = inputBuffer.position();
     MemcachedCommand c = CommandParser.parse(inputPtr, inputBuffer.position());
+    assertEquals(bufSize, c.inputConsumed());
     assertTrue(c instanceof INCR);
     INCR d = (INCR) c;
     int size = d.execute(support, outputPtr, bufferSize);
@@ -902,7 +1042,9 @@ public class TestCommandExecution extends TestBase{
     inputBuffer.clear();
 
     writeStorageCommand(cmd, key, value.getBytes(), flags, expire, 0, false, false, FaultType.NONE, inputBuffer);
+    bufSize = inputBuffer.position();
     c = CommandParser.parse(inputPtr, inputBuffer.position());
+    assertEquals(bufSize, c.inputConsumed());
     assertTrue(c instanceof SET);
     SET sc = (SET) c;
     
@@ -913,7 +1055,9 @@ public class TestCommandExecution extends TestBase{
     
     inputBuffer.clear();
     writeIncrCommand(key, 10, false, FaultType.NONE, inputBuffer);
+    bufSize = inputBuffer.position();
     c = CommandParser.parse(inputPtr, inputBuffer.position());
+    assertEquals(bufSize, c.inputConsumed());
     assertTrue(c instanceof INCR);
     d = (INCR) c;
     size = d.execute(support, outputPtr, bufferSize);
@@ -936,7 +1080,9 @@ public class TestCommandExecution extends TestBase{
     inputBuffer.clear();
     value = "value";
     writeStorageCommand(cmd, key, value.getBytes(), flags, expire, 0, false, false, FaultType.NONE, inputBuffer);
+    bufSize = inputBuffer.position();
     c = CommandParser.parse(inputPtr, inputBuffer.position());
+    assertEquals(bufSize, c.inputConsumed());
     assertTrue(c instanceof SET);
     sc = (SET) c;
     size = sc.execute(support, outputPtr, bufferSize);
@@ -946,7 +1092,9 @@ public class TestCommandExecution extends TestBase{
     
     inputBuffer.clear();
     writeIncrCommand(key, 10, false, FaultType.NONE, inputBuffer);
+    bufSize = inputBuffer.position();
     c = CommandParser.parse(inputPtr, inputBuffer.position());
+    assertEquals(bufSize, c.inputConsumed());
     assertTrue(c instanceof INCR);
     d = (INCR) c;
     size = d.execute(support, outputPtr, bufferSize);
@@ -967,7 +1115,9 @@ public class TestCommandExecution extends TestBase{
     
     inputBuffer.clear();
     writeDecrCommand(key, 10, false, FaultType.NONE, inputBuffer);
+    int bufSize = inputBuffer.position();
     MemcachedCommand c = CommandParser.parse(inputPtr, inputBuffer.position());
+    assertEquals(bufSize, c.inputConsumed());
     assertTrue(c instanceof DECR);
     DECR d = (DECR) c;
     int size = d.execute(support, outputPtr, bufferSize);
@@ -977,7 +1127,9 @@ public class TestCommandExecution extends TestBase{
     inputBuffer.clear();
 
     writeStorageCommand(cmd, key, value.getBytes(), flags, expire, 0, false, false, FaultType.NONE, inputBuffer);
+    bufSize = inputBuffer.position();
     c = CommandParser.parse(inputPtr, inputBuffer.position());
+    assertEquals(bufSize, c.inputConsumed());
     assertTrue(c instanceof SET);
     SET sc = (SET) c;
     
@@ -988,7 +1140,9 @@ public class TestCommandExecution extends TestBase{
     
     inputBuffer.clear();
     writeDecrCommand(key, 9, false, FaultType.NONE, inputBuffer);
+    bufSize = inputBuffer.position();
     c = CommandParser.parse(inputPtr, inputBuffer.position());
+    assertEquals(bufSize, c.inputConsumed());
     assertTrue(c instanceof DECR);
     d = (DECR) c;
     size = d.execute(support, outputPtr, bufferSize);
@@ -997,7 +1151,9 @@ public class TestCommandExecution extends TestBase{
     
     inputBuffer.clear();
     writeDecrCommand(key, 9, false, FaultType.NONE, inputBuffer);
+    bufSize = inputBuffer.position();
     c = CommandParser.parse(inputPtr, inputBuffer.position());
+    assertEquals(bufSize, c.inputConsumed());
     assertTrue(c instanceof DECR);
     d = (DECR) c;
     size = d.execute(support, outputPtr, bufferSize);
@@ -1020,7 +1176,9 @@ public class TestCommandExecution extends TestBase{
     inputBuffer.clear();
     value = "value";
     writeStorageCommand(cmd, key, value.getBytes(), flags, expire, 0, false, false, FaultType.NONE, inputBuffer);
+    bufSize = inputBuffer.position();
     c = CommandParser.parse(inputPtr, inputBuffer.position());
+    assertEquals(bufSize, c.inputConsumed());
     assertTrue(c instanceof SET);
     sc = (SET) c;
     size = sc.execute(support, outputPtr, bufferSize);
@@ -1030,7 +1188,9 @@ public class TestCommandExecution extends TestBase{
     
     inputBuffer.clear();
     writeDecrCommand(key, 10, false, FaultType.NONE, inputBuffer);
+    bufSize = inputBuffer.position();
     c = CommandParser.parse(inputPtr, inputBuffer.position());
+    assertEquals(bufSize, c.inputConsumed());
     assertTrue(c instanceof DECR);
     d = (DECR) c;
     size = d.execute(support, outputPtr, bufferSize);

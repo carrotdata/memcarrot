@@ -80,4 +80,15 @@ public interface MemcachedCommand {
    */
   public boolean parse(long inBuffer, int bufferSize) throws IllegalFormatException;
   
+  /**
+   * Consumed input in bytes
+   * @return bytes consumed during parsing
+   */
+  public int inputConsumed();
+  
+  /**
+   * Command name length + space
+   * @return length
+   */
+  public int commandLength();
 }

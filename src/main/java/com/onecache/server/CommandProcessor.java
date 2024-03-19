@@ -9,6 +9,9 @@
  */
 package com.onecache.server;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import com.onecache.core.support.Memcached;
 import com.onecache.core.util.UnsafeAccess;
 import com.onecache.server.commands.CommandParser;
@@ -17,7 +20,13 @@ import com.onecache.server.support.IllegalFormatException;
 import com.onecache.server.support.UnsupportedCommand;
 
 public class CommandProcessor {
+  private static Logger logger = LogManager.getLogger(CommandProcessor.class);
 
+  public static class Result {
+    int consumed;
+    int produced;
+  }
+  
   static ThreadLocal<MemcachedCommand> lastCommand = new ThreadLocal<MemcachedCommand>();
   /**
    * Main method
@@ -26,7 +35,8 @@ public class CommandProcessor {
    * @return size of response or -1 if input is incomplete
    * @throws IllegalFormatException, UnsupportedCommand
    */
-
+  static int touched;
+  static int added = 0;
   public static int process(Memcached storage, long inputPtr, int inputSize, long outPtr,
       int outSize) throws IllegalFormatException {
     try {
@@ -44,13 +54,14 @@ public class CommandProcessor {
       return buf.length;
     } catch (IllegalFormatException eee){
       String msg = "CLIENT_ERROR " + eee.getMessage() + "\r\n";
+      logger.error(msg);
       byte[] buf = msg.getBytes();
       UnsafeAccess.copy(buf, 0, outPtr, buf.length);
       return buf.length;
     }
   }
 
-  public MemcachedCommand getLastExecutedCommand() {
+  public static MemcachedCommand getLastExecutedCommand() {
     return lastCommand.get();
   }
 }

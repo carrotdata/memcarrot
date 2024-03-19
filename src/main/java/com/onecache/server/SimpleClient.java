@@ -60,19 +60,32 @@ public class SimpleClient {
     }
   }
 
+  public SimpleClient(String host, int port) {
+    try {
+      conn = openConnection(host, port);
+    } catch (IOException e) {
+      logger.error(e);
+    }
+  }
+  
   private SocketChannel openConnection(String node) throws IOException {
     String[] parts = node.split(":");
     String host = parts[0];
     int port = Integer.parseInt(parts[1]);
+    return openConnection(host, port);
+  }
 
+  private SocketChannel openConnection(String host, int port) throws IOException {
+   
     SocketChannel sc = SocketChannel.open(new InetSocketAddress(host, port));
     sc.configureBlocking(false);
     sc.setOption(StandardSocketOptions.TCP_NODELAY, true);
     sc.setOption(StandardSocketOptions.SO_SNDBUF, 64 * 1024);
     sc.setOption(StandardSocketOptions.SO_RCVBUF, 64 * 1024);
+    logger.debug("Client opened connection to: {}", sc.getRemoteAddress().toString());
     return sc;
   }
-
+  
   private ResponseCode getStorageResponse(ByteBuffer buf) {
     int pos = buf.position();
     if (pos == 8) {
@@ -140,6 +153,8 @@ public class SimpleClient {
 
     if (pos == 11 && buf.get(0) == 'N') {
       return ResponseCode.NOT_FOUND;
+    } else if (buf.get(0) == 'C') {
+      return ResponseCode.CLIENT_ERROR;
     } else {
       byte[] b = new byte[pos - 2];
       buf.flip();
@@ -161,11 +176,14 @@ public class SimpleClient {
         return new ArrayList<GetResult>();
       }
       buf.position(pos);
+      return null;
     }
     // Check if it is complete response
     // we need to check last 5 bytes
+    //FIXME: its dangerous: there is a chance that we can get this true before response is complete
     buf.position(pos - 5);
     if (com.onecache.core.util.Utils.compareTo(buf, END.length, END, 0, END.length) != 0) {
+      buf.position(pos);
       return null;// response is not complete
     }
 
@@ -192,19 +210,20 @@ public class SimpleClient {
       }
     }
     // search \r\n
-    while (buf.remaining() >= 2) {
-      byte b1 = buf.get();
-      byte b2 = buf.get();
+    int off = pos;
+    while (limit - off >= 2) {
+      byte b1 = buf.get(off);
+      byte b2 = buf.get(++off);
       if (b1 == CRLF[0] && b2 == CRLF[1]) {
         break;
       }
     }
     // copy line
-    int newPos = buf.position();
+    int newPos = off + 1;
     buf.position(pos);
     byte[] bb = new byte[newPos - pos - 2];
     buf.get(bb);
-    String s = new String(bb);
+    String s = new String(bb);    
     String[] splits = s.split(" ");
     GetResult res = new GetResult();
     res.key = splits[1].getBytes();
@@ -213,6 +232,9 @@ public class SimpleClient {
       res.cas = OptionalLong.of(Long.parseLong(splits[4]));
     }
     int valueSize = Integer.parseInt(splits[3]);
+    buf.get();
+    buf.get();
+    
     byte[] value = new byte[valueSize];
     buf.get(value);
     res.value = value;
@@ -236,7 +258,9 @@ public class SimpleClient {
     buf.put(SPACE[0]);
     for (int i = 0; i < numKeys; i++) {
       buf.put(keys[i]);
-      buf.put(SPACE[0]);
+      if (i < numKeys - 1) {
+        buf.put(SPACE[0]);
+      }
     }
     buf.put(CRLF);
 
@@ -269,7 +293,9 @@ public class SimpleClient {
     buf.put(SPACE[0]);
     for (int i = 0; i < numKeys; i++) {
       buf.put(keys[i]);
-      buf.put(SPACE[0]);
+      if (i < numKeys -1) {
+        buf.put(SPACE[0]);
+      }
     }
     buf.put(CRLF);
 
@@ -307,7 +333,9 @@ public class SimpleClient {
     buf.put(SPACE[0]);
     for (int i = 0; i < numKeys; i++) {
       buf.put(keys[i]);
-      buf.put(SPACE[0]);
+      if (i < numKeys -1) {
+        buf.put(SPACE[0]);
+      }
     }
     buf.put(CRLF);
 
@@ -335,7 +363,7 @@ public class SimpleClient {
   public List<GetResult> gats(long expire, byte[][] keys) throws IOException {
     buf.clear();
     int numKeys = keys.length;
-    buf.put(GETSCMD);
+    buf.put(GATSCMD);
     // SPACE
     buf.put(SPACE[0]);
     // expire
@@ -344,7 +372,9 @@ public class SimpleClient {
     buf.put(SPACE[0]);
     for (int i = 0; i < numKeys; i++) {
       buf.put(keys[i]);
-      buf.put(SPACE[0]);
+      if (i < numKeys -1) {
+        buf.put(SPACE[0]);
+      }
     }
     buf.put(CRLF);
 
@@ -399,7 +429,8 @@ public class SimpleClient {
       // SPACE
       buf.put(SPACE[0]);
       // CAS
-      buf.put(cas.toString().getBytes());
+      String s = Long.toString(cas.getAsLong());
+      buf.put(s.getBytes());
     }
     if (noreply) {
       // SPACE
@@ -681,19 +712,11 @@ public class SimpleClient {
 
   /**
    * Shutdown onecache server
-   * @param save save data on shutdown
    * @throws IOException
    */
-  public void shutdown(boolean save) throws IOException {
+  public void shutdown() throws IOException {
     buf.clear();
     buf.put("shutdown".getBytes());
-    // SPACE
-    buf.put(SPACE[0]);
-    if (save) {
-      buf.put("save".getBytes());
-    } else {
-      buf.put("nosave".getBytes());
-    }
     buf.put(CRLF);
     SocketChannel channel = conn;
     buf.flip();
@@ -701,6 +724,10 @@ public class SimpleClient {
       channel.write(buf);
     }
     // this command does not return
+    buf.clear();
+    while (buf.position() != 4 ) {
+      channel.read(buf);
+    }
   }
 
   /**

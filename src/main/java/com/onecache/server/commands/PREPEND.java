@@ -33,4 +33,9 @@ public class PREPEND extends StorageCommand {
     }
     return 0;
   }
+
+  @Override
+  public int commandLength() {
+    return 8;
+  }
 }

@@ -18,6 +18,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.logging.log4j.LogManager;
@@ -25,9 +26,6 @@ import org.apache.logging.log4j.Logger;
 
 import com.onecache.core.support.Memcached;
 import com.onecache.core.util.UnsafeAccess;
-import com.onecache.server.support.IllegalFormatException;
-import com.onecache.server.support.UnsupportedCommand;
-import com.onecache.server.util.Utils;
 
 public class RequestHandlers {
 
@@ -64,6 +62,8 @@ public class RequestHandlers {
    * Request handlers
    */
   WorkThread[] workers;
+  
+  volatile boolean shutdown;
 
   private RequestHandlers(Memcached store, int numThreads, int bufferSize) {
     workers = new WorkThread[numThreads];
@@ -87,6 +87,9 @@ public class RequestHandlers {
    * @param key selection key for socket channel
    */
   public void submit(SelectionKey key) {
+    if(this.shutdown) {
+      return;
+    }
     while (true) {
       for (int i = 0; i < workers.length; i++) {
         if (workers[i].isBusy()) continue;
@@ -98,7 +101,9 @@ public class RequestHandlers {
 
   /** Shutdown service */
   public void shutdown() {
-    // TODO
+    this.shutdown = true;
+    Arrays.stream(workers).forEach(Thread::interrupt);  
+    log.debug("Stopped request handlers: count={}", workers.length);
   }
 }
 
@@ -145,14 +150,19 @@ class WorkThread extends Thread {
   private volatile boolean busy = false;
 
   private int bufferSize;
+  
+  private static AtomicInteger counter = new AtomicInteger(); 
+  
   /**
    * Default constructor
    *
    * @param store data store
    */
   WorkThread(Memcached store, int bufferSize) {
+    super("oc-pool-thread-"+ counter.getAndIncrement());
     this.store = store;
     this.bufferSize = bufferSize;
+    setDaemon(true);
   }
 
   private ByteBuffer getInputBuffer() {
@@ -209,6 +219,9 @@ class WorkThread extends Thread {
     SelectionKey key = null;
     // wait for next task
     while ((key = nextKey.getAndSet(null)) == null) {
+      if (Thread.interrupted()) {
+        return null;
+      }
       // Exponential (actually, linear :)) back off
       if (counter < BUSY_LOOP_MAX) {
         counter++;
@@ -219,11 +232,13 @@ class WorkThread extends Thread {
         try {
           Thread.sleep(timeout);
         } catch (InterruptedException e) {
+          return null;
         }
       }
     }
     return key;
   }
+  
   /*
    * Main loop
    */
@@ -233,12 +248,15 @@ class WorkThread extends Thread {
     while (true) {
       SelectionKey key = null;
       // Double busy set to false
-      //busy = false;
+      // busy = false;
       // Can it override
       key = waitForKey();
+      if (key == null) {
+        log.debug("Thread {} got interrupt signal, exiting", Thread.currentThread().getName());
+        return;
+      }
       // We are busy now
       busy = true;
-
       SocketChannel channel = (SocketChannel) key.channel();
       // Read request first
       ByteBuffer in = getInputBuffer();
@@ -247,38 +265,59 @@ class WorkThread extends Thread {
       out.clear();
 
       try {
-        long startCounter = System.nanoTime();
-        long max_wait_ns = 100000000; // 100ms - FIXME - make it configurable
+        long startCounter = 0; //System.nanoTime();
+        long max_wait_ns = 500_000_000; // 500ms - FIXME - make it configurable
 
-        while (true) {
+        outer: while (true) {
           int num = channel.read(in);
           if (num < 0) {
             // End-Of-Stream - socket was closed, cancel the key
             key.cancel();
             break;
           } else if (num == 0) {
+            if (startCounter == 0) {
+              startCounter = System.nanoTime();
+            }
             if (System.nanoTime() - startCounter > max_wait_ns) {
               // FIXME: Request timeout
+              // timeout
+              key.cancel();
+              channel.close();
               break;
             }
-            if (inBuf.remaining() == 0) {
-              //TDOD: we need multi buffer support
+            Thread.onSpinWait();            
+            continue;
+          }
+          startCounter = 0;
+          int consumed = 0;
+          int inputSize = in.position();
+
+          while (consumed < inputSize) {
+            // Try to parse
+            // Process request using buffer's addresses
+
+            int responseLength = CommandProcessor.process(store, in_ptr + consumed,
+              inputSize - consumed, out_ptr, bufferSize);
+            if (responseLength < 0) {
+              // command is incomplete
+              // check if we consumed something, then compact input buffer
+              if(consumed > 0) {
+                in.position(consumed);
+                in.compact();
+              }
+              continue outer;
             }
-            continue;
-          }
-          // Try to parse
-          int oldPos = in.position();
-          // Process request using buffer's addresses
-          int responseLength = CommandProcessor.process(store, in_ptr, oldPos, out_ptr, bufferSize);
-          if (responseLength < 0) {
-            // command is incomplete
-            continue;
-          }
-          out.limit(responseLength);
-          out.position(0);
-          // send response back
-          while (out.hasRemaining()) {
-            channel.write(out);
+            if (responseLength > 0) {
+              out.limit(responseLength);
+              out.position(0);
+              // send response back
+              while (out.hasRemaining()) {
+                // FIXME: Can we stuck here?
+                channel.write(out);
+              }
+            }
+            consumed += CommandProcessor.getLastExecutedCommand().inputConsumed();
+            
           }
           break;
         }

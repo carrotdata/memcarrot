@@ -29,6 +29,14 @@ public abstract class AbstractMemcachedCommand implements MemcachedCommand {
   long value; // for INCR/DECR commands
   boolean noreply;
   boolean isCAS;
+  
+  int consumed;
+  
+  @Override
+  public int inputConsumed() {
+    if (consumed == 0) return 0;
+    return consumed + commandLength();
+  }
 
   protected void crlf(long ptr) {
     UnsafeAccess.putByte(ptr, (byte) '\r');

@@ -53,16 +53,15 @@ public class DELETE extends AbstractMemcachedCommand {
     this.keyPtr = inBuffer;
     
     end = nextTokenEnd(inBuffer, bufferSize);
+    if (end == 0) return false;
     end += start; // start should be 0?
-    
-    throwIfEquals(end, 0, "malformed request");
-    
+        
     this.keySize = end - start;
     
     start = nextTokenStart(inBuffer + end, bufferSize - end);
     start += end;    
     // start = 0 ?
-    if (UnsafeAccess.toByte(inBuffer + start) == 'n' && bufferSize  - start == 9 /* noreply\r\n*/) {
+    if (UnsafeAccess.toByte(inBuffer + start) == 'n' && bufferSize  - start >= 9 /* noreply\r\n*/) {
       if (compareTo(inBuffer + start, 7, NOREPLY, 7) == 0) {
         this.noreply = true;
         end = start + 7;
@@ -70,11 +69,10 @@ public class DELETE extends AbstractMemcachedCommand {
         new IllegalFormatException("malformed request");
       }
     } else if (UnsafeAccess.toByte(inBuffer + start) == 'n') {
-      new IllegalFormatException("malformed request");
+       return false;
     }
-    if (end != bufferSize - 2) {
-      new IllegalFormatException("malformed request");
-    }
+    
+    if (end > bufferSize - 2) return false;
     // skip \r\n
     if (UnsafeAccess.toByte(inBuffer + end) != '\r') {
       throw new IllegalFormatException("'\r\n' was expected");
@@ -84,6 +82,8 @@ public class DELETE extends AbstractMemcachedCommand {
     if (UnsafeAccess.toByte(inBuffer + end) != '\n') {
       throw new IllegalFormatException("'\r\n' was expected");
     }
+    end++;
+    this.consumed = end;
     return true;
   }
 
@@ -100,6 +100,11 @@ public class DELETE extends AbstractMemcachedCommand {
       }
     }
     return 0;  
+  }
+
+  @Override
+  public int commandLength() {
+    return 7;
   }
 
 }

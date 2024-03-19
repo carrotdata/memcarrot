@@ -34,4 +34,9 @@ public class ADD extends StorageCommand {
     return 0;
   }
 
+  @Override
+  public int commandLength() {
+    return 4;
+  }
+
 }

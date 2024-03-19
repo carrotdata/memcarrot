@@ -43,7 +43,7 @@ public class OnecacheMain {
     OnecacheConf conf = OnecacheConf.getConf(configFile);
     String node = conf.getNode();
     SimpleClient client = new SimpleClient(node);
-    client.shutdown(true);
+    client.shutdown();
     // shutdown
     log("Shutdown finished.");
   }
@@ -58,7 +58,7 @@ public class OnecacheMain {
     String host = parts[0].trim();
     int port = Integer.parseInt(parts[1].trim());
     OnecacheServer server = new OnecacheServer(host, port);
-    server.runNodeServer();;
+    server.start();
     // shutdown
     log.info("[" + Thread.currentThread().getName() + "] " +"Shutdown finished.");
   }

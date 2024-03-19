@@ -84,4 +84,10 @@ deleted by a client).
     outSize += 5;
     return outSize;
   }
+
+  @Override
+  public int commandLength() {
+    return 5;
+  }
+  
 }

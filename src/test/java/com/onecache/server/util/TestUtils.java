@@ -68,6 +68,23 @@ public class TestUtils {
     return com.onecache.core.util.Utils.getRandomStr(new Random(), size);
   }
   
+  public static String randomString(Random r, int size) {
+    return com.onecache.core.util.Utils.getRandomStr(r, size);
+  }
+  
+  public static String toString(long ptr, int size) {
+    byte[] b = com.onecache.core.util.Utils.toBytes(ptr, size);
+    return new String(b);
+  }
+  
+  public static boolean equals(byte[] a, byte[] b) {
+    return equals(a, 0, a.length, b, 0, b.length);
+  }
+  
+  public static boolean equals(byte[] a, int aoff, int alen, byte[] b, int boff, int blen) {
+    return com.onecache.core.util.Utils.compareTo(a, aoff, alen , b, boff, blen) == 0;
+  }
+  
   /**
    * Creates new byte array and fill it with random data
    * @param size size of an array

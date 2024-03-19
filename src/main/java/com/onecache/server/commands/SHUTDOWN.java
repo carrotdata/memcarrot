@@ -29,6 +29,7 @@ import com.onecache.core.util.UnsafeAccess;
  * Reply: OK shutting down the server\r\n, OK shutdown is in progress\r\
  */
 public class SHUTDOWN implements MemcachedCommand {
+  int consumed;
   private static final Logger log = LogManager.getLogger(SHUTDOWN.class);
 
   @Override
@@ -55,6 +56,18 @@ public class SHUTDOWN implements MemcachedCommand {
     byte[] buf = msg.getBytes();
     UnsafeAccess.copy(buf, 0, outBuffer, buf.length);
     return size;
+  }
+
+  @Override
+  public int inputConsumed() {
+    return 10;
+  }
+
+
+
+  @Override
+  public int commandLength() {
+    return 0;
   }
 
 }

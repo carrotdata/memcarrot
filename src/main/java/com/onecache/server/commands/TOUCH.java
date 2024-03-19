@@ -56,18 +56,22 @@ public class TOUCH extends AbstractMemcachedCommand {
       this.keyPtr = inBuffer;
 
       end = nextTokenEnd(inBuffer, bufferSize);
-      throwIfEquals(end, 0, "malformed request");
+      if (end == 0) {
+        return false;
+      }
       end += start; // start == 0?
       this.keySize = end - start;
 
       start = nextTokenStart(inBuffer + end, bufferSize - end);
+      if (start == 0) return false; 
       throwIfNotEquals(start, 1, "malformed request");
 
       start += end;
 
       end = nextTokenEnd(inBuffer + start, bufferSize - start);
-      throwIfEquals(end, 0, "malformed request");
-
+      if (end == 0) {
+        return false;
+      }
       end += start;
       this.exptime = strToLongDirect(inBuffer + start, end - start);
       // check noreply
@@ -75,7 +79,7 @@ public class TOUCH extends AbstractMemcachedCommand {
       start += end;
       // start = 0 ?
       if (UnsafeAccess.toByte(inBuffer + start) == 'n'
-          && bufferSize - start == 9 /* noreply\r\n */) {
+          && bufferSize - start >= 9 /* noreply\r\n */) {
         if (compareTo(inBuffer + start, 7, NOREPLY, 7) == 0) {
           this.noreply = true;
           end = start + 7;
@@ -83,20 +87,21 @@ public class TOUCH extends AbstractMemcachedCommand {
           new IllegalFormatException("malformed request");
         }
       } else if (UnsafeAccess.toByte(inBuffer + start) == 'n') {
-        new IllegalFormatException("malformed request");
+         return false;
       }
-      if (end != bufferSize - 2) {
-        new IllegalFormatException("malformed request");
+      if (end > bufferSize - 2) {
+        return false;
       }
       // skip \r\n
       if (UnsafeAccess.toByte(inBuffer + end) != '\r') {
-        throw new IllegalFormatException("'\r\n' was expected");
+        throw new IllegalFormatException("'\\r\\n' was expected");
       }
-
       end++;
       if (UnsafeAccess.toByte(inBuffer + end) != '\n') {
-        throw new IllegalFormatException("'\r\n' was expected");
+        throw new IllegalFormatException("'\\r\\n' was expected");
       }
+      end++;
+      this.consumed = end;
       return true;
     } catch (NumberFormatException e) {
       throw new IllegalFormatException("not a number");
@@ -116,6 +121,11 @@ public class TOUCH extends AbstractMemcachedCommand {
       }
     }
     return 0;  
+  }
+
+  @Override
+  public int commandLength() {
+    return 6;
   }
 
 }

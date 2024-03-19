@@ -30,4 +30,16 @@ public class SAVE implements MemcachedCommand {
     return 0;
   }
 
+  @Override
+  public int inputConsumed() {
+    // TODO Auto-generated method stub
+    return 0;
+  }
+
+  @Override
+  public int commandLength() {
+    // TODO Auto-generated method stub
+    return 0;
+  }
+
 }

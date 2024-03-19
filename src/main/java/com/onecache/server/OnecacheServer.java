@@ -16,6 +16,7 @@ package com.onecache.server;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.StandardSocketOptions;
+import java.nio.channels.ClosedSelectorException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
@@ -25,34 +26,55 @@ import java.util.function.Consumer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.onecache.core.Cache;
 import com.onecache.core.support.Memcached;
+import com.onecache.core.util.CacheConfig;
 
 /** Carrot node server (single thread) */
 public class OnecacheServer {
   private static final Logger log = LogManager.getLogger(OnecacheServer.class);
-
   /** 
    * Executor service (request handlers)
    **/
-  static RequestHandlers service;
+  RequestHandlers service;
 
   /**
    * Host name
    */
-  private String host;
+  String host;
   /**
    * Host port
    */
-  private int port;
+  int port;
   /**
    * Memcached support
    */
-  private Memcached memcached;
+  Memcached memcached;
   
   /**
    * Buffer size
    */
-  private int bufferSize;
+  int bufferSize;
+  
+  /**
+   * Selector
+   */
+  Selector selector;
+  
+  /**
+   * Server socket
+   */
+  ServerSocketChannel serverSocket;
+  
+  /**
+   * Server runner thread
+   */
+  Thread serverRunner;
+  /**
+   * Server started and ready to accept connections
+   */
+  volatile boolean started;
+  
   /**
    * Constructor
    * @param host
@@ -65,18 +87,111 @@ public class OnecacheServer {
     this.bufferSize = OnecacheConf.getConf().getIOBufferSize();
   }
 
+  public OnecacheServer() throws IOException {
+    OnecacheConf config = OnecacheConf.getConf();
+    this.port = config.getServerPort();
+    this.host = config.getServerAddress();
+    this.bufferSize = config.getIOBufferSize();
+  }
   
-  public void runNodeServer() throws IOException {
-    // Create memcached support instance
-    memcached = new Memcached();
+  /**
+   * Used for testing only
+   * @param m memcached support
+   */
+  void setMemachedSupport(Memcached m) {
+    this.memcached = m;
+  }
+  
+  public String getHost() {
+    return host;
+  }
+  
+  public int getPort() {
+    return port;
+  }
+  
+  public void start() {
+    if (serverRunner != null) {
+      return;
+    }
+    serverRunner = new Thread(() -> {
+      IOException ee = null;
+      try {
+        run();
+      } catch (IOException e) {
+        log.error(e);
+        ee = e;
+      } catch (ClosedSelectorException ex) {
+        // We closed selector on shutdown - its OK
+        
+      }
+      onShutdown(ee);
+    });
+    serverRunner.setName("oc-main-thread");
+    serverRunner.setDaemon(true);
+    serverRunner.start();
+    while(!this.started) {
+      try {
+        Thread.sleep(1);
+      } catch (InterruptedException e) {
+        
+      }
+    }
+  }
+  
+  public void stop() {
+    service.shutdown();
+    try {
+      // this should interrupt main I/O loop thread
+      selector.close();
+      serverSocket.close();
+    } catch (IOException e) {
+      // TODO Auto-generated catch block
+    }
+  }
+  
+  // Sub-classes can override
+  protected void onShutdown(IOException e) {
+    String msgStart = null;
+    if (e == null) {
+      msgStart = "Server received shutdown request. ";
+    } else {
+      msgStart = "Server error. ";
+    }
+    Cache c = memcached.getCache();
+    CacheConfig config = c.getCacheConfig();
+    if (!config.isSaveOnShutdown(c.getName())) {
+      memcached.dispose();
+      // If not save on shutdown - dispose
+      String msg = msgStart + "Disposed internal cache";
+      if (e == null) {
+        log.info(msg);
+      } else {
+        log.error(msg);
+      }
+    }
+    String msg = msgStart + "Exited.";
+    if (e == null) {
+      log.info(msg);
+    } else {
+      log.error(msg);
+    }
+  } 
+  
+  private void run() throws IOException {
+    // Create memcached support instance if not null
+    // It is not null in tests
+    if (memcached == null) {
+      memcached = new Memcached();
+    }
     // Start request handlers
     startRequestHandlers();
     
-    final Selector selector = Selector.open(); // selector is open here
+    selector = Selector.open(); // selector is open here
     log.debug("Selector started");
 
     // ServerSocketChannel: selectable channel for stream-oriented listening sockets
-    ServerSocketChannel serverSocket = ServerSocketChannel.open();
+    serverSocket = ServerSocketChannel.open();
     log.debug("Server socket opened");
 
     InetSocketAddress serverAddr = new InetSocketAddress(host, port);
@@ -88,8 +203,11 @@ public class OnecacheServer {
     serverSocket.configureBlocking(false);
     int ops = serverSocket.validOps();
     serverSocket.register(selector, ops, null);
-    log.debug("[{}] Server started on port: {}]", Thread.currentThread().getName(), port);
-
+    
+    log.info("Onecache Server started on: {}. Ready to accept new connections.", serverAddr);
+    
+    this.started  = true;
+    
     Consumer<SelectionKey> action =
         key -> {
           try {
@@ -112,11 +230,8 @@ public class OnecacheServer {
               service.submit(key);
             }
           } catch (IOException e) {
-            log.error("StackTrace: ", e);
-            log.error("Shutting down server ...");
-            memcached.dispose();
-            memcached = null;
-            log.error("Bye-bye folks. See you soon :)");
+            log.error(e.getMessage());
+            key.cancel();
           }
         };
     // Infinite loop..
@@ -133,4 +248,5 @@ public class OnecacheServer {
     service = RequestHandlers.create(memcached, numThreads, bufferSize);
     service.start();
   }
+  
 }

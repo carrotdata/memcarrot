@@ -34,4 +34,9 @@ public class APPEND extends StorageCommand {
     return 0;
   }
 
+  @Override
+  public int commandLength() {
+    return 7;
+  }
+
 }

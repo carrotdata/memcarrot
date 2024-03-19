@@ -71,9 +71,6 @@ public class CommandParser {
   private static long shutdown_cmd = UnsafeAccess.allocAndCopy("shutdown", 0, 8);
   private static int shutdown_cmd_len = 8;
   
-  
-
-  
   /**
    *  TODO: Add new commands support
    * Parse input memory buffer
@@ -81,12 +78,15 @@ public class CommandParser {
    * @return memcached command
    */
   public static MemcachedCommand parse(long buf, int size) throws IllegalFormatException, UnsupportedCommand {
-    if (!endcrlf(buf, size)) {
-      return null;
-    }
-    // size >= 2 and command ends with \r\n
-    if  (size == 2) {
-      throw new IllegalFormatException("malformed request");
+//    if (!endcrlf(buf, size)) {
+//      return null;
+//    }
+//    // size >= 2 and command ends with \r\n
+//    if  (size == 2) {
+//      throw new IllegalFormatException("malformed request");
+//    }
+    if (size < 3) {
+      return null; 
     }
     int start = Utils.nextTokenStart(buf, size);
     if (start > 0) {

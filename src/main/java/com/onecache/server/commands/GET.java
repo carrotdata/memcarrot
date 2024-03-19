@@ -62,9 +62,10 @@ but deleted to make space for more items, or expired, or explicitly
 deleted by a client).
 
    */
-  
+  public static long executeTime = 0;
   @Override
   public int execute(Memcached support, long outBuffer, int outBufferSize) {
+    long t1 = System.nanoTime();
     int outSize = 0;
     int count = this.keys.length;
     for (int i = 0; i < count; i++) {
@@ -78,7 +79,13 @@ deleted by a client).
     }
     UnsafeAccess.copy(END, outBuffer + outSize, 5);
     outSize += 5;
+    executeTime += System.nanoTime() - t1;
     return outSize;
+  }
+
+  @Override
+  public int commandLength() {
+    return 4;
   }
 
 }
