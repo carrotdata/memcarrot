@@ -77,26 +77,27 @@ public class INCR extends AbstractMemcachedCommand {
       this.keyPtr = inBuffer;
 
       end = nextTokenEnd(inBuffer, bufferSize);
-      if (end == 0) return false;
+      if (end <= 0) return false;
       //throwIfEquals(end, 0, "malformed request");
 
       end += start; // start == 0 ?
       this.keySize = end - start;
 
       start = nextTokenStart(inBuffer + end, bufferSize - end);
-      if (start == 0) return false;
+      if (start <= 0) return false;
       throwIfNotEquals(start, 1, "malformed request");
 
       start += end;
 
       end = nextTokenEnd(inBuffer + start, bufferSize - start);
-      if (end == 0) return false;
+      if (end <= 0) return false;
       //throwIfEquals(end, 0, "malformed request");
 
       end += start;
       this.value = strToLongDirect(inBuffer + start, end - start);
       // check noreply
       start = nextTokenStart(inBuffer + end, bufferSize - end);
+      if (start < 0) return false;
       start += end;
       // start = 0 ?
       if (UnsafeAccess.toByte(inBuffer + start) == 'n'

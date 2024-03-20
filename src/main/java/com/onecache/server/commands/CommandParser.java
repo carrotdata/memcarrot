@@ -91,10 +91,14 @@ public class CommandParser {
     int start = Utils.nextTokenStart(buf, size);
     if (start > 0) {
       //TODO check binary protocol
-      throw new IllegalFormatException("malformed request");
+      throw new IllegalFormatException("P1 malformed request");
+    } else if (start < 0) {
+      return null;// stream is incomplete
     }
     int end = Utils.nextTokenEnd(buf + start, size  - start);
-    
+    if (end < 0) {
+      return null;
+    }
     int len = end - start;
     MemcachedCommand cmd = null;
     if (len == 3) {
@@ -162,7 +166,7 @@ public class CommandParser {
     
     start = Utils.nextTokenStart(buf + len, size - len);
     if (start > 1) {
-      throw new IllegalFormatException("malformed request");
+      throw new IllegalFormatException("P2 malformed request");
     }
     boolean result = cmd.parse(buf + len + start, size - start - len);
     return  result? cmd: null;

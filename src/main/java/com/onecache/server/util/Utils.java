@@ -56,7 +56,7 @@ public class Utils {
     while(UnsafeAccess.toByte(ptr + off) == (byte) ' ') {
       off++;
       if (off == limit) {
-        throw new IllegalFormatException("malformed command");
+        return -1;// incomplete
       }
     }
     return off;
@@ -67,7 +67,7 @@ public class Utils {
     while(UnsafeAccess.toByte(ptr + off) != (byte) ' ' && UnsafeAccess.toByte(ptr + off) != (byte) '\r') {
       off++;
       if (off == limit) {
-        throw new IllegalFormatException("malformed command");
+        return -1;//incomplete
       }
     }
     return off;

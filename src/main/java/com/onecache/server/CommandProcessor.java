@@ -14,6 +14,7 @@ import org.apache.logging.log4j.Logger;
 
 import com.onecache.core.support.Memcached;
 import com.onecache.core.util.UnsafeAccess;
+import com.onecache.server.commands.AbstractMemcachedCommand;
 import com.onecache.server.commands.CommandParser;
 import com.onecache.server.commands.MemcachedCommand;
 import com.onecache.server.support.IllegalFormatException;
@@ -46,6 +47,13 @@ public class CommandProcessor {
         return -1; // input is incomplete
       }
       lastCommand.set(cmd);
+      boolean safe = isMemorySafe(cmd, inputPtr, inputSize);
+      if (!safe) {
+        logger.error("SERVER_ERROR memory not safe, cmd={}", cmd.getClass().getName());
+        byte[] buf = "SERVER_ERROR internal error\r\n".getBytes();
+        UnsafeAccess.copy(buf, 0, outPtr, buf.length);
+        return buf.length;
+      }
       int result = cmd.execute(storage, outPtr, outSize);
       return result;
     } catch (UnsupportedCommand ee ) {
@@ -61,6 +69,14 @@ public class CommandProcessor {
     }
   }
 
+  private static boolean isMemorySafe (MemcachedCommand cmd, long in, int size) {
+    if (! (cmd instanceof AbstractMemcachedCommand)) {
+      return true;
+    }
+    AbstractMemcachedCommand c = (AbstractMemcachedCommand) cmd;
+    return c.isMemorySafe(in, size);
+  }
+  
   public static MemcachedCommand getLastExecutedCommand() {
     return lastCommand.get();
   }

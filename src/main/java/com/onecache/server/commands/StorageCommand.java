@@ -43,9 +43,10 @@ import com.onecache.core.util.UnsafeAccess;
  */
 
 public abstract class StorageCommand extends AbstractMemcachedCommand{
- 
+
   @Override
   public boolean parse(long inBuffer, int bufferSize) throws IllegalFormatException {
+    
     try {
       int start = 0;
       int end = 0;
@@ -57,15 +58,15 @@ public abstract class StorageCommand extends AbstractMemcachedCommand{
       end += start;
       start = nextTokenStart(inBuffer + end, bufferSize - end);
       // start = 0 and start > 1 format error
-      if (start == 0) {
+      if (start <= 0) {
         return false;
       }
-      throwIfNotEquals(start, 1, "malformed request");
+      throwIfNotEquals(start, 1, "1 malformed request");
 
       start += end;
 
       end = nextTokenEnd(inBuffer + start, bufferSize - start);
-      if (end == 0) {
+      if (end <= 0) {
         return false;
       }
 
@@ -78,15 +79,15 @@ public abstract class StorageCommand extends AbstractMemcachedCommand{
       this.flags = v;
 
       start = nextTokenStart(inBuffer + end, bufferSize - end);
-      if (start == 0) {
+      if (start <= 0) {
         return false;
       }
-      throwIfNotEquals(start, 1, "malformed request");
+      throwIfNotEquals(start, 1, "2 malformed request");
 
       start += end;
 
       end = nextTokenEnd(inBuffer + start, bufferSize - start);
-      if (end == 0) {
+      if (end <= 0) {
         return false;
       }
 
@@ -94,13 +95,13 @@ public abstract class StorageCommand extends AbstractMemcachedCommand{
       this.exptime = strToLongDirect(inBuffer + start, end - start);
       // Now get bytes 
       start = nextTokenStart(inBuffer + end, bufferSize - end);
-      if (start == 0) {
+      if (start <= 0) {
         return false;
       }
-      throwIfNotEquals(start, 1, "malformed request");
+      throwIfNotEquals(start, 1, "3 malformed request");
       start += end;
       end = nextTokenEnd(inBuffer + start, bufferSize - start);
-      if (end == 0) {
+      if (end <= 0) {
         return false;
       }
       end += start;
@@ -113,15 +114,15 @@ public abstract class StorageCommand extends AbstractMemcachedCommand{
 
       if (isCAS) {
         start = nextTokenStart(inBuffer + end, bufferSize - end);
-        if (start == 0) {
+        if (start <= 0) {
           return false;
         }
-        throwIfNotEquals(start, 1, "malformed request");
+        throwIfNotEquals(start, 1, "4 malformed request");
 
         start += end;
 
         end = nextTokenEnd(inBuffer + start, bufferSize - start);
-        if (end == 0) {
+        if (end <= 0) {
           return false;
         }
         end += start;
@@ -130,6 +131,7 @@ public abstract class StorageCommand extends AbstractMemcachedCommand{
 
       // check noreply
       start = nextTokenStart(inBuffer + end, bufferSize - end);
+      if (start < 0) return false;
       // start = 0 ?
       start += end;
       if (UnsafeAccess.toByte(inBuffer + start) == 'n'
@@ -138,7 +140,7 @@ public abstract class StorageCommand extends AbstractMemcachedCommand{
           this.noreply = true;
           end = start + 7;
         } else {
-          new IllegalFormatException("malformed request");
+          new IllegalFormatException("5 malformed request");
         }
       } else if (UnsafeAccess.toByte(inBuffer + start) == 'n') {
         return false;
@@ -148,11 +150,11 @@ public abstract class StorageCommand extends AbstractMemcachedCommand{
       }
       // skip \r\n
       if (UnsafeAccess.toByte(inBuffer + end) != '\r') {
-        throw new IllegalFormatException("'\r\n' was expected");
+        throw new IllegalFormatException("'\\r\\n' was expected");
       }
       end++;
       if (UnsafeAccess.toByte(inBuffer + end) != '\n') {
-        throw new IllegalFormatException("'\r\n' was expected");
+        throw new IllegalFormatException("'\\r\\n' was expected");
       }
       end++;
       this.valPtr = inBuffer + end;

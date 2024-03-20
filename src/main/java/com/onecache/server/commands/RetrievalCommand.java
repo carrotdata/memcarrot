@@ -41,6 +41,7 @@ public abstract class RetrievalCommand extends AbstractMemcachedCommand{
 
     try {
       int count = calculateNumberOfKeys(inBuffer, bufferSize);
+      if (count < 0) return false;
       if (isTouch) {
         count --; // we counted 'expire' also
       }
@@ -52,33 +53,32 @@ public abstract class RetrievalCommand extends AbstractMemcachedCommand{
       int end = 0;
       if (isTouch) {
         start = nextTokenStart(inBuffer + end, bufferSize - end);
+        if (start < 0) return false;
         // start should be 0
         start += end;
 
         end = nextTokenEnd(inBuffer + start, bufferSize - start);
+        if (end < 0) return false;
         throwIfEquals(end, 0, "malformed request");
         end += start;
         this.exptime = strToLongDirect(inBuffer + start, end - start);
       }
       for (int i = 0; i < count; i++) {
         start = nextTokenStart(inBuffer + end, bufferSize - end);
+        if (start < 0) return false;
         if (i != 0) {
           throwIfNotEquals(start, 1, "malformed request");
         }
         start += end;
 
         end = nextTokenEnd(inBuffer + start, bufferSize - start);
+        if (end < 0) return false;
         throwIfEquals(end, 0, "malformed request");
         end += start;
         keys[i] = inBuffer + start;
         keySizes[i] = end - start;
       }
-      start = nextTokenStart(inBuffer + end, bufferSize - end);
-      // not sure if space here
-      start += end;
-      if (start != bufferSize - 2) {
-        throw new IllegalFormatException("malformed request");
-      }
+      if (end > bufferSize - 2) return false;
       // skip \r\n
       if (UnsafeAccess.toByte(inBuffer + end) != '\r') {
         throw new IllegalFormatException("'\r\n' was expected");
@@ -98,14 +98,25 @@ public abstract class RetrievalCommand extends AbstractMemcachedCommand{
     }
   }
   
+  public final boolean isMemorySafe(long memptr, int memsize) {
+    for (int i = 0; i < keys.length; i++) {
+      boolean safe = keys[i] > 0 && keySizes[i] > 0;
+      safe = safe && (keys[i] > memptr && (keys[i] + keySizes[i]) < memptr + memsize);
+      if (!safe) return false;
+    }
+    return true;
+  }
+  
   private int calculateNumberOfKeys(long inBuffer, int inBufferSize) {
     int count = 0;
     int start = 0;
     int end = 0;
     while(toByte(inBuffer + end) != '\r' && end < inBufferSize) {
       start = nextTokenStart(inBuffer + end, inBufferSize - end);
+      if (start < 0) return -1;
       start += end;
       end = nextTokenEnd(inBuffer + start, inBufferSize- start);
+      if (end < 0) return -1;
       end += start;
       if (end == start) break;
       count++;
