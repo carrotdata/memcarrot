@@ -17,11 +17,17 @@ import com.onecache.core.util.UnsafeAccess;
 import com.onecache.server.support.IllegalFormatException;
 
 public abstract class AbstractMemcachedCommand implements MemcachedCommand {
-
+  
+  // key address
   long keyPtr;
+  // key size
   int keySize;
+  
+  // value address
   long valPtr;
+  // value size
   int valSize;
+  
   //TODO: unsigned 32bit support 
   long flags; // unsigned 32 bits
   long exptime;
@@ -49,5 +55,16 @@ public abstract class AbstractMemcachedCommand implements MemcachedCommand {
 
   protected final void throwIfEquals(long n, int v, String msg) throws IllegalFormatException {
     if (n == v) throw new IllegalFormatException(msg);
+  }
+  
+  public boolean isMemorySafe(long memptr, int memsize) {
+    boolean safe = this.keyPtr > 0 && this.keySize > 0;
+    safe = safe && (this.keyPtr > memptr) && (this.keyPtr + this.keySize < memptr + memsize);
+    if (this instanceof StorageCommand) {
+      safe = safe && (this.valPtr > 0 && this.valSize > 0);
+      safe = safe && (this.valPtr > memptr && this.valPtr + this.valSize < memptr + memsize);
+      safe = safe && (this.valPtr > this.keyPtr + this.keySize);
+    }
+    return safe;
   }
 }
