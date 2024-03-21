@@ -41,6 +41,7 @@ public class CommandProcessor {
   public static int process(Memcached storage, long inputPtr, int inputSize, long outPtr,
       int outSize) throws IllegalFormatException {
     try {
+
     // Execute Memcached command
       MemcachedCommand cmd = CommandParser.parse(inputPtr, inputSize);
       if (cmd == null) {
@@ -58,6 +59,7 @@ public class CommandProcessor {
       return result;
     } catch (UnsupportedCommand ee ) {
       byte[] buf = "ERROR\r\n".getBytes();
+      logger.error(ee);
       UnsafeAccess.copy(buf, 0, outPtr, buf.length);
       return buf.length;
     } catch (IllegalFormatException eee){

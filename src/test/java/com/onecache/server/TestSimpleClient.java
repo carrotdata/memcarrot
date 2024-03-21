@@ -11,7 +11,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.onecache.core.Cache;
@@ -329,7 +328,7 @@ public class TestSimpleClient {
     String value = TestUtils.randomString(200);
     byte[] bvalue = value.getBytes();
     long start = System.currentTimeMillis();
-    int n = 100_000;
+    int n = 1_000_000;
     for (int i = 0; i < n; i++) {
       int flags = 1;
       long expire = expireIn(100);
@@ -341,17 +340,19 @@ public class TestSimpleClient {
     logger.info("SET Time={}ms", end - start);
     
     int batchSize = 100;
-    
+    long getTime = 0;
     for (int i = 0; i < n / batchSize; i++) {
       byte[][] keys = getBatch(i, batchSize);
+      long t1 = System.nanoTime();
       List<GetResult> list = client.get(keys);
+      getTime += System.nanoTime() - t1;
       assertTrue(list.size() == batchSize);
       list.stream().forEach( x-> assertTrue(TestUtils.equals(bvalue, x.value)));
       
     }
     long getend  = System.currentTimeMillis();
-    logger.info("GET total={} batch={} time={}ms", n, batchSize, 
-      getend - end);
+    logger.info("GET total={} batch={} time={}ms get_time={}", n, batchSize, 
+      getend - end, getTime / 1_000_000);
     
   }
   @Test
@@ -790,6 +791,97 @@ public class TestSimpleClient {
     }
     start = System.currentTimeMillis();
     logger.info("DECR Time={}ms", start - end);
+  }
+  
+  @Test
+  public void testCASGMulti() throws IOException {
+    String key = "KEY:";
+    String value = TestUtils.randomString(200);
+    String value1 = TestUtils.randomString(200);
+    
+    long start = System.currentTimeMillis();
+    int n = 100_000;
+    for (int i = 0; i < n; i++) {
+      int flags = 1;
+      long expire = expireIn(100);
+      boolean noreply = true;
+      ResponseCode code = client.set((key + i).getBytes(), (value + i).getBytes(), flags, expire, noreply);
+      assertTrue(code == null);
+    }
+    long end  = System.currentTimeMillis();
+    logger.info("SET Time={}ms", end - start);
+    
+    int batchSize = 100;
+    long getTime = 0;
+    int count = 0;
+    long[] casArray = new long[n];
+    for (int i = 0; i < n / batchSize; i++) {
+      byte[][] keys = getBatch(i, batchSize);
+      long t1 = System.nanoTime();
+      List<GetResult> list = client.gets(keys);
+      getTime += System.nanoTime() - t1;
+      assertTrue(list.size() == batchSize);
+      for (int j = 0; j < list.size(); j++) {
+        GetResult r = list.get(j);
+        assertTrue(TestUtils.equals((value + count).getBytes(), r.value));
+        casArray[count++] = list.get(j).cas.getAsLong();
+      }
+    }
+    long getend  = System.currentTimeMillis();
+    logger.info("GET total={} batch={} time={}ms get_time={}", n, batchSize, 
+      getend - end, getTime / 1_000_000);
+    
+    start = System.currentTimeMillis();
+    // Wrong CAS
+    for (int i = 0; i < n; i++) {
+      int flags = 1;
+      long expire = expireIn(100);
+      boolean noreply = true;
+      ResponseCode code = client.cas((key + i).getBytes(), (value1 + i).getBytes(), flags, expire, noreply, casArray[i] + 1);
+      assertTrue(code == null);
+    }
+    end = System.currentTimeMillis();
+    logger.info("CAS Time={}ms", end - start);
+    
+    count = 0;
+    // OLD values
+    for (int i = 0; i < n / batchSize; i++) {
+      byte[][] keys = getBatch(i, batchSize);
+      List<GetResult> list = client.gets(keys);
+      assertTrue(list.size() == batchSize);
+      for (int j = 0; j < list.size(); j++) {
+        GetResult r = list.get(j);
+        assertTrue(TestUtils.equals((value + count++).getBytes(), r.value));
+      }
+    }
+    getend  = System.currentTimeMillis();
+    logger.info("GET total={} batch={} time={}ms", n, batchSize, getend - end);
+    // Correct CAS
+    for (int i = 0; i < n; i++) {
+      int flags = 1;
+      long expire = expireIn(100);
+      boolean noreply = true;
+      ResponseCode code = client.cas((key + i).getBytes(), (value1 + i).getBytes(), flags, expire, noreply, casArray[i]);
+      assertTrue(code == null);
+    }
+    
+    end  = System.currentTimeMillis();
+    
+    count = 0;
+    // NEW values
+    for (int i = 0; i < n / batchSize; i++) {
+      byte[][] keys = getBatch(i, batchSize);
+      List<GetResult> list = client.gets(keys);
+      assertTrue(list.size() == batchSize);
+      for (int j = 0; j < list.size(); j++) {
+        GetResult r = list.get(j);
+        assertTrue(TestUtils.equals((value1 + count++).getBytes(), r.value));
+      }
+    }
+    getend  = System.currentTimeMillis();
+    logger.info("GET total={} batch={} time={}ms", n, batchSize, getend - end);
+    
+    
   }
   
   private byte[][] getBatch(int batchNumber, int batchSize) {
