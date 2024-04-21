@@ -28,7 +28,7 @@ public class TestSimpleClient {
   
   @Before
   public void setUp() throws IOException {
-    Cache c = TestUtils.createCache(400_000_000, 4_000_000, true, true);
+    Cache c = TestUtils.createCache(800_000_000, 4_000_000, true, true);
     Memcached m = new Memcached(c);
     server = new OnecacheServer();
     server.setMemachedSupport(m);
@@ -361,7 +361,7 @@ public class TestSimpleClient {
     String value = TestUtils.randomString(200);
     byte[] bvalue = value.getBytes();
     long start = System.currentTimeMillis();
-    int n = 100_000;
+    int n = 1_000_000;
     for (int i = 0; i < n; i++) {
       int flags = 1;
       long expire = expireIn(100);
@@ -396,7 +396,7 @@ public class TestSimpleClient {
     byte[] bvalue1 = value1.getBytes();
     byte[] bv = (value + value1).getBytes();
     long start = System.currentTimeMillis();
-    int n = 100_000;
+    int n = 1_000_000;
     for (int i = 0; i < n; i++) {
       int flags = 1;
       long expire = expireIn(100);
@@ -442,7 +442,7 @@ public class TestSimpleClient {
     byte[] bvalue1 = value1.getBytes();
     byte[] bv = (value1 + value).getBytes();
     long start = System.currentTimeMillis();
-    int n = 100_000;
+    int n = 1_000_000;
     for (int i = 0; i < n; i++) {
       int flags = 1;
       long expire = expireIn(100);
@@ -486,7 +486,7 @@ public class TestSimpleClient {
     String value = TestUtils.randomString(200);
     byte[] bvalue = value.getBytes();
     long start = System.currentTimeMillis();
-    int n = 100_000;
+    int n = 1_000_000;
     for (int i = 0; i < n; i++) {
       int flags = 1;
       long expire = expireIn(100);
@@ -528,7 +528,7 @@ public class TestSimpleClient {
     String value = TestUtils.randomString(200);
     byte[] bvalue = value.getBytes();
     long start = System.currentTimeMillis();
-    int n = 100000;
+    int n = 1_000_000;
     for (int i = 0; i < n; i++) {
       long expire = expireIn(100);
       boolean noreply = false;
@@ -549,7 +549,7 @@ public class TestSimpleClient {
     logger.info("ADD Time={}ms", start - end);
     
     for (int i = 0; i < n; i++) {
-      long expire = expireIn(2);
+      long expire = expireIn(10);
       boolean noreply = true;
       ResponseCode code = client.touch((key + i).getBytes(), expire, noreply);
       assertTrue(code == null);
@@ -569,7 +569,8 @@ public class TestSimpleClient {
     logger.info("GET total={} batch={} time={}ms", n, batchSize, 
       getend - end);
     
-    Thread.sleep(2000);
+    Thread.sleep(10000);
+    start = System.currentTimeMillis();
     // All must expire
     for (int i = 0; i < n / batchSize; i++) {
       byte[][] keys = getBatch(i, batchSize);
@@ -578,7 +579,7 @@ public class TestSimpleClient {
     }
     end  = System.currentTimeMillis();
     logger.info("GET total={} batch={} time={}ms", n, batchSize, 
-      end - getend - 2000);
+      end - start);
     
     // Add again
     start = System.currentTimeMillis();
@@ -628,7 +629,7 @@ public class TestSimpleClient {
     String value = TestUtils.randomString(20);
     byte[] bvalue = value.getBytes();
     long start = System.currentTimeMillis();
-    int n = 100_000;
+    int n = 1_000_000;
     for (int i = 0; i < n; i++) {
       boolean noreply = true;
       ResponseCode code = client.delete((key + i).getBytes(), noreply);
@@ -694,7 +695,7 @@ public class TestSimpleClient {
     assertTrue(res instanceof ResponseCode);
     assertTrue(((ResponseCode) res) == ResponseCode.CLIENT_ERROR);
     
-    int n = 100_000;
+    int n = 1_000_000;
     for (int i = 0; i < n; i++) {
       boolean noreply = true;
       ResponseCode code = client.add((key + i).getBytes(), "0".getBytes(), 0, 100, noreply);
@@ -757,7 +758,7 @@ public class TestSimpleClient {
     assertTrue(res instanceof ResponseCode);
     assertTrue(((ResponseCode) res) == ResponseCode.CLIENT_ERROR);
     
-    int n = 100_000;
+    int n = 1_000_000;
     for (int i = 0; i < n; i++) {
       boolean noreply = true;
       ResponseCode code = client.add((key + i).getBytes(), "20".getBytes(), 0, 100, noreply);
@@ -800,7 +801,7 @@ public class TestSimpleClient {
     String value1 = TestUtils.randomString(200);
     
     long start = System.currentTimeMillis();
-    int n = 100_000;
+    int n = 1_000_000;
     for (int i = 0; i < n; i++) {
       int flags = 1;
       long expire = expireIn(100);

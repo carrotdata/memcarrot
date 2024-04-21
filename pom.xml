@@ -5,7 +5,7 @@
     <artifactId>onecache-server</artifactId>
     <packaging>jar</packaging>
     <name>Onecache Server</name>
-    <version>0.9.0-SNAPSHOT</version>
+    <version>0.9</version>
     <url>http://www.server.com</url>
     <build>
         <plugins>
@@ -113,7 +113,7 @@
     <dependency>
         <groupId>com.onecache</groupId>
         <artifactId>onecache-core</artifactId>
-        <version>0.9.0-SNAPSHOT</version>
+        <version>0.9</version>
         </dependency>
  	<dependency>
                 <groupId>com.googlecode.xmemcached</groupId>
