@@ -18,11 +18,10 @@ import java.io.IOException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-
 /** Main service launcher */
-public class OnecacheMain {
+public class Memcarrot {
 
-  private static final Logger log = LogManager.getLogger(OnecacheMain.class);
+  private static final Logger log = LogManager.getLogger(Memcarrot.class);
   
   public static void main(String[] args) throws IOException {
     if (args.length != 2) {
@@ -38,9 +37,8 @@ public class OnecacheMain {
   }
 
   private static void stopServer(String configFile) throws IOException {
-    System.out.println("Stopping  Server");
-    log("Stopping Onecache server ...");
-    OnecacheConf conf = OnecacheConf.getConf(configFile);
+    log("Stopping Memcarrot server ...");
+    MemcarrotConf conf = MemcarrotConf.getConf(configFile);
     String node = conf.getNode();
     SimpleClient client = new SimpleClient(node);
     client.shutdown();
@@ -50,21 +48,14 @@ public class OnecacheMain {
 
 
   private static void startServer(String configFile) throws IOException {
-    
-    log("Starting Onecache server ...");
-    OnecacheConf conf = OnecacheConf.getConf(configFile);
-    String node = conf.getNode();
-    String[] parts = node.split(":");
-    String host = parts[0].trim();
-    int port = Integer.parseInt(parts[1].trim());
-    OnecacheServer server = new OnecacheServer(host, port);
+    log("Starting Memcarrot server ...");
+    MemcarrotServer server = new MemcarrotServer();
     server.start();
-    // shutdown
-    log.info("[" + Thread.currentThread().getName() + "] " +"Shutdown finished.");
+    log.info("Memcarrot started on {}:{}", server.getHost(), server.getPort());
   }
 
   private static void usage() {
-    log("Usage: java com.carrotdata.memcarrot.OnecacheMain config_file_path [start|stop]");
+    log("Usage: ./bin/start-server.sh config_file_path [start|stop]");
     System.exit(-1);
   }
 

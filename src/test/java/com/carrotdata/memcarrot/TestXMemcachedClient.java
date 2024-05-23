@@ -31,14 +31,14 @@ import net.rubyeye.xmemcached.exception.MemcachedException;
 public class TestXMemcachedClient {
   private static Logger logger = LogManager.getLogger(TestXMemcachedClient.class);
 
-  OnecacheServer server;
+  MemcarrotServer server;
   XMemcachedClient client;
   
   @Before
   public void setUp() throws IOException {
     Cache c = TestUtils.createCache(400_000_000, 4_000_000, true, true);
     Memcached m = new Memcached(c);
-    server = new OnecacheServer();
+    server = new MemcarrotServer();
     server.setMemachedSupport(m);
     server.start();
     client = new XMemcachedClient(server.getHost(), server.getPort());

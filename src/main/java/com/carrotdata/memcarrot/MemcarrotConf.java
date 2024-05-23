@@ -19,13 +19,13 @@ import java.util.Properties;
 import com.carrotdata.cache.util.CacheConfig;
 
 
-/** Class which keeps all the configuration parameters for Onecache server */
-public class OnecacheConf {
+/** Class which keeps all the configuration parameters for Memcarrot server */
+public class MemcarrotConf {
 
-  public static final String CONF_SERVER_PORT = "onecache.server-port";
-  public static final String CONF_SERVER_ADDRESS = "onecache.server-address";
-  public static final String CONF_THREAD_POOL_SIZE = "onecache.thread-pool-size";
-  public static final String CONF_IO_BUFFER_SIZE = "onecache.io-buffer-size";
+  public static final String CONF_SERVER_PORT = "memcarrot.server-port";
+  public static final String CONF_SERVER_ADDRESS = "memcarrot.server-address";
+  public static final String CONF_THREAD_POOL_SIZE = "memcarrot.workers-pool-size";
+  public static final String CONF_IO_BUFFER_SIZE = "memcarrot.io-buffer-size";
   
 
   public static final int DEFAULT_SERVER_PORT = 11211;
@@ -35,31 +35,31 @@ public class OnecacheConf {
 
   public static final int DEFAULT_IO_BUFFER_SIZE = 1024 * 1204;
 
-  private static OnecacheConf conf;
+  private static MemcarrotConf conf;
   private CacheConfig cacheConfig;
 
-  public static OnecacheConf getConf() throws IOException {
+  public static MemcarrotConf getConf() throws IOException {
     return getConf(null);
   }
 
-  public static OnecacheConf getConf(String file) throws IOException {
+  public static MemcarrotConf getConf(String file) throws IOException {
     if (conf != null) {
       return conf;
     }
-    synchronized (OnecacheConf.class) {
+    synchronized (MemcarrotConf.class) {
       CacheConfig config = file != null? CacheConfig.getInstance(file): CacheConfig.getInstance();
-      conf = new OnecacheConf(config);
+      conf = new MemcarrotConf(config);
       return conf;
     }
   }
 
   /** For testing */
-  public OnecacheConf(CacheConfig conf) {
+  public MemcarrotConf(CacheConfig conf) {
     this.cacheConfig = conf;
   }
 
   /** Default constructor */
-  public OnecacheConf() {
+  public MemcarrotConf() {
     this.cacheConfig = CacheConfig.getInstance();
   }
   

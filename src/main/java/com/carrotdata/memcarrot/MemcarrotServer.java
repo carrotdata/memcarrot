@@ -30,9 +30,9 @@ import com.carrotdata.cache.Cache;
 import com.carrotdata.cache.support.Memcached;
 import com.carrotdata.cache.util.CacheConfig;
 
-/** Carrot node server (single thread) */
-public class OnecacheServer {
-  private static final Logger log = LogManager.getLogger(OnecacheServer.class);
+/** Memcarrot node server */
+public class MemcarrotServer {
+  private static final Logger log = LogManager.getLogger(MemcarrotServer.class);
   /** 
    * Executor service (request handlers)
    **/
@@ -81,14 +81,14 @@ public class OnecacheServer {
    * @param port
    * @throws IOException 
    */
-  public OnecacheServer(String host, int port) throws IOException {
+  public MemcarrotServer(String host, int port) throws IOException {
     this.port = port;
     this.host = host;
-    this.bufferSize = OnecacheConf.getConf().getIOBufferSize();
+    this.bufferSize = MemcarrotConf.getConf().getIOBufferSize();
   }
 
-  public OnecacheServer() throws IOException {
-    OnecacheConf config = OnecacheConf.getConf();
+  public MemcarrotServer() throws IOException {
+    MemcarrotConf config = MemcarrotConf.getConf();
     this.port = config.getServerPort();
     this.host = config.getServerAddress();
     this.bufferSize = config.getIOBufferSize();
@@ -127,7 +127,7 @@ public class OnecacheServer {
       }
       onShutdown(ee);
     });
-    serverRunner.setName("oc-main-thread");
+    serverRunner.setName("memcarrot-main-thread");
     serverRunner.setDaemon(true);
     serverRunner.start();
     while(!this.started) {
@@ -243,7 +243,7 @@ public class OnecacheServer {
   }
 
   private void startRequestHandlers() throws IOException {
-    OnecacheConf conf = OnecacheConf.getConf();
+    MemcarrotConf conf = MemcarrotConf.getConf();
     int numThreads = conf.getThreadPoolSize();
     service = RequestHandlers.create(memcached, numThreads, bufferSize);
     service.start();

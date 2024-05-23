@@ -23,14 +23,14 @@ import com.carrotdata.memcarrot.util.TestUtils;
 public class TestSimpleClient {
   private static Logger logger = LogManager.getLogger(TestSimpleClient.class);
 
-  OnecacheServer server;
+  MemcarrotServer server;
   SimpleClient client;
   
   @Before
   public void setUp() throws IOException {
     Cache c = TestUtils.createCache(800_000_000, 4_000_000, true, true);
     Memcached m = new Memcached(c);
-    server = new OnecacheServer();
+    server = new MemcarrotServer();
     server.setMemachedSupport(m);
     server.start();
     client = new SimpleClient(server.getHost(), server.getPort());
