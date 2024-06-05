@@ -1,14 +1,14 @@
 /**
  * Copyright (C) 2021-present Carrot, Inc.
- *
- * <p>This program is free software: you can redistribute it and/or modify it under the terms of the
+ * <p>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the
  * Server Side Public License, version 1, as published by MongoDB, Inc.
- *
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * Server Side Public License for more details.
- *
- * <p>You should have received a copy of the Server Side Public License along with this program. If
+ * <p>
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+ * even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the Server
+ * Side Public License for more details.
+ * <p>
+ * You should have received a copy of the Server Side Public License along with this program. If
  * not, see <http://www.mongodb.com/licensing/server-side-public-license>.
  */
 package com.carrotdata.memcarrot;
@@ -25,9 +25,7 @@ import java.util.OptionalLong;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-
 import static com.carrotdata.memcarrot.commands.MemcachedCommand.*;
-
 
 public class SimpleClient {
   private static Logger logger = LogManager.getLogger(SimpleClient.class);
@@ -38,7 +36,8 @@ public class SimpleClient {
   byte[] END = "END\r\n".getBytes();
 
   static enum ResponseCode {
-    DELETED, EXISTS, NOT_FOUND, NOT_STORED, STORED, TOUCHED, SAVED, OK, ERROR, CLIENT_ERROR, SERVER_ERROR
+    DELETED, EXISTS, NOT_FOUND, NOT_STORED, STORED, TOUCHED, SAVED, OK, ERROR, CLIENT_ERROR,
+    SERVER_ERROR
   }
 
   static class GetResult {
@@ -67,7 +66,7 @@ public class SimpleClient {
       logger.error(e);
     }
   }
-  
+
   private SocketChannel openConnection(String node) throws IOException {
     String[] parts = node.split(":");
     String host = parts[0];
@@ -76,7 +75,7 @@ public class SimpleClient {
   }
 
   private SocketChannel openConnection(String host, int port) throws IOException {
-   
+
     SocketChannel sc = SocketChannel.open(new InetSocketAddress(host, port));
     sc.configureBlocking(false);
     sc.setOption(StandardSocketOptions.TCP_NODELAY, true);
@@ -85,7 +84,7 @@ public class SimpleClient {
     logger.debug("Client opened connection to: {}", sc.getRemoteAddress().toString());
     return sc;
   }
-  
+
   private ResponseCode getStorageResponse(ByteBuffer buf) {
     int pos = buf.position();
     if (pos == 8) {
@@ -180,7 +179,7 @@ public class SimpleClient {
     }
     // Check if it is complete response
     // we need to check last 5 bytes
-    //FIXME: its dangerous: there is a chance that we can get this true before response is complete
+    // FIXME: its dangerous: there is a chance that we can get this true before response is complete
     buf.position(pos - 5);
     if (com.carrotdata.cache.util.Utils.compareTo(buf, END.length, END, 0, END.length) != 0) {
       buf.position(pos);
@@ -223,7 +222,7 @@ public class SimpleClient {
     buf.position(pos);
     byte[] bb = new byte[newPos - pos - 2];
     buf.get(bb);
-    String s = new String(bb);    
+    String s = new String(bb);
     String[] splits = s.split(" ");
     GetResult res = new GetResult();
     res.key = splits[1].getBytes();
@@ -234,7 +233,7 @@ public class SimpleClient {
     int valueSize = Integer.parseInt(splits[3]);
     buf.get();
     buf.get();
-    
+
     byte[] value = new byte[valueSize];
     buf.get(value);
     res.value = value;
@@ -293,7 +292,7 @@ public class SimpleClient {
     buf.put(SPACE[0]);
     for (int i = 0; i < numKeys; i++) {
       buf.put(keys[i]);
-      if (i < numKeys -1) {
+      if (i < numKeys - 1) {
         buf.put(SPACE[0]);
       }
     }
@@ -333,7 +332,7 @@ public class SimpleClient {
     buf.put(SPACE[0]);
     for (int i = 0; i < numKeys; i++) {
       buf.put(keys[i]);
-      if (i < numKeys -1) {
+      if (i < numKeys - 1) {
         buf.put(SPACE[0]);
       }
     }
@@ -353,6 +352,7 @@ public class SimpleClient {
     } while ((result = getRetrievalResponse(buf, false)) == null);
     return result;
   }
+
   /**
    * Gat with CAS operation
    * @param expire new expiration time
@@ -372,7 +372,7 @@ public class SimpleClient {
     buf.put(SPACE[0]);
     for (int i = 0; i < numKeys; i++) {
       buf.put(keys[i]);
-      if (i < numKeys -1) {
+      if (i < numKeys - 1) {
         buf.put(SPACE[0]);
       }
     }
@@ -472,13 +472,13 @@ public class SimpleClient {
    * @return response code
    * @throws IOException
    */
-  public ResponseCode set(byte[] key, byte[] value, int flags, long expire,
-      boolean noreply) throws IOException {
+  public ResponseCode set(byte[] key, byte[] value, int flags, long expire, boolean noreply)
+      throws IOException {
     return store(SETCMD, key, value, flags, expire, noreply, OptionalLong.empty());
   }
-  
+
   /**
-   *  Add command
+   * Add command
    * @param key key
    * @param value value
    * @param flags flags
@@ -487,11 +487,11 @@ public class SimpleClient {
    * @return response code
    * @throws IOException
    */
-  public ResponseCode add(byte[] key, byte[] value, int flags, long expire,
-      boolean noreply) throws IOException {
+  public ResponseCode add(byte[] key, byte[] value, int flags, long expire, boolean noreply)
+      throws IOException {
     return store(ADDCMD, key, value, flags, expire, noreply, OptionalLong.empty());
   }
-  
+
   /**
    * Replace command
    * @param key key
@@ -502,13 +502,13 @@ public class SimpleClient {
    * @return response code
    * @throws IOException
    */
-  public ResponseCode replace(byte[] key, byte[] value, int flags, long expire,
-      boolean noreply) throws IOException {
+  public ResponseCode replace(byte[] key, byte[] value, int flags, long expire, boolean noreply)
+      throws IOException {
     return store(REPLACECMD, key, value, flags, expire, noreply, OptionalLong.empty());
   }
 
   /**
-   *  Append command
+   * Append command
    * @param key key
    * @param value value
    * @param flags flags
@@ -517,13 +517,13 @@ public class SimpleClient {
    * @return response code
    * @throws IOException
    */
-  public ResponseCode append(byte[] key, byte[] value, int flags, long expire,
-      boolean noreply) throws IOException {
+  public ResponseCode append(byte[] key, byte[] value, int flags, long expire, boolean noreply)
+      throws IOException {
     return store(APPENDCMD, key, value, flags, expire, noreply, OptionalLong.empty());
   }
 
   /**
-   *  Prepend command
+   * Prepend command
    * @param key key
    * @param value value
    * @param flags flags
@@ -532,13 +532,13 @@ public class SimpleClient {
    * @return response code
    * @throws IOException
    */
-  public ResponseCode prepend(byte[] key, byte[] value, int flags, long expire,
-      boolean noreply) throws IOException {
+  public ResponseCode prepend(byte[] key, byte[] value, int flags, long expire, boolean noreply)
+      throws IOException {
     return store(PREPENDCMD, key, value, flags, expire, noreply, OptionalLong.empty());
   }
-  
+
   /**
-   *  CAS command
+   * CAS command
    * @param key key
    * @param value value
    * @param flags flags
@@ -547,14 +547,14 @@ public class SimpleClient {
    * @return response code
    * @throws IOException
    */
-  public ResponseCode cas(byte[] key, byte[] value, int flags, long expire,
-      boolean noreply, long cas) throws IOException {
+  public ResponseCode cas(byte[] key, byte[] value, int flags, long expire, boolean noreply,
+      long cas) throws IOException {
     return store(CASCMD, key, value, flags, expire, noreply, OptionalLong.of(cas));
   }
 
   /**
    * Delete operation
-   * @param key key 
+   * @param key key
    * @param noreply no reply
    * @return response code
    * @throws IOException
@@ -588,10 +588,10 @@ public class SimpleClient {
     } while ((response = getDeleteResponse(buf)) == null);
     return response;
   }
-  
+
   /**
    * Touch operation
-   * @param key key 
+   * @param key key
    * @param noreply no reply
    * @return response code
    * @throws IOException
@@ -627,10 +627,10 @@ public class SimpleClient {
     } while ((response = getTouchResponse(buf)) == null);
     return response;
   }
-  
+
   /**
    * Increment operation
-   * @param key key 
+   * @param key key
    * @param noreply no reply
    * @return response code (NOT_FOUND) or new value
    * @throws IOException
@@ -666,10 +666,10 @@ public class SimpleClient {
     } while ((response = getIncrDecrResponse(buf)) == null);
     return response;
   }
-  
+
   /**
    * Increment operation
-   * @param key key 
+   * @param key key
    * @param noreply no reply
    * @return response code (NOT_FOUND) or new value
    * @throws IOException
@@ -705,7 +705,7 @@ public class SimpleClient {
     } while ((response = getIncrDecrResponse(buf)) == null);
     return response;
   }
-  
+
   public void close() throws IOException {
     conn.close();
   }
@@ -725,7 +725,7 @@ public class SimpleClient {
     }
     // this command does not return
     buf.clear();
-    while (buf.position() != 4 ) {
+    while (buf.position() != 4) {
       channel.read(buf);
     }
   }
@@ -755,7 +755,7 @@ public class SimpleClient {
     }
     throw new RuntimeException("something wrong");
   }
-  
+
   /**
    * Save (persist data) onecache server
    * @throws IOException
@@ -781,5 +781,5 @@ public class SimpleClient {
     }
     throw new RuntimeException("something wrong");
   }
-  
+
 }

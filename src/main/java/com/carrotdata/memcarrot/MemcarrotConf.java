@@ -1,23 +1,18 @@
 /*
- Copyright (C) 2023-present Onecache, Inc.
-
- <p>This program is free software: you can redistribute it and/or modify it under the terms of the
- Server Side Public License, version 1, as published by MongoDB, Inc.
-
- <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- Server Side Public License for more details.
-
- <p>You should have received a copy of the Server Side Public License along with this program. If
- not, see <http://www.mongodb.com/licensing/server-side-public-license>.
-*/
+ * Copyright (C) 2023-present Onecache, Inc. <p>This program is free software: you can redistribute
+ * it and/or modify it under the terms of the Server Side Public License, version 1, as published by
+ * MongoDB, Inc. <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+ * PURPOSE. See the Server Side Public License for more details. <p>You should have received a copy
+ * of the Server Side Public License along with this program. If not, see
+ * <http://www.mongodb.com/licensing/server-side-public-license>.
+ */
 package com.carrotdata.memcarrot;
 
 import java.io.IOException;
 import java.util.Properties;
 
 import com.carrotdata.cache.util.CacheConfig;
-
 
 /** Class which keeps all the configuration parameters for Memcarrot server */
 public class MemcarrotConf {
@@ -26,7 +21,6 @@ public class MemcarrotConf {
   public static final String CONF_SERVER_ADDRESS = "memcarrot.server-address";
   public static final String CONF_THREAD_POOL_SIZE = "memcarrot.workers-pool-size";
   public static final String CONF_IO_BUFFER_SIZE = "memcarrot.io-buffer-size";
-  
 
   public static final int DEFAULT_SERVER_PORT = 11211;
   public static final String DEFAULT_SERVER_ADDRESS = "127.0.0.1";
@@ -47,7 +41,7 @@ public class MemcarrotConf {
       return conf;
     }
     synchronized (MemcarrotConf.class) {
-      CacheConfig config = file != null? CacheConfig.getInstance(file): CacheConfig.getInstance();
+      CacheConfig config = file != null ? CacheConfig.getInstance(file) : CacheConfig.getInstance();
       conf = new MemcarrotConf(config);
       return conf;
     }
@@ -62,7 +56,7 @@ public class MemcarrotConf {
   public MemcarrotConf() {
     this.cacheConfig = CacheConfig.getInstance();
   }
-  
+
   /**
    * Get cache configuration
    * @return cache configuration
@@ -70,7 +64,7 @@ public class MemcarrotConf {
   public CacheConfig getCacheConfig() {
     return this.cacheConfig;
   }
-  
+
   /**
    * Sets cache configuration
    * @param conf
@@ -78,17 +72,18 @@ public class MemcarrotConf {
   public void setCacheConfig(CacheConfig conf) {
     this.cacheConfig = conf;
   }
-  
+
   /**
    * Get server's port
    * @return port
    */
   public int getServerPort() {
     Properties props = this.cacheConfig.getProperties();
-    String sport = (String) props.getOrDefault(CONF_SERVER_PORT, Integer.toString(DEFAULT_SERVER_PORT));
+    String sport =
+        (String) props.getOrDefault(CONF_SERVER_PORT, Integer.toString(DEFAULT_SERVER_PORT));
     return Integer.parseInt(sport);
   }
-  
+
   /**
    * Sets server port
    * @param port
@@ -97,7 +92,7 @@ public class MemcarrotConf {
     Properties props = this.cacheConfig.getProperties();
     props.setProperty(CONF_SERVER_PORT, Integer.toString(port));
   }
-  
+
   /**
    * Get server address
    * @return address
@@ -107,7 +102,7 @@ public class MemcarrotConf {
     String address = (String) props.getOrDefault(CONF_SERVER_ADDRESS, DEFAULT_SERVER_ADDRESS);
     return address;
   }
-  
+
   /**
    * Set server address
    * @param address
@@ -116,17 +111,18 @@ public class MemcarrotConf {
     Properties props = this.cacheConfig.getProperties();
     props.setProperty(CONF_SERVER_ADDRESS, address);
   }
-  
+
   /**
    * Thread pool size
    * @return pool size
    */
   public int getThreadPoolSize() {
     Properties props = this.cacheConfig.getProperties();
-    String sport = (String) props.getOrDefault(CONF_THREAD_POOL_SIZE, Integer.toString(DEFAULT_THREAD_POOL_SIZE));
+    String sport = (String) props.getOrDefault(CONF_THREAD_POOL_SIZE,
+      Integer.toString(DEFAULT_THREAD_POOL_SIZE));
     return Integer.parseInt(sport);
   }
-  
+
   /**
    * Sets thread pool size
    * @param pool size
@@ -135,17 +131,18 @@ public class MemcarrotConf {
     Properties props = this.cacheConfig.getProperties();
     props.setProperty(CONF_THREAD_POOL_SIZE, Integer.toString(size));
   }
-  
+
   /**
    * I/O buffer size
    * @return buffer size
    */
   public int getIOBufferSize() {
     Properties props = this.cacheConfig.getProperties();
-    String ssize = (String) props.getOrDefault(CONF_IO_BUFFER_SIZE, Integer.toString(DEFAULT_IO_BUFFER_SIZE));
+    String ssize =
+        (String) props.getOrDefault(CONF_IO_BUFFER_SIZE, Integer.toString(DEFAULT_IO_BUFFER_SIZE));
     return Integer.parseInt(ssize);
   }
-  
+
   /**
    * I/O buffer size
    * @param buffer size
@@ -154,7 +151,7 @@ public class MemcarrotConf {
     Properties props = this.cacheConfig.getProperties();
     props.setProperty(CONF_IO_BUFFER_SIZE, Integer.toString(size));
   }
-  
+
   /**
    * Get server node (address:port)
    * @return address:port

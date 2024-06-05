@@ -1,16 +1,12 @@
 /*
- Copyright (C) 2023-present Onecache, Inc.
-
- <p>This program is free software: you can redistribute it and/or modify it under the terms of the
- Server Side Public License, version 1, as published by MongoDB, Inc.
-
- <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- Server Side Public License for more details.
-
- <p>You should have received a copy of the Server Side Public License along with this program. If
- not, see <http://www.mongodb.com/licensing/server-side-public-license>.
-*/
+ * Copyright (C) 2023-present Onecache, Inc. <p>This program is free software: you can redistribute
+ * it and/or modify it under the terms of the Server Side Public License, version 1, as published by
+ * MongoDB, Inc. <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+ * PURPOSE. See the Server Side Public License for more details. <p>You should have received a copy
+ * of the Server Side Public License along with this program. If not, see
+ * <http://www.mongodb.com/licensing/server-side-public-license>.
+ */
 package com.carrotdata.memcarrot.commands;
 
 import com.carrotdata.memcarrot.support.IllegalFormatException;
@@ -24,9 +20,7 @@ import com.carrotdata.cache.support.Memcached;
 import com.carrotdata.cache.util.UnsafeAccess;
 
 /**
- * 
- * Format : shutdown\r\n
- * Reply: OK shutting down the server\r\n, OK shutdown is in progress\r\
+ * Format : shutdown\r\n Reply: OK shutting down the server\r\n, OK shutdown is in progress\r\
  */
 public class SHUTDOWN implements MemcachedCommand {
   int consumed;
@@ -52,7 +46,7 @@ public class SHUTDOWN implements MemcachedCommand {
       // TODO log the error
       log.error(e);
     }
-    size  = msg.length();
+    size = msg.length();
     byte[] buf = msg.getBytes();
     UnsafeAccess.copy(buf, 0, outBuffer, buf.length);
     return size;
@@ -62,8 +56,6 @@ public class SHUTDOWN implements MemcachedCommand {
   public int inputConsumed() {
     return 10;
   }
-
-
 
   @Override
   public int commandLength() {

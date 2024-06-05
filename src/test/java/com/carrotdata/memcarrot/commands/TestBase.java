@@ -1,16 +1,12 @@
 /*
- Copyright (C) 2023-present Onecache, Inc.
-
- <p>This program is free software: you can redistribute it and/or modify it under the terms of the
- Server Side Public License, version 1, as published by MongoDB, Inc.
-
- <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- Server Side Public License for more details.
-
- <p>You should have received a copy of the Server Side Public License along with this program. If
- not, see <http://www.mongodb.com/licensing/server-side-public-license>.
-*/
+ * Copyright (C) 2023-present Onecache, Inc. <p>This program is free software: you can redistribute
+ * it and/or modify it under the terms of the Server Side Public License, version 1, as published by
+ * MongoDB, Inc. <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+ * PURPOSE. See the Server Side Public License for more details. <p>You should have received a copy
+ * of the Server Side Public License along with this program. If not, see
+ * <http://www.mongodb.com/licensing/server-side-public-license>.
+ */
 package com.carrotdata.memcarrot.commands;
 
 import java.nio.ByteBuffer;
@@ -30,12 +26,12 @@ import static com.carrotdata.memcarrot.util.Utils.nextTokenEnd;
 import static com.carrotdata.memcarrot.util.Utils.nextTokenStart;
 
 public class TestBase {
-  
+
   public static class KeyRecord {
-    
+
     byte[] key;
     Record record;
-    
+
     private KeyRecord(long keyPtr, int keySize, Record r) {
       this.key = new byte[keySize];
       UnsafeAccess.copy(keyPtr, key, 0, keySize);
@@ -49,12 +45,12 @@ public class TestBase {
       this.record.size = r.size;
       this.record.offset = r.offset;
     }
-    
+
     static KeyRecord of(long keyPtr, int keySize, Record r) {
       return new KeyRecord(keyPtr, keySize, r);
     }
   }
-  
+
   static final byte[] STORED = "STORED\r\n".getBytes();
   static final byte[] NOT_STORED = "NOT_STORED\r\n".getBytes();
   static final byte[] EXISTS = "EXISTS\r\n".getBytes();
@@ -65,27 +61,18 @@ public class TestBase {
   static final byte[] END = "END\r\n".getBytes();
 
   public static enum FaultType {
-    NONE,
-    INCOMPLETE,
-    WRONG_COMMAND,
-    FLAGS_NOT_NUMBER,
-    VALUE_NOT_NUMBER,
-    EXPTIME_NOT_NUMBER,
-    CAS_NOT_NUMBER,
-    NO_FLAGS,
-    NO_EXPTIME,
-    NO_CAS,
-    CORRUPTED
+    NONE, INCOMPLETE, WRONG_COMMAND, FLAGS_NOT_NUMBER, VALUE_NOT_NUMBER, EXPTIME_NOT_NUMBER,
+    CAS_NOT_NUMBER, NO_FLAGS, NO_EXPTIME, NO_CAS, CORRUPTED
   }
-  
+
   protected ByteBuffer inputBuffer;
   protected ByteBuffer outputBuffer;
-  
+
   long inputPtr;
   long outputPtr;
-  
+
   int bufferSize = 1 << 16;
-  
+
   @Before
   public void setUp() {
     inputBuffer = ByteBuffer.allocateDirect(bufferSize);
@@ -93,7 +80,7 @@ public class TestBase {
     outputBuffer = ByteBuffer.allocateDirect(bufferSize);
     outputPtr = UnsafeAccess.address(outputBuffer);
   }
-  
+
   /**
    * set, add, replace, append, prepend, cas
    * @param cmd command
@@ -107,8 +94,9 @@ public class TestBase {
    * @param fault fault type
    * @param inputBuffer buffer
    */
-  public static void writeStorageCommand(byte[] cmd, String key, byte[] value, int flags, long exptime, 
-      long cas, boolean withCas, boolean noreply, FaultType fault, ByteBuffer inputBuffer) {
+  public static void writeStorageCommand(byte[] cmd, String key, byte[] value, int flags,
+      long exptime, long cas, boolean withCas, boolean noreply, FaultType fault,
+      ByteBuffer inputBuffer) {
     if (fault == FaultType.NONE || fault == FaultType.INCOMPLETE) {
       inputBuffer.put(cmd);
       space(inputBuffer);
@@ -139,7 +127,7 @@ public class TestBase {
       makeIncomplete(inputBuffer);
     }
   }
-  
+
   /**
    * Read storage command response
    * @param buf memory buffer address
@@ -176,7 +164,7 @@ public class TestBase {
       } else {
         org.junit.Assert.fail("Unrecognized storage command response");
       }
-    }  else if (size == 7) {
+    } else if (size == 7) {
       if (compareTo(ERROR, 0, size, buf, size) == 0) {
         return OpResult.ERROR;
       } else {
@@ -187,7 +175,7 @@ public class TestBase {
     }
     return null;
   }
-  
+
   /**
    * Reads touch command response
    * @param buf memory buffer address
@@ -197,7 +185,7 @@ public class TestBase {
   public static OpResult readTouchCommandResponse(long buf, int size) {
     return readStorageCommandResponse(buf, size);
   }
-  
+
   /**
    * Reads delete command response
    * @param buf memory buffer address
@@ -207,7 +195,7 @@ public class TestBase {
   public static OpResult readDeleteCommandResponse(long buf, int size) {
     return readStorageCommandResponse(buf, size);
   }
-  
+
   /**
    * Reads incr decr response
    * @param buf memory buffer address
@@ -228,8 +216,8 @@ public class TestBase {
       return new String(com.carrotdata.cache.util.Utils.toBytes(buf, size));
     }
   }
-  
-  public static List<KeyRecord> readRetrievalCommandResponse(long buf, int size, boolean withCAS){
+
+  public static List<KeyRecord> readRetrievalCommandResponse(long buf, int size, boolean withCAS) {
     List<KeyRecord> result = new ArrayList<KeyRecord>();
     if (size == 5) {
       if (compareTo(END, 0, size, buf, size) == 0) {
@@ -239,7 +227,7 @@ public class TestBase {
       }
     }
     int off = 0;
-    while(off < size - 5) {
+    while (off < size - 5) {
       int $off = readKeyRecordInto(result, buf + off, size - off, withCAS);
       off += $off;
     }
@@ -251,10 +239,11 @@ public class TestBase {
     }
     return null;
   }
-  
-  private static int readKeyRecordInto(List<KeyRecord> result, long buf, int size, boolean withCAS) {
-    //VALUE <key> <flags> <bytes> [<cas unique>]\r\n
-    //<data block>\r\n
+
+  private static int readKeyRecordInto(List<KeyRecord> result, long buf, int size,
+      boolean withCAS) {
+    // VALUE <key> <flags> <bytes> [<cas unique>]\r\n
+    // <data block>\r\n
     try {
       long keyPtr = 0;
       int keySize = 0;
@@ -262,14 +251,14 @@ public class TestBase {
       int valSize = 0;
       long valPtr = 0;
       long cas = 0;
-      
+
       int start = 0;
       int end = 0;
-      
+
       buf += 6; // skip 'VALUE '
       size -= 6;
-      
-      keyPtr = buf ;
+
+      keyPtr = buf;
 
       end = nextTokenEnd(buf, size);
       keySize = end - start;
@@ -285,7 +274,7 @@ public class TestBase {
         throw new IllegalFormatException("flags is not 32 - bit unsigned");
       }
       flags = (int) v;
-      // Now get bytes 
+      // Now get bytes
       start = nextTokenStart(buf + end, size - end);
       start += end;
       end = nextTokenEnd(buf + start, size - start);
@@ -315,7 +304,7 @@ public class TestBase {
       }
       end++;
       valPtr = buf + end;
-     
+
       Record r = new Record();
       r.cas = cas;
       r.error = false;
@@ -325,7 +314,7 @@ public class TestBase {
       r.size = valSize;
       UnsafeAccess.copy(valPtr, r.value, 0, valSize);
       result.add(KeyRecord.of(keyPtr, keySize, r));
-      
+
       return 6 + end + valSize + 2;
     } catch (NumberFormatException e) {
       throw new IllegalFormatException("not a number");
@@ -339,9 +328,10 @@ public class TestBase {
    * @param expTime expiration time
    * @param withExpire with expiration time
    * @param fault fault type
-   * @param inputBuffer buffer 
+   * @param inputBuffer buffer
    */
-  public static void writeRetrievalCommand(byte[] cmd, String[] keys, long expTime,  boolean withExpire, FaultType fault, ByteBuffer inputBuffer) {
+  public static void writeRetrievalCommand(byte[] cmd, String[] keys, long expTime,
+      boolean withExpire, FaultType fault, ByteBuffer inputBuffer) {
     if (fault == FaultType.NONE || fault == FaultType.INCOMPLETE) {
       inputBuffer.put(cmd);
       space(inputBuffer);
@@ -358,18 +348,19 @@ public class TestBase {
       }
       crlf(inputBuffer);
     }
-    
+
     if (fault == FaultType.INCOMPLETE) {
       makeIncomplete(inputBuffer);
     }
   }
-  
-  public static void writeDeleteCommand(String key, boolean noreply, FaultType fault, ByteBuffer inputBuffer) {
+
+  public static void writeDeleteCommand(String key, boolean noreply, FaultType fault,
+      ByteBuffer inputBuffer) {
     byte[] cmd = "delete".getBytes();
     if (fault == FaultType.NONE || fault == FaultType.INCOMPLETE) {
       inputBuffer.put(cmd);
       space(inputBuffer);
-      inputBuffer.put(key.getBytes());      
+      inputBuffer.put(key.getBytes());
       if (noreply) {
         space(inputBuffer);
         inputBuffer.put("noreply".getBytes());
@@ -380,9 +371,9 @@ public class TestBase {
       makeIncomplete(inputBuffer);
     }
   }
-  
-  public static void writeTouchCommand(String key, long exptime, 
-      boolean noreply, FaultType fault, ByteBuffer inputBuffer) {
+
+  public static void writeTouchCommand(String key, long exptime, boolean noreply, FaultType fault,
+      ByteBuffer inputBuffer) {
     byte[] cmd = "touch".getBytes();
     if (fault == FaultType.NONE || fault == FaultType.INCOMPLETE) {
       inputBuffer.put(cmd);
@@ -401,7 +392,7 @@ public class TestBase {
       makeIncomplete(inputBuffer);
     }
   }
-  
+
   public static void writeIncrCommand(String key, long v, boolean noreply, FaultType fault,
       ByteBuffer inputBuffer) {
     byte[] cmd = "incr".getBytes();
@@ -409,7 +400,7 @@ public class TestBase {
     space(inputBuffer);
     inputBuffer.put(key.getBytes());
     space(inputBuffer);
-    String s = fault != FaultType.VALUE_NOT_NUMBER? Long.toString(v): "some";
+    String s = fault != FaultType.VALUE_NOT_NUMBER ? Long.toString(v) : "some";
     inputBuffer.put(s.getBytes());
     if (noreply) {
       space(inputBuffer);
@@ -421,7 +412,7 @@ public class TestBase {
       makeIncomplete(inputBuffer);
     }
   }
-  
+
   public static void writeDecrCommand(String key, long v, boolean noreply, FaultType fault,
       ByteBuffer inputBuffer) {
     byte[] cmd = "decr".getBytes();
@@ -441,7 +432,7 @@ public class TestBase {
       makeIncomplete(inputBuffer);
     }
   }
-  
+
   public static void writeShutdown(FaultType fault, ByteBuffer b) {
     byte[] cmd = "shutdown\r\n".getBytes();
     b.put(cmd);
@@ -449,19 +440,19 @@ public class TestBase {
       makeIncomplete(b);
     }
   }
-  
+
   /**
-   *  Utility methods
+   * Utility methods
    */
   static void space(ByteBuffer b) {
     b.put((byte) ' ');
   }
-  
+
   static void crlf(ByteBuffer b) {
     b.put((byte) '\r');
     b.put((byte) '\n');
   }
-  
+
   static void makeIncomplete(ByteBuffer inputBuffer) {
     Random r = new Random();
     int pos = inputBuffer.position();

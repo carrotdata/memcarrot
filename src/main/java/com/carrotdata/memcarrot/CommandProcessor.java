@@ -27,7 +27,7 @@ public class CommandProcessor {
     int consumed;
     int produced;
   }
-  
+
   static ThreadLocal<MemcachedCommand> lastCommand = new ThreadLocal<MemcachedCommand>();
   /**
    * Main method
@@ -38,11 +38,12 @@ public class CommandProcessor {
    */
   static int touched;
   static int added = 0;
+
   public static int process(Memcached storage, long inputPtr, int inputSize, long outPtr,
       int outSize) throws IllegalFormatException {
     try {
 
-    // Execute Memcached command
+      // Execute Memcached command
       MemcachedCommand cmd = CommandParser.parse(inputPtr, inputSize);
       if (cmd == null) {
         return -1; // input is incomplete
@@ -57,12 +58,12 @@ public class CommandProcessor {
       }
       int result = cmd.execute(storage, outPtr, outSize);
       return result;
-    } catch (UnsupportedCommand ee ) {
+    } catch (UnsupportedCommand ee) {
       byte[] buf = "ERROR\r\n".getBytes();
       logger.error(ee);
       UnsafeAccess.copy(buf, 0, outPtr, buf.length);
       return buf.length;
-    } catch (IllegalFormatException eee){
+    } catch (IllegalFormatException eee) {
       String msg = "CLIENT_ERROR " + eee.getMessage() + "\r\n";
       logger.error(msg);
       byte[] buf = msg.getBytes();
@@ -71,14 +72,14 @@ public class CommandProcessor {
     }
   }
 
-  private static boolean isMemorySafe (MemcachedCommand cmd, long in, int size) {
-    if (! (cmd instanceof AbstractMemcachedCommand)) {
+  private static boolean isMemorySafe(MemcachedCommand cmd, long in, int size) {
+    if (!(cmd instanceof AbstractMemcachedCommand)) {
       return true;
     }
     AbstractMemcachedCommand c = (AbstractMemcachedCommand) cmd;
     return c.isMemorySafe(in, size);
   }
-  
+
   public static MemcachedCommand getLastExecutedCommand() {
     return lastCommand.get();
   }

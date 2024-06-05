@@ -1,43 +1,39 @@
 /*
- Copyright (C) 2023-present Onecache, Inc.
-
- <p>This program is free software: you can redistribute it and/or modify it under the terms of the
- Server Side Public License, version 1, as published by MongoDB, Inc.
-
- <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- Server Side Public License for more details.
-
- <p>You should have received a copy of the Server Side Public License along with this program. If
- not, see <http://www.mongodb.com/licensing/server-side-public-license>.
-*/
+ * Copyright (C) 2023-present Onecache, Inc. <p>This program is free software: you can redistribute
+ * it and/or modify it under the terms of the Server Side Public License, version 1, as published by
+ * MongoDB, Inc. <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+ * PURPOSE. See the Server Side Public License for more details. <p>You should have received a copy
+ * of the Server Side Public License along with this program. If not, see
+ * <http://www.mongodb.com/licensing/server-side-public-license>.
+ */
 package com.carrotdata.memcarrot.commands;
 
 import com.carrotdata.cache.util.UnsafeAccess;
 import com.carrotdata.memcarrot.support.IllegalFormatException;
 
 public abstract class AbstractMemcachedCommand implements MemcachedCommand {
-  
+
   // key address
   long keyPtr;
   // key size
   int keySize;
-  
+
   // value address
   long valPtr;
   // value size
   int valSize;
-  
-  //TODO: unsigned 32bit support 
+
+  // TODO: unsigned 32bit support
   long flags; // unsigned 32 bits
   long exptime;
   long cas;
   long value; // for INCR/DECR commands
   boolean noreply;
   boolean isCAS;
-  
+
   int consumed;
-  
+
   @Override
   public int inputConsumed() {
     if (consumed == 0) return 0;
@@ -56,7 +52,7 @@ public abstract class AbstractMemcachedCommand implements MemcachedCommand {
   protected final void throwIfEquals(long n, int v, String msg) throws IllegalFormatException {
     if (n == v) throw new IllegalFormatException(msg);
   }
-  
+
   public boolean isMemorySafe(long memptr, int memsize) {
     boolean safe = this.keyPtr > 0 && this.keySize > 0;
     safe = safe && (this.keyPtr > memptr) && (this.keyPtr + this.keySize < memptr + memsize);

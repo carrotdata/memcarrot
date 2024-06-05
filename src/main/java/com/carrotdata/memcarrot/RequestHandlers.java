@@ -1,16 +1,12 @@
 /*
- Copyright (C) 2021-present Carrot, Inc.
-
- <p>This program is free software: you can redistribute it and/or modify it under the terms of the
- Server Side Public License, version 1, as published by MongoDB, Inc.
-
- <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- Server Side Public License for more details.
-
- <p>You should have received a copy of the Server Side Public License along with this program. If
- not, see <http://www.mongodb.com/licensing/server-side-public-license>.
-*/
+ * Copyright (C) 2021-present Carrot, Inc. <p>This program is free software: you can redistribute it
+ * and/or modify it under the terms of the Server Side Public License, version 1, as published by
+ * MongoDB, Inc. <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+ * PURPOSE. See the Server Side Public License for more details. <p>You should have received a copy
+ * of the Server Side Public License along with this program. If not, see
+ * <http://www.mongodb.com/licensing/server-side-public-license>.
+ */
 package com.carrotdata.memcarrot;
 
 import java.io.IOException;
@@ -58,11 +54,12 @@ public class RequestHandlers {
       accessTime = System.nanoTime() - epochStartNanos;
     }
   }
+
   /*
    * Request handlers
    */
   WorkThread[] workers;
-  
+
   volatile boolean shutdown;
 
   private RequestHandlers(Memcached store, int numThreads, int bufferSize) {
@@ -83,11 +80,10 @@ public class RequestHandlers {
 
   /**
    * Submit next socket channel for processing
-   *
    * @param key selection key for socket channel
    */
   public void submit(SelectionKey key) {
-    if(this.shutdown) {
+    if (this.shutdown) {
       return;
     }
     while (true) {
@@ -102,7 +98,7 @@ public class RequestHandlers {
   /** Shutdown service */
   public void shutdown() {
     this.shutdown = true;
-    Arrays.stream(workers).forEach(Thread::interrupt);  
+    Arrays.stream(workers).forEach(Thread::interrupt);
     log.debug("Stopped request handlers: count={}", workers.length);
   }
 }
@@ -125,7 +121,7 @@ class WorkThread extends Thread {
    * Address of input buffer
    */
   long in_ptr;
-  
+
   /*
    * Output buffer
    */
@@ -135,7 +131,7 @@ class WorkThread extends Thread {
    * Output buffer address
    */
   long out_ptr;
-  
+
   /*
    * Data store
    */
@@ -150,16 +146,15 @@ class WorkThread extends Thread {
   private volatile boolean busy = false;
 
   private int bufferSize;
-  
-  private static AtomicInteger counter = new AtomicInteger(); 
-  
+
+  private static AtomicInteger counter = new AtomicInteger();
+
   /**
    * Default constructor
-   *
    * @param store data store
    */
   WorkThread(Memcached store, int bufferSize) {
-    super("oc-pool-thread-"+ counter.getAndIncrement());
+    super("oc-pool-thread-" + counter.getAndIncrement());
     this.store = store;
     this.bufferSize = bufferSize;
     setDaemon(true);
@@ -172,7 +167,7 @@ class WorkThread extends Thread {
     }
     return inBuf;
   }
-  
+
   private ByteBuffer getOutputBuffer() {
     if (outBuf == null) {
       outBuf = ByteBuffer.allocateDirect(bufferSize);
@@ -180,10 +175,9 @@ class WorkThread extends Thread {
     }
     return outBuf;
   }
-  
+
   /**
    * Is thread busy working?
-   *
    * @return busy
    */
   boolean isBusy() {
@@ -192,7 +186,6 @@ class WorkThread extends Thread {
 
   /**
    * Submits next selection key for processing
-   *
    * @param key selection key
    */
   void nextKey(SelectionKey key) {
@@ -204,7 +197,6 @@ class WorkThread extends Thread {
 
   /**
    * Release key - mark it not in use
-   *
    * @param key
    */
   void release(SelectionKey key) {
@@ -238,7 +230,7 @@ class WorkThread extends Thread {
     }
     return key;
   }
-  
+
   /*
    * Main loop
    */
@@ -265,7 +257,7 @@ class WorkThread extends Thread {
       out.clear();
 
       try {
-        long startCounter = 0; //System.nanoTime();
+        long startCounter = 0; // System.nanoTime();
         long max_wait_ns = 500_000_000; // 500ms - FIXME - make it configurable
 
         outer: while (true) {
@@ -285,7 +277,7 @@ class WorkThread extends Thread {
               channel.close();
               break;
             }
-            Thread.onSpinWait();            
+            Thread.onSpinWait();
             continue;
           }
           startCounter = 0;
@@ -301,7 +293,7 @@ class WorkThread extends Thread {
             if (responseLength < 0) {
               // command is incomplete
               // check if we consumed something, then compact input buffer
-              if(consumed > 0) {
+              if (consumed > 0) {
                 in.position(consumed);
                 in.compact();
               }
@@ -317,7 +309,7 @@ class WorkThread extends Thread {
               }
             }
             consumed += CommandProcessor.getLastExecutedCommand().inputConsumed();
-            
+
           }
           break;
         }

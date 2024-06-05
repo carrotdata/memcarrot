@@ -30,17 +30,14 @@ import com.carrotdata.cache.util.UnsafeAccess;
 
 /**
  * Utility methods for unit tests
- *
  */
 public class TestUtils {
-  
-  
-  public static Cache createCache(long maxSize, long segmentSize, boolean offheap, boolean withExpireSupport) throws IOException {
-    
+
+  public static Cache createCache(long maxSize, long segmentSize, boolean offheap,
+      boolean withExpireSupport) throws IOException {
+
     Builder b = new Builder("cache");
-    b.withCacheMaximumSize(maxSize)
-    .withCacheDataSegmentSize(segmentSize)
-    .withTLSSupported(true);
+    b.withCacheMaximumSize(maxSize).withCacheDataSegmentSize(segmentSize).withTLSSupported(true);
     if (withExpireSupport) {
       b.withMainQueueIndexFormat(CompactBaseWithExpireIndexFormat.class.getName());
     }
@@ -50,8 +47,7 @@ public class TestUtils {
       return b.buildDiskCache();
     }
   }
-  
-  
+
   /**
    * Creates new byte array and fill it with random data
    * @param size size of an array
@@ -63,28 +59,28 @@ public class TestUtils {
     r.nextBytes(bytes);
     return bytes;
   }
-  
+
   public static String randomString(int size) {
     return com.carrotdata.cache.util.Utils.getRandomStr(new Random(), size);
   }
-  
+
   public static String randomString(Random r, int size) {
     return com.carrotdata.cache.util.Utils.getRandomStr(r, size);
   }
-  
+
   public static String toString(long ptr, int size) {
     byte[] b = com.carrotdata.cache.util.Utils.toBytes(ptr, size);
     return new String(b);
   }
-  
+
   public static boolean equals(byte[] a, byte[] b) {
     return equals(a, 0, a.length, b, 0, b.length);
   }
-  
+
   public static boolean equals(byte[] a, int aoff, int alen, byte[] b, int boff, int blen) {
-    return com.carrotdata.cache.util.Utils.compareTo(a, aoff, alen , b, boff, blen) == 0;
+    return com.carrotdata.cache.util.Utils.compareTo(a, aoff, alen, b, boff, blen) == 0;
   }
-  
+
   /**
    * Creates new byte array and fill it with random data
    * @param size size of an array
@@ -95,17 +91,18 @@ public class TestUtils {
     r.nextBytes(bytes);
     return bytes;
   }
+
   /**
    * Copies an array
    * @param arr array of bytes
    * @return copy
    */
-  public static byte[] copy (byte[] arr) {
+  public static byte[] copy(byte[] arr) {
     byte[] buf = new byte[arr.length];
     System.arraycopy(arr, 0, buf, 0, buf.length);
     return buf;
   }
-  
+
   /**
    * Allocates memory and fills it with random data
    * @param size memory size
@@ -117,7 +114,7 @@ public class TestUtils {
     UnsafeAccess.copy(bytes, 0, ptr, size);
     return ptr;
   }
-  
+
   /**
    * Allocates memory and fills it with random data
    * @param size memory size
@@ -129,7 +126,7 @@ public class TestUtils {
     UnsafeAccess.copy(bytes, 0, ptr, size);
     return ptr;
   }
-  
+
   /**
    * Creates copy of a memory buffer
    * @param ptr memory buffer
@@ -141,25 +138,25 @@ public class TestUtils {
     UnsafeAccess.copy(ptr, mem, size);
     return mem;
   }
-  
+
   public static long copyToMemory(byte[] arr) {
     long mem = UnsafeAccess.malloc(arr.length);
-    UnsafeAccess.copy(arr,  0,  mem, arr.length);
+    UnsafeAccess.copy(arr, 0, mem, arr.length);
     return mem;
   }
-  
+
   public static long copyToMemory(String s) {
     byte[] arr = s.getBytes();
     long mem = UnsafeAccess.malloc(arr.length);
-    UnsafeAccess.copy(arr,  0,  mem, arr.length);
+    UnsafeAccess.copy(arr, 0, mem, arr.length);
     return mem;
   }
-  
+
   public static DataOutputStream getOutputStreamForTest() {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     return new DataOutputStream(baos);
   }
-  
+
   public static RandomAccessFile saveToFile(Segment s) throws IOException {
     File f = File.createTempFile("segment", null);
     f.deleteOnExit();
@@ -167,8 +164,9 @@ public class TestUtils {
     s.save(raf);
     return raf;
   }
-  
-  public static CacheConfig mockConfigForTests(long segmentSize, long maxCacheSize) throws IOException {
+
+  public static CacheConfig mockConfigForTests(long segmentSize, long maxCacheSize)
+      throws IOException {
     CacheConfig mock = Mockito.mock(CacheConfig.class, CALLS_REAL_METHODS);
     mock.init();
     // define segment size
@@ -177,13 +175,14 @@ public class TestUtils {
     Mockito.when(mock.getCacheMaximumSize(Mockito.anyString())).thenReturn(maxCacheSize);
     // data directory
     Path path = Files.createTempDirectory(null);
-    File  dir = path.toFile();
+    File dir = path.toFile();
     dir.deleteOnExit();
     Mockito.when(mock.getDataDir(Mockito.anyString())).thenReturn(dir.getAbsolutePath());
     return mock;
   }
-  
-  public static CacheConfig mockConfigForTests(long segmentSize, long maxCacheSize, String dataDir) throws IOException {
+
+  public static CacheConfig mockConfigForTests(long segmentSize, long maxCacheSize, String dataDir)
+      throws IOException {
     CacheConfig mock = Mockito.mock(CacheConfig.class, CALLS_REAL_METHODS);
     mock.init();
     // define segment size
@@ -193,14 +192,13 @@ public class TestUtils {
     Mockito.when(mock.getDataDir(Mockito.anyString())).thenReturn(dataDir);
     return mock;
   }
-  
-  
+
   public static void deleteDir(Path dir) throws IOException {
     if (!Files.exists(dir)) {
       return;
     }
     Stream<Path> stream = Files.list(dir);
-    stream.forEach( x -> {
+    stream.forEach(x -> {
       try {
         Files.delete(x);
       } catch (IOException e) {
@@ -209,14 +207,14 @@ public class TestUtils {
       }
     });
     Files.delete(dir);
-    if(Files.exists(dir)) {
+    if (Files.exists(dir)) {
       System.err.printf("Could not delete dir=%s\n", dir.toString());
     } else {
       System.out.printf("Deleted dir=%s\n", dir.toString());
     }
     stream.close();
   }
-  
+
   public static void deleteCacheFiles(Cache cache) throws IOException {
     String snapshotDir = cache.getCacheConfig().getSnapshotDir(cache.getName());
     Path p = Paths.get(snapshotDir);
@@ -225,30 +223,30 @@ public class TestUtils {
     p = Paths.get(dataDir);
     deleteDir(p);
   }
-  
-  public static List<byte[]> loadGithubDataAsBytes() throws URISyntaxException, IOException{
-    
+
+  public static List<byte[]> loadGithubDataAsBytes() throws URISyntaxException, IOException {
+
     File dir = new File("./src/test/resources/github");
     File[] list = dir.listFiles();
     ArrayList<byte[]> dataList = new ArrayList<byte[]>();
-    for (File ff: list) {
+    for (File ff : list) {
       String s = Files.readString(Paths.get(ff.toURI()));
       dataList.add(s.getBytes());
     }
     return dataList;
   }
-  
-  public static List<Long> loadGithubDataAsMemory() throws URISyntaxException, IOException{
-    
+
+  public static List<Long> loadGithubDataAsMemory() throws URISyntaxException, IOException {
+
     File dir = new File("./src/test/resources/github");
     File[] list = dir.listFiles();
     ArrayList<Long> dataList = new ArrayList<Long>();
-    for (File ff: list) {
+    for (File ff : list) {
       String s = Files.readString(Paths.get(ff.toURI()));
       long ptr = copyToMemory(s);
       dataList.add(ptr);
     }
     return dataList;
   }
-    
+
 }

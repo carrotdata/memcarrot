@@ -1,16 +1,12 @@
 /*
- Copyright (C) 2021-present Onecache, Inc.
-
- <p>This program is free software: you can redistribute it and/or modify it under the terms of the
- Server Side Public License, version 1, as published by MongoDB, Inc.
-
- <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- Server Side Public License for more details.
-
- <p>You should have received a copy of the Server Side Public License along with this program. If
- not, see <http://www.mongodb.com/licensing/server-side-public-license>.
-*/
+ * Copyright (C) 2021-present Onecache, Inc. <p>This program is free software: you can redistribute
+ * it and/or modify it under the terms of the Server Side Public License, version 1, as published by
+ * MongoDB, Inc. <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+ * PURPOSE. See the Server Side Public License for more details. <p>You should have received a copy
+ * of the Server Side Public License along with this program. If not, see
+ * <http://www.mongodb.com/licensing/server-side-public-license>.
+ */
 package com.carrotdata.memcarrot;
 
 import java.io.IOException;
@@ -22,7 +18,7 @@ import org.apache.logging.log4j.Logger;
 public class Memcarrot {
 
   private static final Logger log = LogManager.getLogger(Memcarrot.class);
-  
+
   public static void main(String[] args) throws IOException {
     if (args.length != 2) {
       usage();
@@ -45,7 +41,6 @@ public class Memcarrot {
     // shutdown
     log("Shutdown finished.");
   }
-
 
   private static void startServer(String configFile) throws IOException {
     log("Starting Memcarrot server ...");

@@ -1,16 +1,12 @@
 /*
- Copyright (C) 2023-present Onecache, Inc.
-
- <p>This program is free software: you can redistribute it and/or modify it under the terms of the
- Server Side Public License, version 1, as published by MongoDB, Inc.
-
- <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- Server Side Public License for more details.
-
- <p>You should have received a copy of the Server Side Public License along with this program. If
- not, see <http://www.mongodb.com/licensing/server-side-public-license>.
-*/
+ * Copyright (C) 2023-present Onecache, Inc. <p>This program is free software: you can redistribute
+ * it and/or modify it under the terms of the Server Side Public License, version 1, as published by
+ * MongoDB, Inc. <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+ * PURPOSE. See the Server Side Public License for more details. <p>You should have received a copy
+ * of the Server Side Public License along with this program. If not, see
+ * <http://www.mongodb.com/licensing/server-side-public-license>.
+ */
 package com.carrotdata.memcarrot.commands;
 
 import static com.carrotdata.cache.util.Utils.compareTo;
@@ -21,29 +17,15 @@ import com.carrotdata.cache.util.UnsafeAccess;
 import com.carrotdata.memcarrot.support.IllegalFormatException;
 
 /**
- * 
- The "touch" command is used to update the expiration time of an existing item
-without fetching it.
-
-touch key exptime [noreply]\r\n
-
-- key is the key of the item the client wishes the server to touch
-
-- exptime is expiration time. Works the same as with the update commands
-  (set/add/etc). This replaces the existing expiration time. If an existing
-  item were to expire in 10 seconds, but then was touched with an
-  expiration time of "20", the item would then expire in 20 seconds.
-
-- "noreply" optional parameter instructs the server to not send the
-  reply.  See the note in Storage commands regarding malformed
-  requests.
-
-The response line to this command can be one of:
-
-- "TOUCHED\r\n" to indicate success
-
-- "NOT_FOUND\r\n" to indicate that the item with this key was not
-  found.
+ * The "touch" command is used to update the expiration time of an existing item without fetching
+ * it. touch key exptime [noreply]\r\n - key is the key of the item the client wishes the server to
+ * touch - exptime is expiration time. Works the same as with the update commands (set/add/etc).
+ * This replaces the existing expiration time. If an existing item were to expire in 10 seconds, but
+ * then was touched with an expiration time of "20", the item would then expire in 20 seconds. -
+ * "noreply" optional parameter instructs the server to not send the reply. See the note in Storage
+ * commands regarding malformed requests. The response line to this command can be one of: -
+ * "TOUCHED\r\n" to indicate success - "NOT_FOUND\r\n" to indicate that the item with this key was
+ * not found.
  */
 public class TOUCH extends AbstractMemcachedCommand {
 
@@ -63,7 +45,7 @@ public class TOUCH extends AbstractMemcachedCommand {
       this.keySize = end - start;
 
       start = nextTokenStart(inBuffer + end, bufferSize - end);
-      if (start <= 0) return false; 
+      if (start <= 0) return false;
       throwIfNotEquals(start, 1, "malformed request");
 
       start += end;
@@ -88,7 +70,7 @@ public class TOUCH extends AbstractMemcachedCommand {
           new IllegalFormatException("malformed request");
         }
       } else if (UnsafeAccess.toByte(inBuffer + start) == 'n') {
-         return false;
+        return false;
       }
       if (end > bufferSize - 2) {
         return false;
@@ -121,7 +103,7 @@ public class TOUCH extends AbstractMemcachedCommand {
         return 11;
       }
     }
-    return 0;  
+    return 0;
   }
 
   @Override
