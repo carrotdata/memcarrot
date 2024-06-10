@@ -27,9 +27,9 @@ public class MemcarrotConf {
   public static final int DEFAULT_SERVER_PORT = 11211;
   public static final String DEFAULT_SERVER_ADDRESS = "127.0.0.1";
   public static final int DEFAULT_THREAD_POOL_SIZE =
-      Math.max(1, Runtime.getRuntime().availableProcessors() / 4);
+      Math.max(1, Runtime.getRuntime().availableProcessors() / 2);
 
-  public static final int DEFAULT_IO_BUFFER_SIZE = 1024 * 1204;
+  public static final int DEFAULT_IO_BUFFER_SIZE = 8 * 1024 * 1204;
 
   private static MemcarrotConf conf;
   private CacheConfig cacheConfig;

@@ -35,28 +35,26 @@ public class Memcarrot {
   }
 
   private static void stopServer(String configFile) throws IOException {
-    log("Stopping Memcarrot server ...");
+    log.info("Stopping Memcarrot server ...");
     MemcarrotConf conf = MemcarrotConf.getConf(configFile);
     String node = conf.getNode();
     SimpleClient client = new SimpleClient(node);
     client.shutdown();
     // shutdown
-    log("Shutdown finished.");
+    log.info("Shutdown finished.");
   }
 
   private static void startServer(String configFile) throws IOException {
-    log("Starting Memcarrot server ...");
-    MemcarrotServer server = new MemcarrotServer();
+    log.info("Starting Memcarrot server ...");
+    MemcarrotConf conf = MemcarrotConf.getConf(configFile);
+    MemcarrotServer server = new MemcarrotServer(conf);
     server.start();
     log.info("Memcarrot started on {}:{}", server.getHost(), server.getPort());
   }
 
   private static void usage() {
-    log("Usage: ./bin/start-server.sh config_file_path [start|stop]");
+    log.info("Usage: ./bin/memcarrot.sh config_file_path [start|stop]");
     System.exit(-1);
   }
 
-  static void log(String str) {
-    log.info("[{}] {}", Thread.currentThread().getName(), str);
-  }
 }

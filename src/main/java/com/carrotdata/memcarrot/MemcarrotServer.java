@@ -91,6 +91,12 @@ public class MemcarrotServer {
     this.host = config.getServerAddress();
     this.bufferSize = config.getIOBufferSize();
   }
+  
+  public MemcarrotServer(MemcarrotConf config) throws IOException {
+    this.port = config.getServerPort();
+    this.host = config.getServerAddress();
+    this.bufferSize = config.getIOBufferSize();
+  }
 
   /**
    * Used for testing only
@@ -125,8 +131,7 @@ public class MemcarrotServer {
       }
       onShutdown(ee);
     });
-    serverRunner.setName("memcarrot-main-thread");
-    serverRunner.setDaemon(true);
+    serverRunner.setName("memcarrot-main");
     serverRunner.start();
     while (!this.started) {
       try {
@@ -202,7 +207,7 @@ public class MemcarrotServer {
     int ops = serverSocket.validOps();
     serverSocket.register(selector, ops, null);
 
-    log.info("Onecache Server started on: {}. Ready to accept new connections.", serverAddr);
+    log.info("Memcarrot Server started on: {}. Ready to accept new connections.", serverAddr);
 
     this.started = true;
 
