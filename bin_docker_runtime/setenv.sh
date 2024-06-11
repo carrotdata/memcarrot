@@ -4,7 +4,7 @@
 # JAVA_HOME variable could be set on stand alone not-dev server.
 #export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk-11.0.11.jdk/Contents/Home
 export MEMCARROT_VERSION=0.11
-export MEMCARROT_RELEASE=memcarrot-0.11-SNAPSHOT.jar
+export MEMCARROT_RELEASE=memcarrot-0.11-SNAPSHOT.jar:memcarrot-0.11-SNAPSHOT-jar-with-dependencies.jar
 export MEMCARROT_APPS_PARAMS="./conf/memcarrot.cfg"
 export MEMCARROT_APP_OPTS="-Dlog4j2.configurationFile=./conf/log4j2.xml"
 # Ubuntu jemalloc path
@@ -14,7 +14,7 @@ export MEMCARROT_APP_OPTS="-Dlog4j2.configurationFile=./conf/log4j2.xml"
 # Mac jemalloc path
 # export LD_PRELOAD=
 
-CPATH="./conf"
+CPATH="./conf:${MEMCARROT_RELEASE}"
 
 export JVM_OPTS="--add-opens java.base/jdk.internal.misc=ALL-UNNAMED --add-opens java.base/java.nio=ALL-UNNAMED \
 --add-opens java.base/java.security=ALL-UNNAMED --add-opens jdk.unsupported/sun.misc=ALL-UNNAMED \

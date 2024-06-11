@@ -2,7 +2,7 @@
 
 . ./setenv.sh
 
-exec_cmd="${JAVA_HOME}/bin/java ${JVM_OPTS} -jar ${MEMCARROT_RELEASE} com.carrotdata.memcarrot.Memcarrot ${MEMCARROT_APPS_PARAMS} start"
+exec_cmd="${JAVA_HOME}/bin/java ${JVM_OPTS} com.carrotdata.memcarrot.Memcarrot ${MEMCARROT_APPS_PARAMS} start"
 echo "${exec_cmd}"
 # Start the application in the background
 ${exec_cmd} &
@@ -16,7 +16,7 @@ PID=$!
 term_handler() {
   echo "Stopping application..."
   if [ ! -z "${PID}" ]; then
-    exec_cmd="${JAVA_HOME}/bin/java ${JVM_OPTS} -jar ${MEMCARROT_RELEASE} com.carrotdata.memcarrot.Memcarrot ${MEMCARROT_APPS_PARAMS} stop"
+    exec_cmd="${JAVA_HOME}/bin/java ${JVM_OPTS} com.carrotdata.memcarrot.Memcarrot ${MEMCARROT_APPS_PARAMS} stop"
     ${exec_cmd}
   fi
   wait "$PID"
