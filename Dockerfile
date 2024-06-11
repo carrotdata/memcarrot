@@ -8,7 +8,7 @@ COPY ./target/*.jar /users/apps/carrotdata/memcarrot
 
 RUN ls -l /users/apps/carrotdata/memcarrot
 
-EXPOSE 8181
+EXPOSE 11211
 
 ENTRYPOINT ["bash"]
 CMD ["./memcarrot.sh"]
