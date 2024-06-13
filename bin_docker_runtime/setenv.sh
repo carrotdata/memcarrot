@@ -4,7 +4,8 @@
 # JAVA_HOME variable could be set on stand alone not-dev server.
 #export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk-11.0.11.jdk/Contents/Home
 export MEMCARROT_VERSION=0.11
-export MEMCARROT_RELEASE=memcarrot-0.11-SNAPSHOT.jar:memcarrot-0.11-SNAPSHOT-jar-with-dependencies.jar
+export MEMCARROT_RELEASE=memcarrot-0.11-SNAPSHOT-jar-with-dependencies.jar
+#export MEMCARROT_RELEASE=memcarrot-0.11-SNAPSHOT.jar:memcarrot-0.11-SNAPSHOT-jar-with-dependencies.jar
 # Ubuntu jemalloc path
 # export LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libjemalloc.so
 # export MALLOC_CONF=prof:true,lg_prof_interval:30,lg_prof_sample:17
