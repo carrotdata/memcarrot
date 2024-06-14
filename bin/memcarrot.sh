@@ -33,10 +33,10 @@ start() {
   fi
 
   exec_cmd="${JAVA_HOME}/bin/java ${JVM_OPTS} com.carrotdata.memcarrot.Memcarrot ${MEMCARROT_APPS_PARAMS} start"
-  echo "${exec_cmd}"
+  #echo "${exec_cmd}"
   mkdir -p logs
   nohup ${exec_cmd} >>logs/memcarrot-stdout.log &
-  echo "Memcarrot ${MEMCARROT_VERSION} instance is starting on PID ${PID}, please wait..."
+  echo "Memcarrot ${MEMCARROT_VERSION} instance is starting, please wait..."
 
   sleep 1
 
@@ -52,12 +52,20 @@ start() {
 
 #==== stop Memcarrot ====
 stop() {
-  if_continue=$1
-
   PID=$(pid)
   if [ ! -z "${PID}" ]; then
     exec_cmd="${JAVA_HOME}/bin/java ${JVM_OPTS} com.carrotdata.memcarrot.Memcarrot ${MEMCARROT_APPS_PARAMS} stop"
-    ${exec_cmd}
+    nohup ${exec_cmd} >> /dev/null &
+    echo "Memcarrot instance is terminating on PID ${PID}, please wait..."
+
+    # Wait for the process to exit
+    while [ -n "$(pid)" ]; do
+      sleep 1
+    done
+
+    echo "Memcarrot instance has exited."
+  else
+    echo "No Memcarrot instance is running."
   fi
 }
 
