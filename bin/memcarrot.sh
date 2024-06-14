@@ -13,7 +13,7 @@ cd "${START_HOME}" || exit
 
 CPATH="${START_HOME}/../conf:${START_HOME}/../lib/${MEMCARROT_RELEASE}"
 
-export JVM_OPTS="--add-opens java.base/jdk.internal.misc=ALL-UNNAMED --add-opens java.base/java.nio=ALL-UNNAMED \
+export JVM_OPTS="-Xmx${MAX_HEAP_SIZE} --add-opens java.base/jdk.internal.misc=ALL-UNNAMED --add-opens java.base/java.nio=ALL-UNNAMED \
 	--add-opens java.base/java.security=ALL-UNNAMED --add-opens jdk.unsupported/sun.misc=ALL-UNNAMED \
 	--add-opens java.base/sun.security.action=ALL-UNNAMED --add-opens jdk.naming.rmi/com.sun.jndi.rmi.registry=ALL-UNNAMED \
 	--add-opens java.base/sun.net=ALL-UNNAMED --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED -cp .:${CPATH} ${MEMCARROT_APP_OPTS}"
