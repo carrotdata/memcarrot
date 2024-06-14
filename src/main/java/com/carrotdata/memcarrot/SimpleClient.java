@@ -722,10 +722,10 @@ public class SimpleClient {
       channel.write(buf);
     }
     // this command does not return
-    buf.clear();
-    while (buf.position() != 4) {
-      channel.read(buf);
-    }
+    //buf.clear();
+    //while (buf.position() != 4) {
+    //  channel.read(buf);
+    //}
   }
 
   /**
