@@ -6,7 +6,7 @@
 export MAX_HEAP_SIZE=100m
 export MEMCARROT_VERSION=0.10
 export MEMCARROT_RELEASE=memcarrot-${MEMCARROT_VERSION}-all.jar
-export MEMCARROT_APPS_PARAMS="../conf/memcarrot.cfg"
+export MEMCARROT_APPS_PARAMS="./conf/memcarrot.cfg"
 export MEMCARROT_INSTANCE_NAME=I_$(pwd)
 export MEMCARROT_APP_OPTS="-Dlocation=${MEMCARROT_INSTANCE_NAME} -Dlog4j2.configurationFile=../conf/log4j2.xml"
 # Ubuntu jemalloc path
