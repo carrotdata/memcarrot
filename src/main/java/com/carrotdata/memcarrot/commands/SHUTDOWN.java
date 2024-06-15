@@ -31,7 +31,7 @@ public class SHUTDOWN implements MemcachedCommand {
   @Override
   public boolean parse(long inBuffer, int bufferSize) throws IllegalFormatException {
     if (bufferSize != 2) {
-      throw new IllegalFormatException("malformed request");
+      return false;
     }
     return true;
   }

@@ -38,18 +38,33 @@ public class TestSimpleClient {
 
   @Before
   public void setUp() throws IOException {
-    Cache c = TestUtils.createCache(800_000_000, 4_000_000, true, true);
-    Memcached m = new Memcached(c);
-    server = new MemcarrotServer();
-    server.setMemachedSupport(m);
-    server.start();
-    client = new SimpleClient(server.getHost(), server.getPort());
+    String host;
+    int port = 0;
+    
+    host = System.getProperty("host");
+    String ps = System.getProperty("port");
+    if (ps != null) {
+      port = Integer.parseInt(ps);
+    }
+    if (host == null) {
+      Cache c = TestUtils.createCache(800_000_000, 4_000_000, true, true);
+      Memcached m = new Memcached(c);
+      server = new MemcarrotServer();
+      server.setMemachedSupport(m);
+      server.start();
+      host = server.getHost();
+      port = server.getPort();
+    }
+    
+    client = new SimpleClient(host, port);
   }
 
   @After
   public void tearDown() throws IOException {
     client.close();
-    server.stop();
+    if (server != null) {
+      server.stop();
+    }
   }
 
   @Test
@@ -539,6 +554,9 @@ public class TestSimpleClient {
       boolean noreply = false;
       ResponseCode code = client.touch((key + i).getBytes(), expire, noreply);
       assertTrue(code == ResponseCode.NOT_FOUND);
+      if ((i) % 10000 == 0) {
+        logger.info("{}", i);
+      }
     }
     long end = System.currentTimeMillis();
     logger.info("TOUCH Time={}ms", end - start);
