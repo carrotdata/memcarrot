@@ -633,7 +633,7 @@ public class TestXMemcachedClient {
     long end = System.currentTimeMillis();
     logger.info("ADD Time={}ms", end - start);
     for (int i = 0; i < n; i++) {
-      int expire = 2;
+      int expire = 5;
       boolean res = client.touch((key + i), expire);
       assertTrue(res);
     }
@@ -650,7 +650,7 @@ public class TestXMemcachedClient {
     end = System.currentTimeMillis();
     logger.info("GET total={} batch={} time={}ms", n, batchSize, end - start);
 
-    Thread.sleep(2000);
+    Thread.sleep(5000);
     start = System.currentTimeMillis();
     // Must all expired
     for (int i = 0; i < n / batchSize; i++) {

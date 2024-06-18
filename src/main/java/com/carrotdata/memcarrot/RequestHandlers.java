@@ -18,12 +18,14 @@ import java.nio.channels.SocketChannel;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.LockSupport;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.carrotdata.cache.support.Memcached;
 import com.carrotdata.cache.util.UnsafeAccess;
+import com.carrotdata.memcarrot.commands.MemcachedCommand;
 
 public class RequestHandlers {
 
@@ -209,7 +211,7 @@ class WorkThread extends Thread {
   /** Busy loop with expo-linear back off */
   private SelectionKey waitForKey() {
     long counter = 0;
-    long timeout = 0;
+    long timeout = 50000;
     SelectionKey key = null;
     // wait for next task
     while ((key = nextKey.getAndSet(null)) == null) {
@@ -221,13 +223,7 @@ class WorkThread extends Thread {
         counter++;
         Thread.onSpinWait();
       } else {
-        timeout += 1;
-        if (timeout > 10) timeout = 10;
-        try {
-          Thread.sleep(timeout);
-        } catch (InterruptedException e) {
-          return null;
-        }
+        LockSupport.parkNanos(timeout);
       }
     }
     return key;
@@ -259,14 +255,15 @@ class WorkThread extends Thread {
       out.clear();
 
       try {
-        long startCounter = 0; // System.nanoTime();
+        long startCounter = 0; 
         long max_wait_ns = 500_000_000; // 500ms - FIXME - make it configurable
-
+        int inputSize  = 0;
         outer: while (true) {
           int num = channel.read(in);
           if (num < 0) {
             // End-Of-Stream - socket was closed, cancel the key
             key.cancel();
+            channel.close();
             break;
           } else if (num == 0) {
             if (startCounter == 0) {
@@ -284,20 +281,21 @@ class WorkThread extends Thread {
           }
           startCounter = 0;
           int consumed = 0;
-          int inputSize = in.position();
-
+          inputSize += num;;
+          
           while (consumed < inputSize) {
             // Try to parse
             // Process request using buffer's addresses
-
             int responseLength = CommandProcessor.process(store, in_ptr + consumed,
               inputSize - consumed, out_ptr, bufferSize);
             if (responseLength < 0) {
               // command is incomplete
               // check if we consumed something, then compact input buffer
               if (consumed > 0) {
-                in.position(consumed);
-                in.compact();
+                // compact input buffer
+                UnsafeAccess.copy(in_ptr + consumed, in_ptr, inputSize - consumed);
+                inputSize -= consumed;
+                in.position(inputSize);
               }
               continue outer;
             }
@@ -311,7 +309,6 @@ class WorkThread extends Thread {
               }
             }
             consumed += CommandProcessor.getLastExecutedCommand().inputConsumed();
-
           }
           break;
         }

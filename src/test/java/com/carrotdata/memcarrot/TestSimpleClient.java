@@ -359,6 +359,7 @@ public class TestSimpleClient {
       long expire = expireIn(100);
       boolean noreply = true;
       ResponseCode code = client.set((key + i).getBytes(), bvalue, flags, expire, noreply);
+      
       assertTrue(code == null);
     }
     long end = System.currentTimeMillis();
