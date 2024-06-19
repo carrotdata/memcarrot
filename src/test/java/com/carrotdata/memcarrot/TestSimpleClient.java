@@ -35,7 +35,8 @@ public class TestSimpleClient {
 
   MemcarrotServer server;
   SimpleClient client;
-
+  //String configFilePath = "/Users/vrodionov/Development/carrotdata/memcarrot/conf/memcarrot.cfg";
+  
   @Before
   public void setUp() throws IOException {
     String host;
@@ -48,6 +49,7 @@ public class TestSimpleClient {
     }
     if (host == null) {
       Cache c = TestUtils.createCache(800_000_000, 4_000_000, true, true);
+      //Cache c = TestUtils.createCache(configFilePath);
       Memcached m = new Memcached(c);
       server = new MemcarrotServer();
       server.setMemachedSupport(m);
@@ -379,6 +381,8 @@ public class TestSimpleClient {
     long getend = System.currentTimeMillis();
     logger.info("GET total={} batch={} time={}ms get_time={}", n, batchSize, getend - end,
       getTime / 1_000_000);
+    
+    deleteAll(n);
 
   }
 
@@ -410,6 +414,7 @@ public class TestSimpleClient {
     }
     long getend = System.currentTimeMillis();
     logger.info("GET total={} batch={} time={}ms", n, batchSize, getend - end);
+    deleteAll(n);
 
   }
 
@@ -454,6 +459,7 @@ public class TestSimpleClient {
     }
     long getend = System.currentTimeMillis();
     logger.info("GET total={} batch={} time={}ms", n, batchSize, getend - start);
+    deleteAll(n);
 
   }
 
@@ -499,6 +505,7 @@ public class TestSimpleClient {
     }
     long getend = System.currentTimeMillis();
     logger.info("GET total={} batch={} time={}ms", n, batchSize, getend - start);
+    deleteAll(n);
 
   }
 
@@ -540,6 +547,7 @@ public class TestSimpleClient {
     }
     long getend = System.currentTimeMillis();
     logger.info("GET total={} batch={} time={}ms", n, batchSize, getend - end);
+    deleteAll(n);
 
   }
 
@@ -573,7 +581,7 @@ public class TestSimpleClient {
     logger.info("ADD Time={}ms", start - end);
 
     for (int i = 0; i < n; i++) {
-      long expire = expireIn(10);
+      long expire = expireIn(5);
       boolean noreply = true;
       ResponseCode code = client.touch((key + i).getBytes(), expire, noreply);
       assertTrue(code == null);
@@ -592,7 +600,7 @@ public class TestSimpleClient {
     long getend = System.currentTimeMillis();
     logger.info("GET total={} batch={} time={}ms", n, batchSize, getend - end);
 
-    Thread.sleep(10000);
+    Thread.sleep(5000);
     start = System.currentTimeMillis();
     // All must expire
     for (int i = 0; i < n / batchSize; i++) {
@@ -641,6 +649,8 @@ public class TestSimpleClient {
     }
     start = System.currentTimeMillis();
     logger.info("GET total={} batch={} time={}ms", n, batchSize, start - end);
+    deleteAll(n);
+
   }
 
   @Test
@@ -685,6 +695,7 @@ public class TestSimpleClient {
     }
     long getend = System.currentTimeMillis();
     logger.info("GET total={} batch={} time={}ms", n, batchSize, getend - end);
+    deleteAll(n);
 
   }
 
@@ -714,6 +725,8 @@ public class TestSimpleClient {
     assertTrue(res instanceof ResponseCode);
     assertTrue(((ResponseCode) res) == ResponseCode.CLIENT_ERROR);
 
+    client.delete(key.getBytes(), true);
+    
     int n = 1_000_000;
     for (int i = 0; i < n; i++) {
       boolean noreply = true;
@@ -748,6 +761,7 @@ public class TestSimpleClient {
     }
     start = System.currentTimeMillis();
     logger.info("INCR Time={}ms", start - end);
+    deleteAll(n);
 
   }
 
@@ -776,6 +790,8 @@ public class TestSimpleClient {
     res = client.decr(key.getBytes(), -1, false);
     assertTrue(res instanceof ResponseCode);
     assertTrue(((ResponseCode) res) == ResponseCode.CLIENT_ERROR);
+
+    client.delete(key.getBytes(), true);
 
     int n = 1_000_000;
     for (int i = 0; i < n; i++) {
@@ -811,6 +827,8 @@ public class TestSimpleClient {
     }
     start = System.currentTimeMillis();
     logger.info("DECR Time={}ms", start - end);
+    deleteAll(n);
+
   }
 
   @Test
@@ -903,6 +921,7 @@ public class TestSimpleClient {
     }
     getend = System.currentTimeMillis();
     logger.info("GET total={} batch={} time={}ms", n, batchSize, getend - end);
+    deleteAll(n);
 
   }
 
@@ -920,5 +939,15 @@ public class TestSimpleClient {
       return sec;
     }
     return System.currentTimeMillis() / 1000 + sec;
+  }
+  
+  private void deleteAll(int n) throws IOException {
+    long start = System.currentTimeMillis();
+    boolean noreply = true;
+    for (int i = 0; i < n; i++) {
+      client.delete(("KEY:" + i).getBytes(), noreply);
+    }
+    long end = System.currentTimeMillis();
+    logger.info("DELETE {} in {} ms", n, end - start);
   }
 }

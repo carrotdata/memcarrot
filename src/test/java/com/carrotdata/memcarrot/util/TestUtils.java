@@ -38,6 +38,7 @@ import com.carrotdata.cache.index.CompactBaseWithExpireIndexFormat;
 import com.carrotdata.cache.io.Segment;
 import com.carrotdata.cache.util.CacheConfig;
 import com.carrotdata.cache.util.UnsafeAccess;
+import com.carrotdata.memcarrot.MemcarrotConf;
 
 /**
  * Utility methods for unit tests
@@ -59,6 +60,29 @@ public class TestUtils {
     }
   }
 
+  public static Cache createCache(String configPath) throws IOException {
+    MemcarrotConf conf = MemcarrotConf.getConf(configPath);
+    return fromConfig();
+  }
+  
+  private static Cache fromConfig() throws IOException {
+    CacheConfig conf = CacheConfig.getInstance();
+
+    String[] cacheNames = conf.getCacheNames();
+    Cache cache = null;
+    for (String name : cacheNames) {
+      if (!conf.isCacheTLSSupported(name)) {
+        conf.setCacheTLSSupported(name, true);
+      }
+      Cache c = new Cache(name);
+      if (cache != null) {
+        cache.setVictimCache(c);
+      }
+      cache = c;
+    }
+    return cache;
+  }
+  
   /**
    * Creates new byte array and fill it with random data
    * @param size size of an array
