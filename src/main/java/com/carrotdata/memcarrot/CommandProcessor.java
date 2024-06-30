@@ -16,6 +16,7 @@ import org.apache.logging.log4j.Logger;
 
 import com.carrotdata.cache.support.Memcached;
 import com.carrotdata.cache.util.UnsafeAccess;
+import com.carrotdata.cache.util.Utils;
 import com.carrotdata.memcarrot.commands.AbstractMemcachedCommand;
 import com.carrotdata.memcarrot.commands.CommandParser;
 import com.carrotdata.memcarrot.commands.MemcachedCommand;

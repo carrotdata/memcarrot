@@ -61,7 +61,7 @@ public class TestCommandExecution extends TestBase {
     String key = TestUtils.randomString(20);
     String value = TestUtils.randomString(200);
     int flags = 1111;
-    long expire = System.currentTimeMillis() + 1000;
+    long expire = 1000;
     writeStorageCommand(cmd, key, value.getBytes(), flags, expire, 0, false, false, FaultType.NONE,
       inputBuffer);
     int bufSize = inputBuffer.position();
@@ -100,7 +100,7 @@ public class TestCommandExecution extends TestBase {
     String key = TestUtils.randomString(20);
     String value = TestUtils.randomString(200);
     int flags = 1111;
-    long expire = System.currentTimeMillis() + 1000;
+    long expire = 1000;
     writeStorageCommand(cmd, key, value.getBytes(), flags, expire, 0, false, false, FaultType.NONE,
       inputBuffer);
 
@@ -146,7 +146,7 @@ public class TestCommandExecution extends TestBase {
     String key = TestUtils.randomString(20);
     String value = TestUtils.randomString(200);
     int flags = 1111;
-    long expire = System.currentTimeMillis() + 1000;
+    long expire = 1000;
     writeStorageCommand(cmd, key, value.getBytes(), flags, expire, 0, false, false, FaultType.NONE,
       inputBuffer);
 
@@ -178,7 +178,7 @@ public class TestCommandExecution extends TestBase {
     inputBuffer.clear();
     value = TestUtils.randomString(200);
     flags = 1112;
-    expire = System.currentTimeMillis() + 1000;
+    expire = 1000;
     writeStorageCommand(cmd, key, value.getBytes(), flags, expire, 0, false, false, FaultType.NONE,
       inputBuffer);
 
@@ -211,7 +211,7 @@ public class TestCommandExecution extends TestBase {
     String key = TestUtils.randomString(20);
     String value = TestUtils.randomString(200);
     int flags = 1111;
-    long expire = System.currentTimeMillis() + 1000;
+    long expire = 1000;
     writeStorageCommand(cmd, key, value.getBytes(), flags, expire, 0, false, false, FaultType.NONE,
       inputBuffer);
     int bufSize = inputBuffer.position();
@@ -243,7 +243,7 @@ public class TestCommandExecution extends TestBase {
     inputBuffer.clear();
     String value1 = TestUtils.randomString(200);
     flags = 1112;
-    expire = System.currentTimeMillis() + 1000;
+    expire = 1000;
     writeStorageCommand(cmd, key, value1.getBytes(), flags, expire, 0, false, false, FaultType.NONE,
       inputBuffer);
 
@@ -276,7 +276,7 @@ public class TestCommandExecution extends TestBase {
     String key = TestUtils.randomString(20);
     String value = TestUtils.randomString(200);
     int flags = 1111;
-    long expire = System.currentTimeMillis() + 1000;
+    long expire = 1000;
     writeStorageCommand(cmd, key, value.getBytes(), flags, expire, 0, false, false, FaultType.NONE,
       inputBuffer);
     int bufSize = inputBuffer.position();
@@ -307,7 +307,7 @@ public class TestCommandExecution extends TestBase {
     inputBuffer.clear();
     String value1 = TestUtils.randomString(200);
     flags = 1112;
-    expire = System.currentTimeMillis() + 1000;
+    expire = 1000;
     writeStorageCommand(cmd, key, value1.getBytes(), flags, expire, 0, false, false, FaultType.NONE,
       inputBuffer);
     bufSize = inputBuffer.position();
@@ -342,7 +342,7 @@ public class TestCommandExecution extends TestBase {
     byte[] bvalue = value.getBytes();
 
     int flags = 1111;
-    long expire = System.currentTimeMillis() + 1000000;
+    long expire = 1000000;
     writeStorageCommand(cmd, key, value.getBytes(), flags, expire, 0, false, false, FaultType.NONE,
       inputBuffer);
 
@@ -461,7 +461,7 @@ public class TestCommandExecution extends TestBase {
     String key = TestUtils.randomString(20);
     String value = TestUtils.randomString(200);
     int flags = 1111;
-    long expire = System.currentTimeMillis() + 1000000;
+    long expire = 1000000;
     writeStorageCommand(cmd, key, value.getBytes(), flags, expire, 0, false, false, FaultType.NONE,
       inputBuffer);
 
@@ -523,7 +523,7 @@ public class TestCommandExecution extends TestBase {
     String key2 = TestUtils.randomString(20);
     String value2 = TestUtils.randomString(200);
     int flags2 = 1111;
-    long expire2 = System.currentTimeMillis() + 1000000;
+    long expire2 = 1000000;
 
     inputBuffer.clear();
     writeStorageCommand(cmd, key2, value2.getBytes(), flags2, expire2, 0, false, false,
@@ -578,7 +578,7 @@ public class TestCommandExecution extends TestBase {
     String key = TestUtils.randomString(20);
     String value = TestUtils.randomString(200);
     int flags = 1111;
-    long expire = System.currentTimeMillis() + 1000000;
+    long expire = 1000000;
     writeStorageCommand(cmd, key, value.getBytes(), flags, expire, 0, false, false, FaultType.NONE,
       inputBuffer);
     int bufSize = inputBuffer.position();
@@ -642,7 +642,7 @@ public class TestCommandExecution extends TestBase {
     String key2 = TestUtils.randomString(20);
     String value2 = TestUtils.randomString(200);
     int flags2 = 1111;
-    long expire2 = System.currentTimeMillis() + 1000000;
+    long expire2 = 1000000;
 
     inputBuffer.clear();
     writeStorageCommand(cmd, key2, value2.getBytes(), flags2, expire2, 0, false, false,
@@ -698,7 +698,7 @@ public class TestCommandExecution extends TestBase {
     String key = TestUtils.randomString(20);
     String value = TestUtils.randomString(200);
     int flags = 1111;
-    long expire = System.currentTimeMillis() + 1000000;
+    long expire = 1000000;
     writeStorageCommand(cmd, key, value.getBytes(), flags, expire, 0, false, false, FaultType.NONE,
       inputBuffer);
     int bufSize = inputBuffer.position();
@@ -734,7 +734,8 @@ public class TestCommandExecution extends TestBase {
     Cache cache = support.getCache();
     byte[] bkey = key.getBytes();
     long exptime = cache.getExpire(bkey, 0, bkey.length);
-    assertTrue(Math.abs(newExpire - exptime) <= 1000);
+    exptime = (exptime - System.currentTimeMillis()) / 1000;
+    assertTrue(Math.abs(newExpire - exptime) <= 0.01 * exptime);
 
     // get 3 keys, 2 - nonexistent
     inputBuffer.clear();
@@ -757,14 +758,15 @@ public class TestCommandExecution extends TestBase {
     assertEquals(value, new String(kr.record.value, kr.record.offset, kr.record.size));
     assertEquals(flags, kr.record.flags);
     exptime = cache.getExpire(bkey, 0, bkey.length);
+    exptime = (exptime - System.currentTimeMillis()) / 1000;
 
-    assertTrue(Math.abs(newExpire - exptime) <= 1000);
+    assertTrue(Math.abs(newExpire - exptime) <= 0.01 * exptime);
 
     // Add one more key - key2
     String key2 = TestUtils.randomString(20);
     String value2 = TestUtils.randomString(200);
     int flags2 = 1111;
-    long expire2 = System.currentTimeMillis() + 1000000;
+    long expire2 = 1000000;
 
     inputBuffer.clear();
     writeStorageCommand(cmd, key2, value2.getBytes(), flags2, expire2, 0, false, false,
@@ -802,7 +804,9 @@ public class TestCommandExecution extends TestBase {
     assertEquals(flags, kr.record.flags);
 
     exptime = cache.getExpire(bkey, 0, bkey.length);
-    assertTrue(Math.abs(newExpire - exptime) <= 1000);
+    exptime = (exptime - System.currentTimeMillis()) / 1000;
+
+    assertTrue(Math.abs(newExpire - exptime) <= 0.01 * exptime);
 
     kr = values.get(1);
 
@@ -811,7 +815,8 @@ public class TestCommandExecution extends TestBase {
     assertEquals(flags2, kr.record.flags);
     bkey = key2.getBytes();
     exptime = cache.getExpire(bkey, 0, bkey.length);
-    assertTrue(Math.abs(newExpire - exptime) <= 1000);
+    exptime = (exptime - System.currentTimeMillis()) / 1000;
+    assertTrue(Math.abs(newExpire - exptime) <= 0.01 * exptime);
   }
 
   @Test
@@ -822,7 +827,7 @@ public class TestCommandExecution extends TestBase {
     String key = TestUtils.randomString(20);
     String value = TestUtils.randomString(200);
     int flags = 1111;
-    long expire = System.currentTimeMillis() + 1000000;
+    long expire = 1000000;
     writeStorageCommand(cmd, key, value.getBytes(), flags, expire, 0, false, false, FaultType.NONE,
       inputBuffer);
     int bufSize = inputBuffer.position();
@@ -861,7 +866,8 @@ public class TestCommandExecution extends TestBase {
     Cache cache = support.getCache();
     byte[] bkey = key.getBytes();
     long exptime = cache.getExpire(bkey, 0, bkey.length);
-    assertTrue(Math.abs(newExpire - exptime) <= 1000);
+    exptime = (exptime - System.currentTimeMillis()) / 1000;
+    assertTrue(Math.abs(newExpire - exptime) <= 0.01 * exptime);
 
     // get 3 keys, 2 - nonexistent
     inputBuffer.clear();
@@ -886,15 +892,17 @@ public class TestCommandExecution extends TestBase {
     assertEquals(value, new String(kr.record.value, kr.record.offset, kr.record.size));
     assertEquals(flags, kr.record.flags);
     exptime = cache.getExpire(bkey, 0, bkey.length);
+    
+    exptime = (exptime - System.currentTimeMillis()) / 1000;
 
-    assertTrue(Math.abs(newExpire - exptime) <= 1000);
+    assertTrue(Math.abs(newExpire - exptime) <= 0.01 * exptime);
     assertTrue(kr.record.cas != 0);
 
     // Add one more key - key2
     String key2 = TestUtils.randomString(20);
     String value2 = TestUtils.randomString(200);
     int flags2 = 1111;
-    long expire2 = System.currentTimeMillis() + 1000000;
+    long expire2 = 1000000;
 
     inputBuffer.clear();
     writeStorageCommand(cmd, key2, value2.getBytes(), flags2, expire2, 0, false, false,
@@ -932,7 +940,9 @@ public class TestCommandExecution extends TestBase {
     assertEquals(flags, kr.record.flags);
 
     exptime = cache.getExpire(bkey, 0, bkey.length);
-    assertTrue(Math.abs(newExpire - exptime) <= 1000);
+    exptime = (exptime - System.currentTimeMillis()) / 1000;
+
+    assertTrue(Math.abs(newExpire - exptime) <= 0.01 * exptime);
     assertTrue(kr.record.cas != 0);
 
     kr = values.get(1);
@@ -942,7 +952,9 @@ public class TestCommandExecution extends TestBase {
     assertEquals(flags2, kr.record.flags);
     bkey = key2.getBytes();
     exptime = cache.getExpire(bkey, 0, bkey.length);
-    assertTrue(Math.abs(newExpire - exptime) <= 1000);
+    exptime = (exptime - System.currentTimeMillis()) / 1000;
+
+    assertTrue(Math.abs(newExpire - exptime) <= 0.01 * exptime);
     assertTrue(kr.record.cas != 0);
 
   }
@@ -954,7 +966,7 @@ public class TestCommandExecution extends TestBase {
     String key = TestUtils.randomString(20);
     String value = TestUtils.randomString(200);
     int flags = 1111;
-    long expire = System.currentTimeMillis() + 1000000;
+    long expire = 1000000;
     writeStorageCommand(cmd, key, value.getBytes(), flags, expire, 0, false, false, FaultType.NONE,
       inputBuffer);
     int bufSize = inputBuffer.position();
@@ -986,7 +998,8 @@ public class TestCommandExecution extends TestBase {
     Cache cache = support.getCache();
     byte[] bkey = key.getBytes();
     long exptime = cache.getExpire(bkey, 0, bkey.length);
-    assertTrue(Math.abs(newExpire - exptime) <= 1000);
+    exptime = (exptime - System.currentTimeMillis()) / 1000;
+    assertTrue(Math.abs(newExpire - exptime) <= 0.01 * exptime);
 
     // TOUCH non-existent key
     inputBuffer.clear();
@@ -1013,7 +1026,7 @@ public class TestCommandExecution extends TestBase {
     String key = TestUtils.randomString(20);
     String value = TestUtils.randomString(200);
     int flags = 1111;
-    long expire = System.currentTimeMillis() + 1000;
+    long expire = 1000;
 
     inputBuffer.clear();
     writeDeleteCommand(key, false, FaultType.NONE, inputBuffer);
@@ -1065,7 +1078,7 @@ public class TestCommandExecution extends TestBase {
     String key = TestUtils.randomString(20);
     String value = "10";
     int flags = 1111;
-    long expire = System.currentTimeMillis() + 1000;
+    long expire = 1000;
 
     inputBuffer.clear();
     writeIncrCommand(key, 10, false, FaultType.NONE, inputBuffer);
@@ -1152,7 +1165,7 @@ public class TestCommandExecution extends TestBase {
     String key = TestUtils.randomString(20);
     String value = "10";
     int flags = 1111;
-    long expire = System.currentTimeMillis() + 1000;
+    long expire = 1000;
 
     inputBuffer.clear();
     writeDecrCommand(key, 10, false, FaultType.NONE, inputBuffer);

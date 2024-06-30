@@ -31,27 +31,32 @@ public class SHUTDOWN implements MemcachedCommand {
   @Override
   public boolean parse(long inBuffer, int bufferSize) throws IllegalFormatException {
     if (bufferSize != 2) {
-      throw new IllegalFormatException("malformed request");
+      return false;
     }
     return true;
   }
 
   @Override
   public int execute(Memcached support, long outBuffer, int outBufferSize) {
+    log.info("Shutting down the server ...");
+    long start = System.currentTimeMillis();
     int size = 0;
     String msg = null;
     try {
       support.getCache().shutdown();
-      msg = support.getCache().shutdownStatusMsg();
+      log.info("Done in {}ms", System.currentTimeMillis() - start);
+      System.exit(0);
     } catch (IOException e) {
       msg = "SERVER_ERROR " + e.getMessage() + "\r\n";
       // TODO log the error
       log.error(e);
+      size = msg.length();
+      byte[] buf = msg.getBytes();
+      UnsafeAccess.copy(buf, 0, outBuffer, buf.length);
+      return size;
     }
-    size = msg.length();
-    byte[] buf = msg.getBytes();
-    UnsafeAccess.copy(buf, 0, outBuffer, buf.length);
-    return size;
+    // Unreachable code
+    return 0;
   }
 
   @Override

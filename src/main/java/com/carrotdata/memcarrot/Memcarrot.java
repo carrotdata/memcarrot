@@ -35,13 +35,10 @@ public class Memcarrot {
   }
 
   private static void stopServer(String configFile) throws IOException {
-    log.info("Stopping Memcarrot server ...");
     MemcarrotConf conf = MemcarrotConf.getConf(configFile);
     String node = conf.getNode();
     SimpleClient client = new SimpleClient(node);
     client.shutdown();
-    // shutdown
-    log.info("Shutdown finished.");
   }
 
   private static void startServer(String configFile) throws IOException {

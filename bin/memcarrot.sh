@@ -1,22 +1,23 @@
 #!/usr/bin/env bash
 
-START_HOME=$PWD
-# within instruction $(dirname "$(realpath "$0")") you can start server from any directory. No just from bin
-# for example, you can start app by root from cron. like: /bin/carrot/bin/carrot-server.sh reboot
-# it is important if you use auto-start script in case of server reboot.
-#START_HOME=$(dirname "$(realpath "$0")")
-echo Memcarrot server home directory is "${START_HOME}"
+# Determine the directory of the script
+SCRIPT_DIR=$(dirname "$(realpath "$0")")
 
-cd "${START_HOME}" || exit
+# Set the application directory to the parent directory of the script
+APP_DIR=$(dirname "$SCRIPT_DIR")
 
-. ./setenv.sh
+echo "Memcarrot server home directory is ${APP_DIR}"
 
-CPATH="${START_HOME}/../conf:${START_HOME}/../lib/${MEMCARROT_RELEASE}"
+cd "${APP_DIR}" || exit
 
-export JVM_OPTS="--add-opens java.base/jdk.internal.misc=ALL-UNNAMED --add-opens java.base/java.nio=ALL-UNNAMED \
-	--add-opens java.base/java.security=ALL-UNNAMED --add-opens jdk.unsupported/sun.misc=ALL-UNNAMED \
-	--add-opens java.base/sun.security.action=ALL-UNNAMED --add-opens jdk.naming.rmi/com.sun.jndi.rmi.registry=ALL-UNNAMED \
-	--add-opens java.base/sun.net=ALL-UNNAMED --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED -cp .:${CPATH} ${MEMCARROT_APP_OPTS}"
+. ./bin/setenv.sh
+
+CPATH="${APP_DIR}/conf:${APP_DIR}/lib/${MEMCARROT_RELEASE}"
+
+export JVM_OPTS="-Xmx${MAX_HEAP_SIZE} --add-opens java.base/jdk.internal.misc=ALL-UNNAMED --add-opens java.base/java.nio=ALL-UNNAMED \
+        --add-opens java.base/java.security=ALL-UNNAMED --add-opens jdk.unsupported/sun.misc=ALL-UNNAMED \
+        --add-opens java.base/sun.security.action=ALL-UNNAMED --add-opens jdk.naming.rmi/com.sun.jndi.rmi.registry=ALL-UNNAMED \
+        --add-opens java.base/sun.net=ALL-UNNAMED --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED -cp .:${CPATH} ${MEMCARROT_APP_OPTS}"
 
 #===== find pid =====
 pid() {
@@ -27,15 +28,15 @@ pid() {
 start() {
   PID=$(pid)
   if [ ! -z "${PID}" ]; then
-    echo Server address and port number in use PID="${PID}"
+    echo "Server address and port number in use PID=${PID}"
     exit 1
   fi
 
   exec_cmd="${JAVA_HOME}/bin/java ${JVM_OPTS} com.carrotdata.memcarrot.Memcarrot ${MEMCARROT_APPS_PARAMS} start"
-  echo "${exec_cmd}"
+  #echo "${exec_cmd}"
   mkdir -p logs
   nohup ${exec_cmd} >>logs/memcarrot-stdout.log &
-  echo "Memcarrot ${MEMCARROT_VERSION} instance is staring on PID ${PID}, please wait..."
+  echo "Memcarrot ${MEMCARROT_VERSION} instance is starting, please wait..."
 
   sleep 1
 
@@ -51,55 +52,34 @@ start() {
 
 #==== stop Memcarrot ====
 stop() {
-  if_continue=$1
-
   PID=$(pid)
   if [ ! -z "${PID}" ]; then
-    exec_cmd="${JAVA_HOME}/bin/java ${JVM_OPTS} com.carrotdata.memcarrot.Memcarrot ${MEMCARROT_APPS_PARAMS} stop"   
-    #nohup ${exec_cmd} &
-    ${exec_cmd}	
-    #echo "Memcarrot instance is terminating on PID ${PID}, please wait..."
-    #sleep 5
+    exec_cmd="${JAVA_HOME}/bin/java ${JVM_OPTS} com.carrotdata.memcarrot.Memcarrot ${MEMCARROT_APPS_PARAMS} stop"
+    nohup ${exec_cmd} >> /dev/null &
+    echo "Memcarrot instance is terminating on PID ${PID}, please wait..."
+
+    # Wait for the process to exit
+    while [ -n "$(pid)" ]; do
+      sleep 1
+    done
+
+    echo "Memcarrot instance has exited."
+  else
+    echo "No Memcarrot instance is running."
   fi
-
-#  sleep 1
-
-#  PID=$(pid)
-#  if [ ! -z "${PID}" ]; then
-#    echo "Memcarrot server still running and can't be stopped for some reason. PID ${PID}"
-#  else
-#    echo "No instances of Memcarrot server are runnning"
-#  fi
-
-#  if [ -z "${if_continue}" ]; then
-#    exit 0
-#  fi
 }
 
-#===== reboot =====
-reboot() {
-  stop 1
-  sleep 2
-  start
-}
+# Add the call to start or stop functions based on arguments
+case "$1" in
+  start)
+    start
+    ;;
+  stop)
+    stop
+    ;;
+  *)
+    echo "Usage: $0 {start|stop}"
+    exit 1
+    ;;
+esac
 
-#===== usage =====
-usage() {
-  echo
-  echo Usage:
-  echo \$\> \./memcarrot.sh [start]\|[stop]
-  echo
-}
-
-#==== main =====
-${JAVA_HOME}/bin/java -version
-cmd=$1
-if [ "${cmd}" == "start" ]; then
-  start
-elif [ "${cmd}" == "stop" ]; then
-  stop
-#elif [ "${cmd}" == "reboot" ]; then
-#  reboot
-else
-  usage
-fi
