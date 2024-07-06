@@ -14,6 +14,7 @@ package com.carrotdata.memcarrot;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.StandardSocketOptions;
+import java.nio.channels.CancelledKeyException;
 import java.nio.channels.ClosedSelectorException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
@@ -221,6 +222,7 @@ public class MemcarrotServer {
           client.setOption(StandardSocketOptions.TCP_NODELAY, true);
           client.setOption(StandardSocketOptions.SO_SNDBUF, 64 * 1024);
           client.setOption(StandardSocketOptions.SO_RCVBUF, 64 * 1024);
+          client.setOption(StandardSocketOptions.SO_REUSEADDR, true);
           // Operation-set bit for read operations
           client.register(selector, SelectionKey.OP_READ);
           log.debug("[{}] Connection Accepted: {}]", Thread.currentThread().getName(),
@@ -234,7 +236,14 @@ public class MemcarrotServer {
         }
       } catch (IOException e) {
         log.error(e.getMessage());
-        key.cancel();
+        try {
+          key.channel().close();
+        } catch (IOException ee) {
+          //FIXME: is this correct?
+        }
+        //key.cancel();
+      } catch (CancelledKeyException eee) {
+        // swallow
       }
     };
     // Infinite loop..
