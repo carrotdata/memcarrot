@@ -35,7 +35,8 @@ public class TestSimpleClient {
 
   MemcarrotServer server;
   SimpleClient client;
-  //String configFilePath = "/Users/vrodionov/Development/carrotdata/memcarrot/conf/memcarrot.cfg";
+  
+  static long startTime = System.nanoTime();
   
   @Before
   public void setUp() throws IOException {
@@ -69,6 +70,10 @@ public class TestSimpleClient {
     }
   }
 
+  private String getIdString() {
+    return startTime + "." + Thread.currentThread().getId() + "."; 
+  }
+  
   @Test
   public void testSetGet() throws IOException {
     String key = TestUtils.randomString(20);
@@ -351,7 +356,7 @@ public class TestSimpleClient {
 
   @Test
   public void testSetGetMulti() throws IOException {
-    String key = "KEY:";
+    String key = getIdString();
     String value = TestUtils.randomString(200);
     byte[] bvalue = value.getBytes();
     long start = System.currentTimeMillis();
@@ -388,7 +393,7 @@ public class TestSimpleClient {
 
   @Test
   public void testAddGetMulti() throws IOException {
-    String key = "KEY:";
+    String key = getIdString();
     String value = TestUtils.randomString(200);
     byte[] bvalue = value.getBytes();
     long start = System.currentTimeMillis();
@@ -420,7 +425,7 @@ public class TestSimpleClient {
 
   @Test
   public void testAppendGetMulti() throws IOException {
-    String key = "KEY:";
+    String key = getIdString();
     String value = TestUtils.randomString(200);
     String value1 = TestUtils.randomString(200);
     byte[] bvalue = value.getBytes();
@@ -465,7 +470,7 @@ public class TestSimpleClient {
 
   @Test
   public void testPrependGetMulti() throws IOException {
-    String key = "KEY:";
+    String key = getIdString();
     String value = TestUtils.randomString(20);
     String value1 = TestUtils.randomString(20);
     byte[] bvalue = value.getBytes();
@@ -511,7 +516,7 @@ public class TestSimpleClient {
 
   @Test
   public void testReplaceGetMulti() throws IOException {
-    String key = "KEY:";
+    String key = getIdString();
     String value = TestUtils.randomString(200);
     byte[] bvalue = value.getBytes();
     long start = System.currentTimeMillis();
@@ -553,7 +558,7 @@ public class TestSimpleClient {
 
   @Test
   public void testTouchGetMulti() throws IOException, InterruptedException {
-    String key = "KEY:";
+    String key = getIdString();
     String value = TestUtils.randomString(200);
     byte[] bvalue = value.getBytes();
     long start = System.currentTimeMillis();
@@ -655,7 +660,7 @@ public class TestSimpleClient {
 
   @Test
   public void testDeleteGetMulti() throws IOException {
-    String key = "KEY:";
+    String key = getIdString();
     String value = TestUtils.randomString(20);
     byte[] bvalue = value.getBytes();
     long start = System.currentTimeMillis();
@@ -701,7 +706,7 @@ public class TestSimpleClient {
 
   @Test
   public void testIncrGetMulti() throws IOException {
-    String key = "KEY:";
+    String key = getIdString();
     long start = System.currentTimeMillis();
 
     // Check INCR non-existent key
@@ -767,7 +772,7 @@ public class TestSimpleClient {
 
   @Test
   public void testDecrGetMulti() throws IOException {
-    String key = "KEY:";
+    String key = getIdString();
     long start = System.currentTimeMillis();
 
     // Check DECR non-existent key
@@ -833,7 +838,7 @@ public class TestSimpleClient {
 
   @Test
   public void testCASGMulti() throws IOException {
-    String key = "KEY:";
+    String key = getIdString();
     String value = TestUtils.randomString(200);
     String value1 = TestUtils.randomString(200);
 
@@ -927,8 +932,9 @@ public class TestSimpleClient {
 
   private byte[][] getBatch(int batchNumber, int batchSize) {
     byte[][] batch = new byte[batchSize][];
+    String key = getIdString();
     for (int i = 0; i < batchSize; i++) {
-      batch[i] = ("KEY:" + (batchNumber * batchSize + i)).getBytes();
+      batch[i] = (key + (batchNumber * batchSize + i)).getBytes();
     }
     return batch;
   }
@@ -944,10 +950,72 @@ public class TestSimpleClient {
   private void deleteAll(int n) throws IOException {
     long start = System.currentTimeMillis();
     boolean noreply = true;
+    String key = getIdString();
+
     for (int i = 0; i < n; i++) {
-      client.delete(("KEY:" + i).getBytes(), noreply);
+      client.delete((key + i).getBytes(), noreply);
     }
     long end = System.currentTimeMillis();
     logger.info("DELETE {} in {} ms", n, end - start);
+  }
+  
+  
+  public static void main(String[] args) throws IOException, InterruptedException {
+    
+    TestSimpleClient test = new TestSimpleClient();
+//    test.setUp();
+//    test.testAddGet();
+//    test.tearDown();
+//    test.setUp();
+//    test.testAddGetMulti();
+//    test.tearDown();
+//    test.setUp();
+//    test.testAppendGet();
+//    test.tearDown();
+//    test.setUp();
+//    test.testAppendGetMulti();
+//    test.tearDown();
+//    test.setUp();
+//    test.testCAS();
+//    test.tearDown();
+//    test.setUp();
+//    test.testCASGMulti();
+//    test.tearDown();
+//    test.setUp();
+//    test.testDecrGetMulti();
+//    test.tearDown();
+//    test.setUp();
+//    test.testDeleteGetMulti();
+//    test.tearDown();
+//    test.setUp();
+//    test.testIncrGetMulti();
+//    test.tearDown();
+//    test.setUp();
+//    test.testPrependGet();
+//    test.tearDown();
+//    test.setUp();
+//    test.testPrependGetMulti();
+//    test.tearDown();
+//    test.setUp();
+//    test.testReplaceGet();
+//    test.tearDown();
+//    test.setUp();
+//    test.testSetGat();
+//    test.tearDown();
+//    test.setUp();
+//    test.testSetGats();
+//    test.tearDown();
+//    test.setUp();
+//    test.testSetGet();
+//    test.tearDown();
+//    test.setUp();
+//    test.testSetGetMulti();
+//    test.tearDown();
+//    test.setUp();
+//    test.testSetGets();
+//    test.tearDown();
+    test.setUp();
+    test.testTouchGetMulti();
+    test.tearDown();
   }
 }

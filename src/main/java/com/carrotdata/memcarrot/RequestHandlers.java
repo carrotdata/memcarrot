@@ -248,6 +248,7 @@ class WorkThread extends Thread {
       // We are busy now
       busy = true;
       SocketChannel channel = (SocketChannel) key.channel();
+
       // Read request first
       ByteBuffer in = getInputBuffer();
       ByteBuffer out = getOutputBuffer();
@@ -258,6 +259,8 @@ class WorkThread extends Thread {
         long startCounter = 0; 
         long max_wait_ns = 500_000_000; // 500ms - FIXME - make it configurable
         int inputSize  = 0;
+        log.debug("Thread {} got read some data, remote={}", Thread.currentThread().getName(), channel.getRemoteAddress());
+
         outer: while (true) {
           int num = channel.read(in);
           if (num < 0) {
