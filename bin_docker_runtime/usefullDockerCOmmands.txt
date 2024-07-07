@@ -1,5 +1,0 @@
-docker pull --platform mac/amd64 amazoncorretto:17.0.3-alpine
-
-docker pull --platform linux/arm64 eclipse-temurin:17-jre-focal
-
-docker pull --platform linux/arm64 eclipse-temurin:17-jre
