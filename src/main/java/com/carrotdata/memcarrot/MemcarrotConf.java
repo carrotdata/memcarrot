@@ -29,7 +29,7 @@ public class MemcarrotConf {
   public static final int DEFAULT_THREAD_POOL_SIZE =
       Math.max(1, Runtime.getRuntime().availableProcessors() / 2);
 
-  public static final int DEFAULT_IO_BUFFER_SIZE = 8 * 1024 * 1204;
+  public static final int DEFAULT_IO_BUFFER_SIZE = 4 * 1024 * 1024;
 
   private static MemcarrotConf conf;
   private CacheConfig cacheConfig;

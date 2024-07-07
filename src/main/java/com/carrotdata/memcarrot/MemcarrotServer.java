@@ -298,8 +298,9 @@ public class MemcarrotServer {
         }
       } catch (IOException e) {
         log.error("Error during select: ", e);
+        //FIXME
       } catch (CancelledKeyException e) {
-        log.warn("CancelledKeyException: ", e);
+        // swallow
       }
     }
   }

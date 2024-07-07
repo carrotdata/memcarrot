@@ -194,6 +194,7 @@ class WorkThread extends Thread {
    */
   void nextKey(SelectionKey key) {
     key.attach(new RequestHandlers.Attachment());
+    busy = true;
     while (!nextKey.compareAndSet(null, key)) {
       Thread.onSpinWait();
     }
@@ -214,7 +215,7 @@ class WorkThread extends Thread {
     long timeout = 50000;
     SelectionKey key = null;
     // wait for next task
-    while ((key = nextKey.getAndSet(null)) == null) {
+    while ((key = nextKey.get()) == null) {
       if (Thread.interrupted()) {
         return null;
       }
@@ -246,7 +247,7 @@ class WorkThread extends Thread {
         return;
       }
       // We are busy now
-      busy = true;
+      //busy = true;
       SocketChannel channel = (SocketChannel) key.channel();
 
       // Read request first
@@ -259,7 +260,6 @@ class WorkThread extends Thread {
         long startCounter = 0; 
         long max_wait_ns = 500_000_000; // 500ms - FIXME - make it configurable
         int inputSize  = 0;
-        log.debug("Thread {} got read some data, remote={}", Thread.currentThread().getName(), channel.getRemoteAddress());
 
         outer: while (true) {
           int num = channel.read(in);
