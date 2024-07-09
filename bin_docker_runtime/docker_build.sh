@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
 
 cd ..
-docker build -t memcarrot:latest .
+docker_imagetag=latest
+docker build -t memcarrot:${docker_imagetag} .
