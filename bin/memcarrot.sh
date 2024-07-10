@@ -12,7 +12,7 @@ cd "${APP_DIR}" || exit
 
 . ./bin/setenv.sh
 
-CPATH="${APP_DIR}/conf:${APP_DIR}/${MEMCARROT_RELEASE}"
+CPATH="${APP_DIR}/conf:${APP_DIR}/lib/${MEMCARROT_RELEASE}"
 
 export JVM_OPTS="-Xmx${MAX_HEAP_SIZE} --add-opens java.base/jdk.internal.misc=ALL-UNNAMED --add-opens java.base/java.nio=ALL-UNNAMED \
         --add-opens java.base/java.security=ALL-UNNAMED --add-opens jdk.unsupported/sun.misc=ALL-UNNAMED \
