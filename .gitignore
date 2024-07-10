@@ -33,3 +33,4 @@ replay_pid*
 target/
 logs/
 *.iml
+._*
