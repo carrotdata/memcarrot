@@ -60,7 +60,6 @@ public class SimpleClient {
   public SimpleClient(String host, int port) {
     try {
       conn = openConnection(host, port);
-      System.out.println("host, port, conn : " + host + ", " + port + ", " + conn);
     } catch (IOException e) {
       logger.error(e);
     }
@@ -443,8 +442,6 @@ public class SimpleClient {
 
     SocketChannel channel = conn;
     buf.flip();
-    System.out.println("SocketChannel: " + channel);
-    System.out.println("Write to buffer: " + buf);
     while (buf.hasRemaining()) {
       channel.write(buf);
     }

@@ -9,7 +9,7 @@ docker_image=memcarrot:${docker_imagetag}
 echo ${github_token} | docker login ghcr.io -u $github_user --password-stdin
 
 # Tag your Docker image
-docker tag ${docker_image} ghcr.io/${github_user}/${docker_image}
+docker tag ${docker_image} ghcr.io/carrotdata/${docker_image}
 
 # Push the image to GitHub Container Registry
-docker push ghcr.io/${github_user}/${docker_image}
+docker push ghcr.io/carrotdata/${docker_image}

@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-docker pull ghcr.io/kzheludkov/memcarrot:latest
+docker pull ghcr.io/carrotdata/memcarrot:latest
