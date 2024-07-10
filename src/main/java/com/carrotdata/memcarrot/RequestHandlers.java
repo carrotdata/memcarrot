@@ -25,7 +25,6 @@ import org.apache.logging.log4j.Logger;
 
 import com.carrotdata.cache.support.Memcached;
 import com.carrotdata.cache.util.UnsafeAccess;
-import com.carrotdata.memcarrot.commands.MemcachedCommand;
 
 public class RequestHandlers {
 
@@ -158,7 +157,7 @@ class WorkThread extends Thread {
    * @param store data store
    */
   WorkThread(Memcached store, int bufferSize) {
-    super("oc-pool-thread-" + counter.getAndIncrement());
+    super("mc-pool-thread-" + counter.getAndIncrement());
     this.store = store;
     this.bufferSize = bufferSize;
     setDaemon(true);
@@ -194,9 +193,11 @@ class WorkThread extends Thread {
    */
   void nextKey(SelectionKey key) {
     key.attach(new RequestHandlers.Attachment());
+    busy = true;
     while (!nextKey.compareAndSet(null, key)) {
       Thread.onSpinWait();
     }
+    LockSupport.unpark(this);
   }
 
   /**
@@ -214,7 +215,7 @@ class WorkThread extends Thread {
     long timeout = 50000;
     SelectionKey key = null;
     // wait for next task
-    while ((key = nextKey.getAndSet(null)) == null) {
+    while ((key = nextKey.get()) == null) {
       if (Thread.interrupted()) {
         return null;
       }
@@ -246,8 +247,9 @@ class WorkThread extends Thread {
         return;
       }
       // We are busy now
-      busy = true;
+      //busy = true;
       SocketChannel channel = (SocketChannel) key.channel();
+
       // Read request first
       ByteBuffer in = getInputBuffer();
       ByteBuffer out = getOutputBuffer();
@@ -258,6 +260,7 @@ class WorkThread extends Thread {
         long startCounter = 0; 
         long max_wait_ns = 500_000_000; // 500ms - FIXME - make it configurable
         int inputSize  = 0;
+
         outer: while (true) {
           int num = channel.read(in);
           if (num < 0) {
