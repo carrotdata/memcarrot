@@ -25,7 +25,6 @@ import org.apache.logging.log4j.Logger;
 
 import com.carrotdata.cache.support.Memcached;
 import com.carrotdata.cache.util.UnsafeAccess;
-import com.carrotdata.memcarrot.commands.MemcachedCommand;
 
 public class RequestHandlers {
 
@@ -158,7 +157,7 @@ class WorkThread extends Thread {
    * @param store data store
    */
   WorkThread(Memcached store, int bufferSize) {
-    super("oc-pool-thread-" + counter.getAndIncrement());
+    super("mc-pool-thread-" + counter.getAndIncrement());
     this.store = store;
     this.bufferSize = bufferSize;
     setDaemon(true);
@@ -198,6 +197,7 @@ class WorkThread extends Thread {
     while (!nextKey.compareAndSet(null, key)) {
       Thread.onSpinWait();
     }
+    LockSupport.unpark(this);
   }
 
   /**
