@@ -23,6 +23,8 @@ public class MemcarrotConf {
   public static final String CONF_SERVER_ADDRESS = "memcarrot.server-address";
   public static final String CONF_THREAD_POOL_SIZE = "memcarrot.workers-pool-size";
   public static final String CONF_IO_BUFFER_SIZE = "memcarrot.io-buffer-size";
+  public static final String CONF_SND_RCV_BUFFER_SIZE = "memcarrot.tcp-buffer-size";
+  
 
   public static final int DEFAULT_SERVER_PORT = 11211;
   public static final String DEFAULT_SERVER_ADDRESS = "127.0.0.1";
@@ -30,6 +32,7 @@ public class MemcarrotConf {
       Math.max(1, Runtime.getRuntime().availableProcessors() / 2);
 
   public static final int DEFAULT_IO_BUFFER_SIZE = 4 * 1024 * 1024;
+  public static final int DEFAULT_SNDRCV_BUFFER_SIZE = 32 * 1024;
 
   private static MemcarrotConf conf;
   private CacheConfig cacheConfig;
@@ -105,6 +108,24 @@ public class MemcarrotConf {
     return address;
   }
 
+  /**
+   * Sets TCP send/receive buffer sizes
+   * @param size
+   */
+  public void setSndRcvBufferSize(int size) {
+    Properties props = this.cacheConfig.getProperties();
+    props.setProperty(CONF_SND_RCV_BUFFER_SIZE, Integer.toString(size));
+  }
+
+  /**
+   * Get TCP send-receive buffer size
+   * @return size
+   */
+  public int getSndRcvBufferSize() {
+    Properties props = this.cacheConfig.getProperties();
+    Integer size = (Integer) props.getOrDefault(CONF_SND_RCV_BUFFER_SIZE, DEFAULT_SNDRCV_BUFFER_SIZE);
+    return size;
+  }
   /**
    * Set server address
    * @param address

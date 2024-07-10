@@ -21,7 +21,6 @@ import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.Iterator;
-import java.util.function.Consumer;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -55,6 +54,11 @@ public class MemcarrotServer {
    * Buffer size
    */
   int bufferSize;
+  
+  /**
+   * TCP Send/Receive buffer size
+   */
+  int tcpSndRcvBufferSize;
 
   /**
    * Selector
@@ -85,6 +89,8 @@ public class MemcarrotServer {
     this.port = port;
     this.host = host;
     this.bufferSize = MemcarrotConf.getConf().getIOBufferSize();
+    this.tcpSndRcvBufferSize = MemcarrotConf.getConf().getSndRcvBufferSize();
+
   }
 
   public MemcarrotServer() throws IOException {
@@ -92,12 +98,15 @@ public class MemcarrotServer {
     this.port = config.getServerPort();
     this.host = config.getServerAddress();
     this.bufferSize = config.getIOBufferSize();
+    this.tcpSndRcvBufferSize = MemcarrotConf.getConf().getSndRcvBufferSize();
+
   }
 
   public MemcarrotServer(MemcarrotConf config) throws IOException {
     this.port = config.getServerPort();
     this.host = config.getServerAddress();
     this.bufferSize = config.getIOBufferSize();
+    this.tcpSndRcvBufferSize = config.getSndRcvBufferSize();
   }
 
   /**
@@ -310,8 +319,8 @@ public class MemcarrotServer {
     SocketChannel client = serverSocketChannel.accept();
     client.configureBlocking(false);
     client.setOption(StandardSocketOptions.TCP_NODELAY, true);
-    client.setOption(StandardSocketOptions.SO_SNDBUF, 64 * 1024);
-    client.setOption(StandardSocketOptions.SO_RCVBUF, 64 * 1024);
+    client.setOption(StandardSocketOptions.SO_SNDBUF, this.tcpSndRcvBufferSize);
+    client.setOption(StandardSocketOptions.SO_RCVBUF, this.tcpSndRcvBufferSize);
     client.setOption(StandardSocketOptions.SO_REUSEADDR, true);
     client.register(selector, SelectionKey.OP_READ);
     log.debug("[{}] Connection Accepted: remote={}]", Thread.currentThread().getName(),
