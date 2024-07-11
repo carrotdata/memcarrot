@@ -19,11 +19,11 @@ import com.carrotdata.cache.util.CacheConfig;
 /** Class which keeps all the configuration parameters for Memcarrot server */
 public class MemcarrotConf {
 
-  public static final String CONF_SERVER_PORT = "memcarrot.server-port";
-  public static final String CONF_SERVER_ADDRESS = "memcarrot.server-address";
-  public static final String CONF_THREAD_POOL_SIZE = "memcarrot.workers-pool-size";
-  public static final String CONF_IO_BUFFER_SIZE = "memcarrot.io-buffer-size";
-  public static final String CONF_SND_RCV_BUFFER_SIZE = "memcarrot.tcp-buffer-size";
+  public static final String CONF_SERVER_PORT = "server.port";
+  public static final String CONF_SERVER_ADDRESS = "server.address";
+  public static final String CONF_THREAD_POOL_SIZE = "workers.pool.size";
+  public static final String CONF_IO_BUFFER_SIZE = "io.buffer.size";
+  public static final String CONF_SND_RCV_BUFFER_SIZE = "tcp.buffer.size";
   
 
   public static final int DEFAULT_SERVER_PORT = 11211;
@@ -83,9 +83,12 @@ public class MemcarrotConf {
    * @return port
    */
   public int getServerPort() {
-    Properties props = this.cacheConfig.getProperties();
-    String sport =
+    String sport = System.getProperty(CONF_SERVER_PORT);
+    if (sport == null) {
+      Properties props = this.cacheConfig.getProperties();
+      sport =
         (String) props.getOrDefault(CONF_SERVER_PORT, Integer.toString(DEFAULT_SERVER_PORT));
+    }
     return Integer.parseInt(sport);
   }
 
@@ -103,9 +106,12 @@ public class MemcarrotConf {
    * @return address
    */
   public String getServerAddress() {
-    Properties props = this.cacheConfig.getProperties();
-    String address = (String) props.getOrDefault(CONF_SERVER_ADDRESS, DEFAULT_SERVER_ADDRESS);
-    return address;
+    String saddress = System.getProperty(CONF_SERVER_ADDRESS);
+    if (saddress == null) {
+      Properties props = this.cacheConfig.getProperties();
+      saddress = (String) props.getOrDefault(CONF_SERVER_ADDRESS, DEFAULT_SERVER_ADDRESS);
+    }
+    return saddress;
   }
 
   /**
@@ -122,9 +128,13 @@ public class MemcarrotConf {
    * @return size
    */
   public int getSndRcvBufferSize() {
-    Properties props = this.cacheConfig.getProperties();
-    Integer size = (Integer) props.getOrDefault(CONF_SND_RCV_BUFFER_SIZE, DEFAULT_SNDRCV_BUFFER_SIZE);
-    return size;
+    String ssize = System.getProperty(CONF_SND_RCV_BUFFER_SIZE);
+    if (ssize == null) {
+      Properties props = this.cacheConfig.getProperties();
+      ssize = (String) props.getOrDefault(CONF_SND_RCV_BUFFER_SIZE, 
+        Integer.toString(DEFAULT_SNDRCV_BUFFER_SIZE));
+    }
+    return Integer.parseInt(ssize);
   }
   /**
    * Set server address
@@ -140,10 +150,13 @@ public class MemcarrotConf {
    * @return pool size
    */
   public int getThreadPoolSize() {
-    Properties props = this.cacheConfig.getProperties();
-    String sport = (String) props.getOrDefault(CONF_THREAD_POOL_SIZE,
+    String spool = System.getProperty(CONF_THREAD_POOL_SIZE);
+    if (spool == null) {
+      Properties props = this.cacheConfig.getProperties();
+      spool = (String) props.getOrDefault(CONF_THREAD_POOL_SIZE,
       Integer.toString(DEFAULT_THREAD_POOL_SIZE));
-    return Integer.parseInt(sport);
+    }
+    return Integer.parseInt(spool);
   }
 
   /**
@@ -160,9 +173,12 @@ public class MemcarrotConf {
    * @return buffer size
    */
   public int getIOBufferSize() {
-    Properties props = this.cacheConfig.getProperties();
-    String ssize =
+    String ssize = System.getProperty(CONF_IO_BUFFER_SIZE);
+    if (ssize == null) {
+      Properties props = this.cacheConfig.getProperties();
+      ssize =
         (String) props.getOrDefault(CONF_IO_BUFFER_SIZE, Integer.toString(DEFAULT_IO_BUFFER_SIZE));
+    }
     return Integer.parseInt(ssize);
   }
 

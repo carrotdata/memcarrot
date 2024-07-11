@@ -735,7 +735,7 @@ public class TestSimpleClient {
     int n = 1_000_000;
     for (int i = 0; i < n; i++) {
       boolean noreply = true;
-      ResponseCode code = client.add((key + i).getBytes(), "0".getBytes(), 0, 100, noreply);
+      ResponseCode code = client.add((key + i).getBytes(), "0".getBytes(), 0, 1000, noreply);
       assertTrue(code == null);
     }
     long end = System.currentTimeMillis();
@@ -801,7 +801,7 @@ public class TestSimpleClient {
     int n = 1_000_000;
     for (int i = 0; i < n; i++) {
       boolean noreply = true;
-      ResponseCode code = client.add((key + i).getBytes(), "20".getBytes(), 0, 100, noreply);
+      ResponseCode code = client.add((key + i).getBytes(), "20".getBytes(), 0, 1000, noreply);
       assertTrue(code == null);
     }
     long end = System.currentTimeMillis();
