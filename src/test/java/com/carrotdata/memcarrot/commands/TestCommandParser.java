@@ -305,6 +305,7 @@ public class TestCommandParser extends TestBase {
     writeShutdown(FaultType.NONE, inputBuffer);
     MemcachedCommand c = CommandParser.parse(inputPtr, inputBuffer.position());
     assertTrue(c instanceof SHUTDOWN);
+    inputBuffer.clear();
     writeShutdown(FaultType.INCOMPLETE, inputBuffer);
     c = CommandParser.parse(inputPtr, inputBuffer.position());
     assertTrue(c == null);

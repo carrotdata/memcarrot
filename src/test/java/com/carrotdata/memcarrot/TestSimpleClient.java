@@ -101,6 +101,25 @@ public class TestSimpleClient {
   }
 
   @Test
+  public void testInputTooLarge() throws IOException {
+    MemcarrotConf conf = MemcarrotConf.getConf();
+    int max_kv_size = conf.getKeyValueMaxSize();
+    
+    String key = TestUtils.randomString(20);
+    String value = TestUtils.randomString(max_kv_size);
+    byte[] bkey = key.getBytes();
+    byte[] bvalue = value.getBytes();
+
+    int flags = 1;
+    long expire = expireIn(100);
+    boolean noreply = false;
+    ResponseCode code = client.set(bkey, bvalue, flags, expire, noreply);
+    assertTrue(code == ResponseCode.CLIENT_ERROR);
+
+
+  }
+  
+  @Test
   public void testSetGets() throws IOException {
     String key = TestUtils.randomString(20);
     String value = TestUtils.randomString(200);

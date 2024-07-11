@@ -11,6 +11,8 @@
  */
 package com.carrotdata.memcarrot.commands;
 
+import java.nio.BufferOverflowException;
+
 import com.carrotdata.cache.support.Memcached;
 import com.carrotdata.cache.support.Memcached.Record;
 import com.carrotdata.cache.util.UnsafeAccess;
@@ -43,7 +45,12 @@ public class GATS extends GET {
       if (r.value == null) continue;
       int size = r.write(keys[i], keySizes[i], outBuffer + outSize, outBufferSize - outSize, isCAS);
       if (size > outBufferSize - outSize - 5 /* END\r\n */) {
-        break;
+        if (outSize > 0) {
+          // FIXME: Partial return - problem
+          break;
+        } else {
+          throw new BufferOverflowException();
+        }
       }
       outSize += size;
     }

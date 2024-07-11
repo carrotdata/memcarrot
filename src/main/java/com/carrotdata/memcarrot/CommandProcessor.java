@@ -11,6 +11,8 @@
  */
 package com.carrotdata.memcarrot;
 
+import java.nio.BufferOverflowException;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -43,7 +45,7 @@ public class CommandProcessor {
   static int added = 0;
 
   public static int process(Memcached storage, long inputPtr, int inputSize, long outPtr,
-      int outSize) throws IllegalFormatException {
+      int outSize) throws IllegalFormatException, BufferOverflowException {
     try {
 
       // Execute Memcached command

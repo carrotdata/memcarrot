@@ -11,6 +11,8 @@
  */
 package com.carrotdata.memcarrot.commands;
 
+import java.nio.BufferOverflowException;
+
 import com.carrotdata.cache.support.Memcached;
 import com.carrotdata.cache.util.UnsafeAccess;
 import com.carrotdata.memcarrot.support.IllegalFormatException;
@@ -57,7 +59,7 @@ public interface MemcachedCommand {
    * @param bufferSize size
    * @return total bytes written
    */
-  public int execute(Memcached support, long outBuffer, int bufferSize);
+  public int execute(Memcached support, long outBuffer, int bufferSize) throws BufferOverflowException;
 
   public default int nextTokenStart(long ptr, int limit) {
     return Utils.nextTokenStart(ptr, limit);

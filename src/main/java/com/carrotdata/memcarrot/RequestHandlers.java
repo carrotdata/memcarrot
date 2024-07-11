@@ -12,6 +12,7 @@
 package com.carrotdata.memcarrot;
 
 import java.io.IOException;
+import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
@@ -25,6 +26,7 @@ import org.apache.logging.log4j.Logger;
 
 import com.carrotdata.cache.support.Memcached;
 import com.carrotdata.cache.util.UnsafeAccess;
+import com.carrotdata.memcarrot.util.Errors;
 
 public class RequestHandlers {
 
@@ -34,7 +36,7 @@ public class RequestHandlers {
 
   static class Attachment {
     private long accessTime;
-    private boolean inUse = false;
+    private volatile boolean inUse = false;
 
     Attachment() {
       accessTime = System.nanoTime() - epochStartNanos;
@@ -192,7 +194,12 @@ class WorkThread extends Thread {
    * @param key selection key
    */
   void nextKey(SelectionKey key) {
-    key.attach(new RequestHandlers.Attachment());
+    if(key.attachment() ==  null) {
+      key.attach(new RequestHandlers.Attachment());
+    } else {
+      RequestHandlers.Attachment att = (RequestHandlers.Attachment) key.attachment();
+      att.setInUse(true);
+    }
     busy = true;
     while (!nextKey.compareAndSet(null, key)) {
       Thread.onSpinWait();
@@ -262,6 +269,24 @@ class WorkThread extends Thread {
         int inputSize  = 0;
 
         outer: while (true) {
+          // Before read check input size
+          if (inputSize == bufferSize) {
+            // Input is too large
+            out.clear();
+            out.put(Errors.INPUT_TOO_LARGE);
+            out.flip();
+            // send response back
+            while (out.hasRemaining()) {
+              // FIXME: Can we stuck here?
+              channel.write(out);
+            }
+            // We need to close channel
+            // because now we are not able to restore
+            // correct position of the next command
+            key.cancel();
+            channel.close();
+            break;
+          }
           int num = channel.read(in);
           if (num < 0) {
             // End-Of-Stream - socket was closed, cancel the key
@@ -322,6 +347,20 @@ class WorkThread extends Thread {
           log.error("StackTrace: ", e);
         }
         key.cancel();
+      } catch (BufferOverflowException ee) {
+        out.clear();
+        out.put(Errors.OUTPUT_TOO_LARGE);
+        out.flip();
+        // send response back
+        while (out.hasRemaining()) {
+          // FIXME: Can we stuck here?
+          try {
+            channel.write(out);
+          } catch (IOException eee) {
+            key.cancel();
+            // what to do with channel?
+          }
+        }
       } finally {
         // Release selection key - ready for the next request
         release(key);
