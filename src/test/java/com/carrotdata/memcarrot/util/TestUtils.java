@@ -45,7 +45,7 @@ import com.carrotdata.memcarrot.MemcarrotConf;
  */
 public class TestUtils {
 
-  public static Cache createCache(long maxSize, long segmentSize, boolean offheap,
+  public static Cache createCache(long maxSize, long segmentSize, boolean memory,
       boolean withExpireSupport) throws IOException {
 
     Builder b = new Builder("cache");
@@ -53,7 +53,7 @@ public class TestUtils {
     if (withExpireSupport) {
       b.withMainQueueIndexFormat(CompactBaseWithExpireIndexFormat.class.getName());
     }
-    if (offheap) {
+    if (memory) {
       return b.buildMemoryCache();
     } else {
       return b.buildDiskCache();
