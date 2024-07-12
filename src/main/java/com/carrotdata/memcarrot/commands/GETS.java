@@ -11,11 +11,13 @@
  */
 package com.carrotdata.memcarrot.commands;
 
+import java.io.IOException;
 import java.nio.BufferOverflowException;
 
 import com.carrotdata.cache.support.Memcached;
 import com.carrotdata.cache.support.Memcached.Record;
 import com.carrotdata.cache.util.UnsafeAccess;
+import com.carrotdata.memcarrot.CommandProcessor.OutputConsumer;
 
 public class GETS extends GET {
 
@@ -40,7 +42,7 @@ public class GETS extends GET {
   }
 
   @Override
-  public int execute(Memcached support, long outBuffer, int outBufferSize) {
+  public int execute(Memcached support, long outBuffer, int outBufferSize, OutputConsumer consumer) throws IOException {
     int outSize = 0;
     int count = this.keys.length;
     for (int i = 0; i < count; i++) {
@@ -50,7 +52,11 @@ public class GETS extends GET {
       if (size > outBufferSize - outSize - 5 /* END\r\n */) {
         if (outSize > 0) {
           // FIXME: Partial return - problem
-          break;
+          //break;
+          consumer.consume(outSize);
+          outSize = 0;
+          i--;
+          continue;
         } else {
           throw new BufferOverflowException();
         }

@@ -175,7 +175,7 @@ public class SimpleClient {
   }
 
   private List<GetResult> getRetrievalResponse(ByteBuffer buf, boolean cas) {
-
+    // FIXME: handling error response
     int pos = buf.position();
     if (pos < 5) {
       return null;

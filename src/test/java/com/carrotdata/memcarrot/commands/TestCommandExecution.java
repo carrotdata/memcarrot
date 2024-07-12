@@ -70,7 +70,7 @@ public class TestCommandExecution extends TestBase {
     assertEquals(bufSize, c.inputConsumed());
     SET sc = (SET) c;
 
-    int size = sc.execute(support, outputPtr, bufferSize);
+    int size = sc.execute(support, outputPtr, bufferSize, null);
     assertTrue(size > 0);
     OpResult result = readStorageCommandResponse(outputPtr, size);
     assertEquals(OpResult.STORED, result);
@@ -83,7 +83,7 @@ public class TestCommandExecution extends TestBase {
     assertEquals(bufSize, c.inputConsumed());
     assertTrue(c instanceof SET);
     sc = (SET) c;
-    size = sc.execute(support, outputPtr, bufferSize);
+    size = sc.execute(support, outputPtr, bufferSize, null);
     assertTrue(size == 0);
     byte[] bkey = key.getBytes();
     Record r = support.get(bkey, 0, bkey.length);
@@ -110,7 +110,7 @@ public class TestCommandExecution extends TestBase {
     assertTrue(c instanceof ADD);
     ADD sc = (ADD) c;
 
-    int size = sc.execute(support, outputPtr, bufferSize);
+    int size = sc.execute(support, outputPtr, bufferSize, null);
     assertTrue(size > 0);
     OpResult result = readStorageCommandResponse(outputPtr, size);
     assertEquals(OpResult.STORED, result);
@@ -124,7 +124,7 @@ public class TestCommandExecution extends TestBase {
 
     assertTrue(c instanceof ADD);
     sc = (ADD) c;
-    size = sc.execute(support, outputPtr, bufferSize);
+    size = sc.execute(support, outputPtr, bufferSize, null);
     assertTrue(size > 0);
     result = readStorageCommandResponse(outputPtr, size);
     assertEquals(OpResult.NOT_STORED, result);
@@ -156,7 +156,7 @@ public class TestCommandExecution extends TestBase {
     assertTrue(c instanceof REPLACE);
     REPLACE sc = (REPLACE) c;
 
-    int size = sc.execute(support, outputPtr, bufferSize);
+    int size = sc.execute(support, outputPtr, bufferSize, null);
     assertTrue(size > 0);
     OpResult result = readStorageCommandResponse(outputPtr, size);
     assertEquals(OpResult.NOT_STORED, result);
@@ -170,7 +170,7 @@ public class TestCommandExecution extends TestBase {
 
     assertTrue(c instanceof SET);
     SET s = (SET) c;
-    size = s.execute(support, outputPtr, bufferSize);
+    size = s.execute(support, outputPtr, bufferSize, null);
     assertTrue(size > 0);
     result = readStorageCommandResponse(outputPtr, size);
     assertEquals(OpResult.STORED, result);
@@ -189,7 +189,7 @@ public class TestCommandExecution extends TestBase {
     assertTrue(c instanceof REPLACE);
     sc = (REPLACE) c;
 
-    size = sc.execute(support, outputPtr, bufferSize);
+    size = sc.execute(support, outputPtr, bufferSize, null);
     assertTrue(size > 0);
     result = readStorageCommandResponse(outputPtr, size);
     assertEquals(OpResult.STORED, result);
@@ -220,7 +220,7 @@ public class TestCommandExecution extends TestBase {
     assertTrue(c instanceof APPEND);
     APPEND sc = (APPEND) c;
 
-    int size = sc.execute(support, outputPtr, bufferSize);
+    int size = sc.execute(support, outputPtr, bufferSize, null);
     assertTrue(size > 0);
     OpResult result = readStorageCommandResponse(outputPtr, size);
     assertEquals(OpResult.NOT_STORED, result);
@@ -235,7 +235,7 @@ public class TestCommandExecution extends TestBase {
 
     assertTrue(c instanceof SET);
     SET s = (SET) c;
-    size = s.execute(support, outputPtr, bufferSize);
+    size = s.execute(support, outputPtr, bufferSize, null);
     assertTrue(size > 0);
     result = readStorageCommandResponse(outputPtr, size);
     assertEquals(OpResult.STORED, result);
@@ -254,7 +254,7 @@ public class TestCommandExecution extends TestBase {
     assertTrue(c instanceof APPEND);
     sc = (APPEND) c;
 
-    size = sc.execute(support, outputPtr, bufferSize);
+    size = sc.execute(support, outputPtr, bufferSize, null);
     assertTrue(size > 0);
     result = readStorageCommandResponse(outputPtr, size);
     assertEquals(OpResult.STORED, result);
@@ -285,7 +285,7 @@ public class TestCommandExecution extends TestBase {
     assertTrue(c instanceof PREPEND);
     PREPEND sc = (PREPEND) c;
 
-    int size = sc.execute(support, outputPtr, bufferSize);
+    int size = sc.execute(support, outputPtr, bufferSize, null);
     assertTrue(size > 0);
     OpResult result = readStorageCommandResponse(outputPtr, size);
     assertEquals(OpResult.NOT_STORED, result);
@@ -299,7 +299,7 @@ public class TestCommandExecution extends TestBase {
 
     assertTrue(c instanceof SET);
     SET s = (SET) c;
-    size = s.execute(support, outputPtr, bufferSize);
+    size = s.execute(support, outputPtr, bufferSize, null);
     assertTrue(size > 0);
     result = readStorageCommandResponse(outputPtr, size);
     assertEquals(OpResult.STORED, result);
@@ -316,7 +316,7 @@ public class TestCommandExecution extends TestBase {
     assertTrue(c instanceof PREPEND);
     sc = (PREPEND) c;
 
-    size = sc.execute(support, outputPtr, bufferSize);
+    size = sc.execute(support, outputPtr, bufferSize, null);
     assertTrue(size > 0);
     result = readStorageCommandResponse(outputPtr, size);
     assertEquals(OpResult.STORED, result);
@@ -330,7 +330,7 @@ public class TestCommandExecution extends TestBase {
   }
 
   @Test
-  public void testCASCommand() {
+  public void testCASCommand() throws IOException {
     byte[] cas = "cas".getBytes();
     byte[] gets = "gets".getBytes();
     inputBuffer.clear();
@@ -353,7 +353,7 @@ public class TestCommandExecution extends TestBase {
     assertTrue(c instanceof SET);
     SET sc = (SET) c;
 
-    int size = sc.execute(support, outputPtr, bufferSize);
+    int size = sc.execute(support, outputPtr, bufferSize, null);
     assertTrue(size > 0);
     OpResult result = readStorageCommandResponse(outputPtr, size);
     assertEquals(OpResult.STORED, result);
@@ -369,7 +369,7 @@ public class TestCommandExecution extends TestBase {
     assertTrue(c instanceof GETS);
     GETS g = (GETS) c;
 
-    size = g.execute(support, outputPtr, bufferSize);
+    size = g.execute(support, outputPtr, bufferSize, null);
 
     assertTrue(size > 0);
     List<KeyRecord> values = readRetrievalCommandResponse(outputPtr, size, true);
@@ -392,7 +392,7 @@ public class TestCommandExecution extends TestBase {
     assertTrue(c instanceof CAS);
     CAS cs = (CAS) c;
 
-    size = cs.execute(support, outputPtr, bufferSize);
+    size = cs.execute(support, outputPtr, bufferSize, null);
     assertTrue(size > 0);
     result = readStorageCommandResponse(outputPtr, size);
     assertEquals(OpResult.STORED, result);
@@ -408,7 +408,7 @@ public class TestCommandExecution extends TestBase {
     assertTrue(c instanceof GETS);
     g = (GETS) c;
 
-    size = g.execute(support, outputPtr, bufferSize);
+    size = g.execute(support, outputPtr, bufferSize, null);
     assertTrue(size > 0);
     values = readRetrievalCommandResponse(outputPtr, size, true);
     assertEquals(1, values.size());
@@ -430,7 +430,7 @@ public class TestCommandExecution extends TestBase {
     assertTrue(c instanceof CAS);
     cs = (CAS) c;
 
-    size = cs.execute(support, outputPtr, bufferSize);
+    size = cs.execute(support, outputPtr, bufferSize, null);
     assertTrue(size > 0);
     result = readStorageCommandResponse(outputPtr, size);
     assertEquals(OpResult.EXISTS, result);
@@ -447,14 +447,14 @@ public class TestCommandExecution extends TestBase {
     assertTrue(c instanceof CAS);
     cs = (CAS) c;
 
-    size = cs.execute(support, outputPtr, bufferSize);
+    size = cs.execute(support, outputPtr, bufferSize, null);
     assertTrue(size > 0);
     result = readStorageCommandResponse(outputPtr, size);
     assertEquals(OpResult.NOT_FOUND, result);
   }
 
   @Test
-  public void testGETCommand() {
+  public void testGETCommand() throws IOException {
     inputBuffer.clear();
     byte[] cmd = "set".getBytes();
     byte[] get = "get".getBytes();
@@ -472,7 +472,7 @@ public class TestCommandExecution extends TestBase {
     assertTrue(c instanceof SET);
     SET sc = (SET) c;
 
-    int size = sc.execute(support, outputPtr, bufferSize);
+    int size = sc.execute(support, outputPtr, bufferSize, null);
     assertTrue(size > 0);
     OpResult result = readStorageCommandResponse(outputPtr, size);
     assertEquals(OpResult.STORED, result);
@@ -487,7 +487,7 @@ public class TestCommandExecution extends TestBase {
     assertTrue(c instanceof GET);
     GET g = (GET) c;
 
-    size = g.execute(support, outputPtr, bufferSize);
+    size = g.execute(support, outputPtr, bufferSize, null);
     assertTrue(size > 0);
     List<KeyRecord> values = readRetrievalCommandResponse(outputPtr, size, false);
     assertEquals(1, values.size());
@@ -509,7 +509,7 @@ public class TestCommandExecution extends TestBase {
     assertTrue(c instanceof GET);
     g = (GET) c;
 
-    size = g.execute(support, outputPtr, bufferSize);
+    size = g.execute(support, outputPtr, bufferSize, null);
     assertTrue(size > 0);
     values = readRetrievalCommandResponse(outputPtr, size, false);
     assertEquals(1, values.size());
@@ -536,7 +536,7 @@ public class TestCommandExecution extends TestBase {
     assertTrue(c instanceof SET);
     sc = (SET) c;
 
-    size = sc.execute(support, outputPtr, bufferSize);
+    size = sc.execute(support, outputPtr, bufferSize, null);
     assertTrue(size > 0);
     result = readStorageCommandResponse(outputPtr, size);
     assertEquals(OpResult.STORED, result);
@@ -553,7 +553,7 @@ public class TestCommandExecution extends TestBase {
     assertTrue(c instanceof GET);
     g = (GET) c;
 
-    size = g.execute(support, outputPtr, bufferSize);
+    size = g.execute(support, outputPtr, bufferSize, null);
     assertTrue(size > 0);
     values = readRetrievalCommandResponse(outputPtr, size, false);
     assertEquals(2, values.size());
@@ -571,7 +571,7 @@ public class TestCommandExecution extends TestBase {
   }
 
   @Test
-  public void testGETSCommand() {
+  public void testGETSCommand() throws IOException {
     inputBuffer.clear();
     byte[] cmd = "set".getBytes();
     byte[] gets = "gets".getBytes();
@@ -588,7 +588,7 @@ public class TestCommandExecution extends TestBase {
     assertTrue(c instanceof SET);
     SET sc = (SET) c;
 
-    int size = sc.execute(support, outputPtr, bufferSize);
+    int size = sc.execute(support, outputPtr, bufferSize, null);
     assertTrue(size > 0);
     OpResult result = readStorageCommandResponse(outputPtr, size);
     assertEquals(OpResult.STORED, result);
@@ -603,7 +603,7 @@ public class TestCommandExecution extends TestBase {
     assertTrue(c instanceof GET);
     GETS g = (GETS) c;
 
-    size = g.execute(support, outputPtr, bufferSize);
+    size = g.execute(support, outputPtr, bufferSize, null);
     assertTrue(size > 0);
     List<KeyRecord> values = readRetrievalCommandResponse(outputPtr, size, true);
     assertEquals(1, values.size());
@@ -626,7 +626,7 @@ public class TestCommandExecution extends TestBase {
     assertTrue(c instanceof GET);
     g = (GETS) c;
 
-    size = g.execute(support, outputPtr, bufferSize);
+    size = g.execute(support, outputPtr, bufferSize, null);
     assertTrue(size > 0);
     values = readRetrievalCommandResponse(outputPtr, size, true);
     assertEquals(1, values.size());
@@ -653,7 +653,7 @@ public class TestCommandExecution extends TestBase {
     assertTrue(c instanceof SET);
     sc = (SET) c;
 
-    size = sc.execute(support, outputPtr, bufferSize);
+    size = sc.execute(support, outputPtr, bufferSize, null);
     assertTrue(size > 0);
     result = readStorageCommandResponse(outputPtr, size);
     assertEquals(OpResult.STORED, result);
@@ -668,7 +668,7 @@ public class TestCommandExecution extends TestBase {
     assertTrue(c instanceof GET);
     g = (GETS) c;
 
-    size = g.execute(support, outputPtr, bufferSize);
+    size = g.execute(support, outputPtr, bufferSize, null);
     assertTrue(size > 0);
     values = readRetrievalCommandResponse(outputPtr, size, true);
     assertEquals(2, values.size());
@@ -691,7 +691,7 @@ public class TestCommandExecution extends TestBase {
   }
 
   @Test
-  public void testGATCommand() {
+  public void testGATCommand() throws IOException {
     inputBuffer.clear();
     byte[] cmd = "set".getBytes();
     byte[] gat = "gat".getBytes();
@@ -707,7 +707,7 @@ public class TestCommandExecution extends TestBase {
     assertTrue(c instanceof SET);
     SET sc = (SET) c;
 
-    int size = sc.execute(support, outputPtr, bufferSize);
+    int size = sc.execute(support, outputPtr, bufferSize, null);
     assertTrue(size > 0);
     OpResult result = readStorageCommandResponse(outputPtr, size);
     assertEquals(OpResult.STORED, result);
@@ -721,7 +721,7 @@ public class TestCommandExecution extends TestBase {
     assertTrue(c instanceof GAT);
     GAT g = (GAT) c;
 
-    size = g.execute(support, outputPtr, bufferSize);
+    size = g.execute(support, outputPtr, bufferSize, null);
     assertTrue(size > 0);
     List<KeyRecord> values = readRetrievalCommandResponse(outputPtr, size, false);
     assertEquals(1, values.size());
@@ -748,7 +748,7 @@ public class TestCommandExecution extends TestBase {
     assertTrue(c instanceof GAT);
     g = (GAT) c;
 
-    size = g.execute(support, outputPtr, bufferSize);
+    size = g.execute(support, outputPtr, bufferSize, null);
     assertTrue(size > 0);
     values = readRetrievalCommandResponse(outputPtr, size, false);
     assertEquals(1, values.size());
@@ -777,7 +777,7 @@ public class TestCommandExecution extends TestBase {
     assertTrue(c instanceof SET);
     sc = (SET) c;
 
-    size = sc.execute(support, outputPtr, bufferSize);
+    size = sc.execute(support, outputPtr, bufferSize, null);
     assertTrue(size > 0);
     result = readStorageCommandResponse(outputPtr, size);
     assertEquals(OpResult.STORED, result);
@@ -793,7 +793,7 @@ public class TestCommandExecution extends TestBase {
     assertTrue(c instanceof GAT);
     g = (GAT) c;
 
-    size = g.execute(support, outputPtr, bufferSize);
+    size = g.execute(support, outputPtr, bufferSize, null);
     assertTrue(size > 0);
     values = readRetrievalCommandResponse(outputPtr, size, false);
     assertEquals(2, values.size());
@@ -820,7 +820,7 @@ public class TestCommandExecution extends TestBase {
   }
 
   @Test
-  public void testGATSCommand() {
+  public void testGATSCommand() throws IOException {
     inputBuffer.clear();
     byte[] cmd = "set".getBytes();
     byte[] gats = "gats".getBytes();
@@ -836,7 +836,7 @@ public class TestCommandExecution extends TestBase {
     assertTrue(c instanceof SET);
     SET sc = (SET) c;
 
-    int size = sc.execute(support, outputPtr, bufferSize);
+    int size = sc.execute(support, outputPtr, bufferSize, null);
     assertTrue(size > 0);
     OpResult result = readStorageCommandResponse(outputPtr, size);
     assertEquals(OpResult.STORED, result);
@@ -852,7 +852,7 @@ public class TestCommandExecution extends TestBase {
     assertTrue(c instanceof GATS);
     GATS g = (GATS) c;
 
-    size = g.execute(support, outputPtr, bufferSize);
+    size = g.execute(support, outputPtr, bufferSize, null);
     assertTrue(size > 0);
     List<KeyRecord> values = readRetrievalCommandResponse(outputPtr, size, true);
     assertEquals(1, values.size());
@@ -882,7 +882,7 @@ public class TestCommandExecution extends TestBase {
     assertTrue(c instanceof GATS);
     g = (GATS) c;
 
-    size = g.execute(support, outputPtr, bufferSize);
+    size = g.execute(support, outputPtr, bufferSize, null);
     assertTrue(size > 0);
     values = readRetrievalCommandResponse(outputPtr, size, true);
     assertEquals(1, values.size());
@@ -913,7 +913,7 @@ public class TestCommandExecution extends TestBase {
     assertTrue(c instanceof SET);
     sc = (SET) c;
 
-    size = sc.execute(support, outputPtr, bufferSize);
+    size = sc.execute(support, outputPtr, bufferSize, null);
     assertTrue(size > 0);
     result = readStorageCommandResponse(outputPtr, size);
     assertEquals(OpResult.STORED, result);
@@ -929,7 +929,7 @@ public class TestCommandExecution extends TestBase {
     assertTrue(c instanceof GATS);
     g = (GATS) c;
 
-    size = g.execute(support, outputPtr, bufferSize);
+    size = g.execute(support, outputPtr, bufferSize, null);
     assertTrue(size > 0);
     values = readRetrievalCommandResponse(outputPtr, size, true);
     assertEquals(2, values.size());
@@ -975,7 +975,7 @@ public class TestCommandExecution extends TestBase {
     assertTrue(c instanceof SET);
     SET sc = (SET) c;
 
-    int size = sc.execute(support, outputPtr, bufferSize);
+    int size = sc.execute(support, outputPtr, bufferSize, null);
     assertTrue(size > 0);
     OpResult result = readStorageCommandResponse(outputPtr, size);
     assertEquals(OpResult.STORED, result);
@@ -990,7 +990,7 @@ public class TestCommandExecution extends TestBase {
     assertTrue(c instanceof TOUCH);
     TOUCH t = (TOUCH) c;
 
-    size = t.execute(support, outputPtr, bufferSize);
+    size = t.execute(support, outputPtr, bufferSize, null);
     assertTrue(size > 0);
     result = readTouchCommandResponse(outputPtr, size);
     assertEquals(OpResult.TOUCHED, result);
@@ -1011,7 +1011,7 @@ public class TestCommandExecution extends TestBase {
     assertTrue(c instanceof TOUCH);
     t = (TOUCH) c;
 
-    size = t.execute(support, outputPtr, bufferSize);
+    size = t.execute(support, outputPtr, bufferSize, null);
     assertTrue(size > 0);
     result = readTouchCommandResponse(outputPtr, size);
     assertEquals(OpResult.NOT_FOUND, result);
@@ -1035,7 +1035,7 @@ public class TestCommandExecution extends TestBase {
     assertEquals(bufSize, c.inputConsumed());
     assertTrue(c instanceof DELETE);
     DELETE d = (DELETE) c;
-    int size = d.execute(support, outputPtr, bufferSize);
+    int size = d.execute(support, outputPtr, bufferSize, null);
     OpResult result = readDeleteCommandResponse(outputPtr, size);
     assertEquals(OpResult.NOT_FOUND, result);
 
@@ -1049,7 +1049,7 @@ public class TestCommandExecution extends TestBase {
     assertTrue(c instanceof SET);
     SET sc = (SET) c;
 
-    size = sc.execute(support, outputPtr, bufferSize);
+    size = sc.execute(support, outputPtr, bufferSize, null);
     assertTrue(size > 0);
     result = readStorageCommandResponse(outputPtr, size);
     assertEquals(OpResult.STORED, result);
@@ -1061,7 +1061,7 @@ public class TestCommandExecution extends TestBase {
     assertEquals(bufSize, c.inputConsumed());
     assertTrue(c instanceof DELETE);
     d = (DELETE) c;
-    size = d.execute(support, outputPtr, bufferSize);
+    size = d.execute(support, outputPtr, bufferSize, null);
     result = readDeleteCommandResponse(outputPtr, size);
     assertEquals(OpResult.DELETED, result);
 
@@ -1087,7 +1087,7 @@ public class TestCommandExecution extends TestBase {
     assertEquals(bufSize, c.inputConsumed());
     assertTrue(c instanceof INCR);
     INCR d = (INCR) c;
-    int size = d.execute(support, outputPtr, bufferSize);
+    int size = d.execute(support, outputPtr, bufferSize, null);
     Object result = readIncrDecrCommandResponse(outputPtr, size);
     assertEquals(OpResult.NOT_FOUND, result);
 
@@ -1101,7 +1101,7 @@ public class TestCommandExecution extends TestBase {
     assertTrue(c instanceof SET);
     SET sc = (SET) c;
 
-    size = sc.execute(support, outputPtr, bufferSize);
+    size = sc.execute(support, outputPtr, bufferSize, null);
     assertTrue(size > 0);
     result = readStorageCommandResponse(outputPtr, size);
     assertEquals(OpResult.STORED, result);
@@ -1113,7 +1113,7 @@ public class TestCommandExecution extends TestBase {
     assertEquals(bufSize, c.inputConsumed());
     assertTrue(c instanceof INCR);
     d = (INCR) c;
-    size = d.execute(support, outputPtr, bufferSize);
+    size = d.execute(support, outputPtr, bufferSize, null);
     result = readIncrDecrCommandResponse(outputPtr, size);
     assertEquals(20L, ((Long) result).longValue());
 
@@ -1139,7 +1139,7 @@ public class TestCommandExecution extends TestBase {
     assertEquals(bufSize, c.inputConsumed());
     assertTrue(c instanceof SET);
     sc = (SET) c;
-    size = sc.execute(support, outputPtr, bufferSize);
+    size = sc.execute(support, outputPtr, bufferSize, null);
     assertTrue(size > 0);
     result = readStorageCommandResponse(outputPtr, size);
     assertEquals(OpResult.STORED, result);
@@ -1151,7 +1151,7 @@ public class TestCommandExecution extends TestBase {
     assertEquals(bufSize, c.inputConsumed());
     assertTrue(c instanceof INCR);
     d = (INCR) c;
-    size = d.execute(support, outputPtr, bufferSize);
+    size = d.execute(support, outputPtr, bufferSize, null);
     result = readIncrDecrCommandResponse(outputPtr, size);
     assertTrue(result instanceof String);
     assertTrue(((String) result).startsWith("CLIENT_ERROR "));
@@ -1174,7 +1174,7 @@ public class TestCommandExecution extends TestBase {
     assertEquals(bufSize, c.inputConsumed());
     assertTrue(c instanceof DECR);
     DECR d = (DECR) c;
-    int size = d.execute(support, outputPtr, bufferSize);
+    int size = d.execute(support, outputPtr, bufferSize, null);
     Object result = readIncrDecrCommandResponse(outputPtr, size);
     assertEquals(OpResult.NOT_FOUND, result);
 
@@ -1188,7 +1188,7 @@ public class TestCommandExecution extends TestBase {
     assertTrue(c instanceof SET);
     SET sc = (SET) c;
 
-    size = sc.execute(support, outputPtr, bufferSize);
+    size = sc.execute(support, outputPtr, bufferSize, null);
     assertTrue(size > 0);
     result = readStorageCommandResponse(outputPtr, size);
     assertEquals(OpResult.STORED, result);
@@ -1200,7 +1200,7 @@ public class TestCommandExecution extends TestBase {
     assertEquals(bufSize, c.inputConsumed());
     assertTrue(c instanceof DECR);
     d = (DECR) c;
-    size = d.execute(support, outputPtr, bufferSize);
+    size = d.execute(support, outputPtr, bufferSize, null);
     result = readIncrDecrCommandResponse(outputPtr, size);
     assertEquals(1L, ((Long) result).longValue());
 
@@ -1211,7 +1211,7 @@ public class TestCommandExecution extends TestBase {
     assertEquals(bufSize, c.inputConsumed());
     assertTrue(c instanceof DECR);
     d = (DECR) c;
-    size = d.execute(support, outputPtr, bufferSize);
+    size = d.execute(support, outputPtr, bufferSize, null);
     result = readIncrDecrCommandResponse(outputPtr, size);
     assertEquals(0L, ((Long) result).longValue());
 
@@ -1237,7 +1237,7 @@ public class TestCommandExecution extends TestBase {
     assertEquals(bufSize, c.inputConsumed());
     assertTrue(c instanceof SET);
     sc = (SET) c;
-    size = sc.execute(support, outputPtr, bufferSize);
+    size = sc.execute(support, outputPtr, bufferSize, null);
     assertTrue(size > 0);
     result = readStorageCommandResponse(outputPtr, size);
     assertEquals(OpResult.STORED, result);
@@ -1249,7 +1249,7 @@ public class TestCommandExecution extends TestBase {
     assertEquals(bufSize, c.inputConsumed());
     assertTrue(c instanceof DECR);
     d = (DECR) c;
-    size = d.execute(support, outputPtr, bufferSize);
+    size = d.execute(support, outputPtr, bufferSize, null);
     result = readIncrDecrCommandResponse(outputPtr, size);
     assertTrue(result instanceof String);
     assertTrue(((String) result).startsWith("CLIENT_ERROR "));

@@ -11,6 +11,7 @@
  */
 package com.carrotdata.memcarrot.commands;
 
+import com.carrotdata.memcarrot.CommandProcessor.OutputConsumer;
 import com.carrotdata.memcarrot.support.IllegalFormatException;
 
 import static com.carrotdata.cache.util.Utils.compareTo;
@@ -104,7 +105,7 @@ public class INCR extends AbstractMemcachedCommand {
   }
 
   @Override
-  public int execute(Memcached support, long outBuffer, int outBufferSize) {
+  public int execute(Memcached support, long outBuffer, int outBufferSize, OutputConsumer consumer) {
     try {
       long result = support.incr(keyPtr, keySize, value);
       if (!this.noreply) {

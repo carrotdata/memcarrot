@@ -40,6 +40,7 @@ public class TestSimpleClient {
   
   @Before
   public void setUp() throws IOException {
+    System.setProperty(MemcarrotConf.CONF_KV_SIZE_MAX, "262144");
     String host;
     int port = 0;
     
@@ -58,7 +59,7 @@ public class TestSimpleClient {
       host = server.getHost();
       port = server.getPort();
     }
-    
+    logger.info("kv-max-size={}", MemcarrotConf.getConf().getKeyValueMaxSize());
     client = new SimpleClient(host, port);
   }
 
@@ -410,6 +411,46 @@ public class TestSimpleClient {
 
   }
 
+  @Test
+  public void testSetGetMultiWithOverflow() throws IOException {
+    String key = getIdString();
+    String value = TestUtils.randomString(200);
+    byte[] bvalue = value.getBytes();
+    long start = System.currentTimeMillis();
+    int n = 1_000_000;
+    for (int i = 0; i < n; i++) {
+      int flags = 1;
+      long expire = expireIn(100);
+      boolean noreply = true;
+      ResponseCode code = client.set((key + i).getBytes(), bvalue, flags, expire, noreply);
+      
+      assertTrue(code == null);
+    }
+    long end = System.currentTimeMillis();
+    logger.info("SET Time={}ms", end - start);
+
+    // Total response size > 1MB (5000 * 200 value size + some extra), 
+    // I/O buffer size is 256kb
+    // Must be OK, we handle such cases
+    int batchSize = 5000;
+    long getTime = 0;
+    for (int i = 0; i < n / batchSize; i++) {
+      byte[][] keys = getBatch(i, batchSize);
+      long t1 = System.nanoTime();
+      List<GetResult> list = client.get(keys);
+      getTime += System.nanoTime() - t1;
+      assertTrue(list.size() == batchSize);
+      list.stream().forEach(x -> assertTrue(TestUtils.equals(bvalue, x.value)));
+
+    }
+    long getend = System.currentTimeMillis();
+    logger.info("GET total={} batch={} time={}ms get_time={}", n, batchSize, getend - end,
+      getTime / 1_000_000);
+    
+    deleteAll(n);
+
+  }
+  
   @Test
   public void testAddGetMulti() throws IOException {
     String key = getIdString();
@@ -957,7 +998,7 @@ public class TestSimpleClient {
     }
     return batch;
   }
-
+  
   private long expireIn(long sec) {
     if (sec <= 0) return sec;
     if (sec <= 60 * 60 * 24 * 30) {
@@ -977,7 +1018,6 @@ public class TestSimpleClient {
     long end = System.currentTimeMillis();
     logger.info("DELETE {} in {} ms", n, end - start);
   }
-  
   
   public static void main(String[] args) throws IOException, InterruptedException {
     

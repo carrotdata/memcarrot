@@ -26,6 +26,7 @@ import org.apache.logging.log4j.Logger;
 
 import com.carrotdata.cache.support.Memcached;
 import com.carrotdata.cache.util.UnsafeAccess;
+import com.carrotdata.memcarrot.CommandProcessor.OutputConsumer;
 import com.carrotdata.memcarrot.util.Errors;
 
 public class RequestHandlers {
@@ -109,7 +110,21 @@ public class RequestHandlers {
 }
 
 class WorkThread extends Thread {
-
+  static class ChannelOutputConsumer implements OutputConsumer {
+    
+    SocketChannel channel;
+    ByteBuffer out;
+    
+    @Override
+    public void consume(int upto) throws IOException {
+      out.limit(upto);
+      out.position(0);
+      while(out.hasRemaining()) {
+        channel.write(out);
+      }
+    }
+    
+  }
   private static final Logger log = LogManager.getLogger(WorkThread.class);
 
   /*
@@ -242,27 +257,27 @@ class WorkThread extends Thread {
    */
   public void run() {
 
+    final ChannelOutputConsumer consumer = new ChannelOutputConsumer();
     // infinite loop
     while (true) {
-      SelectionKey key = null;
-      // Double busy set to false
-      // busy = false;
-      // Can it override
-      key = waitForKey();
+      final SelectionKey key = waitForKey();
+
       if (key == null) {
         log.debug("Thread {} got interrupt signal, exiting", Thread.currentThread().getName());
         return;
       }
       // We are busy now
-      //busy = true;
-      SocketChannel channel = (SocketChannel) key.channel();
+      final SocketChannel channel = (SocketChannel) key.channel();
 
       // Read request first
       ByteBuffer in = getInputBuffer();
       ByteBuffer out = getOutputBuffer();
       in.clear();
       out.clear();
-
+      
+      consumer.channel = channel;
+      consumer.out = out;
+      
       try {
         long startCounter = 0; 
         long max_wait_ns = 500_000_000; // 500ms - FIXME - make it configurable
@@ -315,7 +330,7 @@ class WorkThread extends Thread {
             // Try to parse
             // Process request using buffer's addresses
             int responseLength = CommandProcessor.process(store, in_ptr + consumed,
-              inputSize - consumed, out_ptr, bufferSize);
+              inputSize - consumed, out_ptr, bufferSize, consumer);
             if (responseLength < 0) {
               // command is incomplete
               // check if we consumed something, then compact input buffer
