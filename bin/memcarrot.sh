@@ -12,12 +12,12 @@ cd "${APP_DIR}" || exit
 
 . ./bin/setenv.sh
 
-CPATH="${APP_DIR}/conf:${APP_DIR}/lib/${MEMCARROT_RELEASE}"
-
-export JVM_OPTS="-Xmx${MAX_HEAP_SIZE} --add-opens java.base/jdk.internal.misc=ALL-UNNAMED --add-opens java.base/java.nio=ALL-UNNAMED \
-        --add-opens java.base/java.security=ALL-UNNAMED --add-opens jdk.unsupported/sun.misc=ALL-UNNAMED \
-        --add-opens java.base/sun.security.action=ALL-UNNAMED --add-opens jdk.naming.rmi/com.sun.jndi.rmi.registry=ALL-UNNAMED \
-        --add-opens java.base/sun.net=ALL-UNNAMED --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED -cp .:${CPATH} ${MEMCARROT_APP_OPTS}"
+export JVM_OPTS="-Xmx${MAX_HEAP_SIZE} --add-opens java.base/jdk.internal.misc=ALL-UNNAMED \
+  --add-opens java.base/java.nio=ALL-UNNAMED --add-opens java.base/java.security=ALL-UNNAMED \
+  --add-opens jdk.unsupported/sun.misc=ALL-UNNAMED --add-opens java.base/sun.security.action=ALL-UNNAMED \
+  --add-opens jdk.naming.rmi/com.sun.jndi.rmi.registry=ALL-UNNAMED --add-opens java.base/sun.net=ALL-UNNAMED \
+  --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED \
+  -Dlocation=${MEMCARROT_INSTANCE_NAME} ${MEMCARROT_APP_OPTS}"
 
 #===== find pid =====
 pid() {
@@ -32,17 +32,17 @@ start() {
     exit 1
   fi
 
-  exec_cmd="${JAVA_HOME}/bin/java ${JVM_OPTS} com.carrotdata.memcarrot.Memcarrot ${MEMCARROT_APPS_PARAMS} start"
+  exec_cmd="${JAVA_HOME}/bin/java ${JVM_OPTS} -jar lib/${MEMCARROT_RELEASE} ${MEMCARROT_APPS_PARAMS} start"
   #echo "${exec_cmd}"
   mkdir -p logs
   nohup ${exec_cmd} >>logs/memcarrot-stdout.log &
-  echo "Memcarrot ${MEMCARROT_VERSION} instance is starting, please wait..."
+  echo "${MEMCARROT_RELEASE} instance is starting, please wait..."
 
   sleep 1
 
   PID=$(pid)
   if [ ! -z "${PID}" ]; then
-    echo "Memcarrot ${MEMCARROT_VERSION} instance successfully started. PID ${PID}"
+    echo "${MEMCARROT_RELEASE} instance successfully started. PID ${PID}"
     exit 0
   fi
 
@@ -54,7 +54,7 @@ start() {
 stop() {
   PID=$(pid)
   if [ ! -z "${PID}" ]; then
-    exec_cmd="${JAVA_HOME}/bin/java ${JVM_OPTS} com.carrotdata.memcarrot.Memcarrot ${MEMCARROT_APPS_PARAMS} stop"
+    exec_cmd="${JAVA_HOME}/bin/java ${JVM_OPTS} -jar lib/${MEMCARROT_RELEASE} ${MEMCARROT_APPS_PARAMS} stop"
     nohup ${exec_cmd} >> /dev/null &
     echo "Memcarrot instance is terminating on PID ${PID}, please wait..."
 
