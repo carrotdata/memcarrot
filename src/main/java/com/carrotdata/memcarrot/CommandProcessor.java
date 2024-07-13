@@ -11,12 +11,15 @@
  */
 package com.carrotdata.memcarrot;
 
+import java.io.IOException;
+import java.nio.BufferOverflowException;
+import java.nio.ByteBuffer;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.carrotdata.cache.support.Memcached;
 import com.carrotdata.cache.util.UnsafeAccess;
-import com.carrotdata.cache.util.Utils;
 import com.carrotdata.memcarrot.commands.AbstractMemcachedCommand;
 import com.carrotdata.memcarrot.commands.CommandParser;
 import com.carrotdata.memcarrot.commands.MemcachedCommand;
@@ -26,6 +29,10 @@ import com.carrotdata.memcarrot.support.UnsupportedCommand;
 public class CommandProcessor {
   private static Logger logger = LogManager.getLogger(CommandProcessor.class);
 
+  public static interface OutputConsumer {
+    public void consume(int upto) throws IOException;
+  }
+  
   public static class Result {
     int consumed;
     int produced;
@@ -43,7 +50,7 @@ public class CommandProcessor {
   static int added = 0;
 
   public static int process(Memcached storage, long inputPtr, int inputSize, long outPtr,
-      int outSize) throws IllegalFormatException {
+      int outSize, OutputConsumer consumer) throws IllegalFormatException, BufferOverflowException, IOException {
     try {
 
       // Execute Memcached command
@@ -59,7 +66,7 @@ public class CommandProcessor {
         UnsafeAccess.copy(buf, 0, outPtr, buf.length);
         return buf.length;
       }
-      int result = cmd.execute(storage, outPtr, outSize);
+      int result = cmd.execute(storage, outPtr, outSize, consumer);
       return result;
     } catch (UnsupportedCommand ee) {
       byte[] buf = "ERROR\r\n".getBytes();

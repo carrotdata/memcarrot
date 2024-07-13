@@ -11,6 +11,7 @@
  */
 package com.carrotdata.memcarrot.commands;
 
+import com.carrotdata.memcarrot.CommandProcessor.OutputConsumer;
 import com.carrotdata.memcarrot.support.IllegalFormatException;
 
 import java.io.IOException;
@@ -37,7 +38,7 @@ public class SHUTDOWN implements MemcachedCommand {
   }
 
   @Override
-  public int execute(Memcached support, long outBuffer, int outBufferSize) {
+  public int execute(Memcached support, long outBuffer, int outBufferSize, OutputConsumer consumer) {
     log.info("Shutting down the server ...");
     long start = System.currentTimeMillis();
     int size = 0;

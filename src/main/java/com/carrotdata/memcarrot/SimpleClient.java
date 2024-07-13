@@ -47,7 +47,7 @@ public class SimpleClient {
 
   SocketChannel conn;
 
-  ByteBuffer buf = ByteBuffer.allocateDirect(1024 * 1024);
+  ByteBuffer buf = ByteBuffer.allocateDirect(16 * 1024 * 1024);
 
   public SimpleClient(String node) {
     try {
@@ -107,6 +107,20 @@ public class SimpleClient {
       buf.flip();
       buf.get(b);
       throw new RuntimeException(new String(b));
+    } else if (pos > 0) {
+      byte[] b = new byte[pos];
+      buf.flip();
+      buf.get(b);
+      String s = new String(b);
+      if (s.startsWith("CLIENT_ERROR")) {
+        return ResponseCode.CLIENT_ERROR;
+      } else if (s.startsWith("ERROR")) {
+        return ResponseCode.ERROR;
+      } else if (s.startsWith("SERVER_ERROR")) {
+        return ResponseCode.SERVER_ERROR;
+      } else {
+        throw new RuntimeException(s);
+      }
     }
     return null;
   }
@@ -161,7 +175,7 @@ public class SimpleClient {
   }
 
   private List<GetResult> getRetrievalResponse(ByteBuffer buf, boolean cas) {
-
+    // FIXME: handling error response
     int pos = buf.position();
     if (pos < 5) {
       return null;

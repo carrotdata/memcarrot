@@ -23,10 +23,10 @@ public class Errors {
   public static final byte[] ERROR = "ERROR\r\n".getBytes();
 
   public static final byte[] INPUT_TOO_LARGE =
-      "SERVER_ERROR Input is too large, increase value of 'onecache.io-buffer-size' configuration option\r\n"
+      "CLIENT_ERROR Input is too large, increase value of 'kv.size.max' configuration option\r\n"
           .getBytes();
   public static final byte[] OUTPUT_TOO_LARGE =
-      "SERVER_ERROR Command result is too large, increase value of 'onecache.io-buffer-size' configuration option\r\n"
+      "SERVER_ERROR Command result is too large, increase value of 'kv.size.max' configuration option\r\n"
           .getBytes();
 
   public static int error(long ptr) {

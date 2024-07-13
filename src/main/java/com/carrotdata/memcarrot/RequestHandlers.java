@@ -12,6 +12,7 @@
 package com.carrotdata.memcarrot;
 
 import java.io.IOException;
+import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
@@ -25,6 +26,8 @@ import org.apache.logging.log4j.Logger;
 
 import com.carrotdata.cache.support.Memcached;
 import com.carrotdata.cache.util.UnsafeAccess;
+import com.carrotdata.memcarrot.CommandProcessor.OutputConsumer;
+import com.carrotdata.memcarrot.util.Errors;
 
 public class RequestHandlers {
 
@@ -34,7 +37,7 @@ public class RequestHandlers {
 
   static class Attachment {
     private long accessTime;
-    private boolean inUse = false;
+    private volatile boolean inUse = false;
 
     Attachment() {
       accessTime = System.nanoTime() - epochStartNanos;
@@ -107,7 +110,21 @@ public class RequestHandlers {
 }
 
 class WorkThread extends Thread {
-
+  static class ChannelOutputConsumer implements OutputConsumer {
+    
+    SocketChannel channel;
+    ByteBuffer out;
+    
+    @Override
+    public void consume(int upto) throws IOException {
+      out.limit(upto);
+      out.position(0);
+      while(out.hasRemaining()) {
+        channel.write(out);
+      }
+    }
+    
+  }
   private static final Logger log = LogManager.getLogger(WorkThread.class);
 
   /*
@@ -192,7 +209,12 @@ class WorkThread extends Thread {
    * @param key selection key
    */
   void nextKey(SelectionKey key) {
-    key.attach(new RequestHandlers.Attachment());
+    if(key.attachment() ==  null) {
+      key.attach(new RequestHandlers.Attachment());
+    } else {
+      RequestHandlers.Attachment att = (RequestHandlers.Attachment) key.attachment();
+      att.setInUse(true);
+    }
     busy = true;
     while (!nextKey.compareAndSet(null, key)) {
       Thread.onSpinWait();
@@ -235,33 +257,51 @@ class WorkThread extends Thread {
    */
   public void run() {
 
+    final ChannelOutputConsumer consumer = new ChannelOutputConsumer();
     // infinite loop
     while (true) {
-      SelectionKey key = null;
-      // Double busy set to false
-      // busy = false;
-      // Can it override
-      key = waitForKey();
+      final SelectionKey key = waitForKey();
+
       if (key == null) {
         log.debug("Thread {} got interrupt signal, exiting", Thread.currentThread().getName());
         return;
       }
       // We are busy now
-      //busy = true;
-      SocketChannel channel = (SocketChannel) key.channel();
+      final SocketChannel channel = (SocketChannel) key.channel();
 
       // Read request first
       ByteBuffer in = getInputBuffer();
       ByteBuffer out = getOutputBuffer();
       in.clear();
       out.clear();
-
+      
+      consumer.channel = channel;
+      consumer.out = out;
+      
       try {
         long startCounter = 0; 
         long max_wait_ns = 500_000_000; // 500ms - FIXME - make it configurable
         int inputSize  = 0;
 
         outer: while (true) {
+          // Before read check input size
+          if (inputSize == bufferSize) {
+            // Input is too large
+            out.clear();
+            out.put(Errors.INPUT_TOO_LARGE);
+            out.flip();
+            // send response back
+            while (out.hasRemaining()) {
+              // FIXME: Can we stuck here?
+              channel.write(out);
+            }
+            // We need to close channel
+            // because now we are not able to restore
+            // correct position of the next command
+            key.cancel();
+            channel.close();
+            break;
+          }
           int num = channel.read(in);
           if (num < 0) {
             // End-Of-Stream - socket was closed, cancel the key
@@ -290,7 +330,7 @@ class WorkThread extends Thread {
             // Try to parse
             // Process request using buffer's addresses
             int responseLength = CommandProcessor.process(store, in_ptr + consumed,
-              inputSize - consumed, out_ptr, bufferSize);
+              inputSize - consumed, out_ptr, bufferSize, consumer);
             if (responseLength < 0) {
               // command is incomplete
               // check if we consumed something, then compact input buffer
@@ -322,6 +362,20 @@ class WorkThread extends Thread {
           log.error("StackTrace: ", e);
         }
         key.cancel();
+      } catch (BufferOverflowException ee) {
+        out.clear();
+        out.put(Errors.OUTPUT_TOO_LARGE);
+        out.flip();
+        // send response back
+        while (out.hasRemaining()) {
+          // FIXME: Can we stuck here?
+          try {
+            channel.write(out);
+          } catch (IOException eee) {
+            key.cancel();
+            // what to do with channel?
+          }
+        }
       } finally {
         // Release selection key - ready for the next request
         release(key);

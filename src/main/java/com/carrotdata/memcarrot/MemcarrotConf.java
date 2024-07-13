@@ -22,7 +22,7 @@ public class MemcarrotConf {
   public static final String CONF_SERVER_PORT = "server.port";
   public static final String CONF_SERVER_ADDRESS = "server.address";
   public static final String CONF_THREAD_POOL_SIZE = "workers.pool.size";
-  public static final String CONF_IO_BUFFER_SIZE = "io.buffer.size";
+  public static final String CONF_KV_SIZE_MAX = "kv.size.max";
   public static final String CONF_SND_RCV_BUFFER_SIZE = "tcp.buffer.size";
   
 
@@ -31,7 +31,7 @@ public class MemcarrotConf {
   public static final int DEFAULT_THREAD_POOL_SIZE =
       Math.max(1, Runtime.getRuntime().availableProcessors() / 2);
 
-  public static final int DEFAULT_IO_BUFFER_SIZE = 4 * 1024 * 1024;
+  public static final int DEFAULT_KV_SIZE_MAX = 4 * 1024 * 1024;
   public static final int DEFAULT_SNDRCV_BUFFER_SIZE = 32 * 1024;
 
   private static MemcarrotConf conf;
@@ -169,26 +169,26 @@ public class MemcarrotConf {
   }
 
   /**
-   * I/O buffer size
-   * @return buffer size
+   * Key-Value maximum size
+   * @return max size
    */
-  public int getIOBufferSize() {
-    String ssize = System.getProperty(CONF_IO_BUFFER_SIZE);
+  public int getKeyValueMaxSize() {
+    String ssize = System.getProperty(CONF_KV_SIZE_MAX);
     if (ssize == null) {
       Properties props = this.cacheConfig.getProperties();
       ssize =
-        (String) props.getOrDefault(CONF_IO_BUFFER_SIZE, Integer.toString(DEFAULT_IO_BUFFER_SIZE));
+        (String) props.getOrDefault(CONF_KV_SIZE_MAX, Integer.toString(DEFAULT_KV_SIZE_MAX));
     }
     return Integer.parseInt(ssize);
   }
 
   /**
-   * I/O buffer size
-   * @param buffer size
+   * Key-Value maximum size
+   * @param max size
    */
-  public void setIOBufferSize(int size) {
+  public void setKeyValueMaxSize(int size) {
     Properties props = this.cacheConfig.getProperties();
-    props.setProperty(CONF_IO_BUFFER_SIZE, Integer.toString(size));
+    props.setProperty(CONF_KV_SIZE_MAX, Integer.toString(size));
   }
 
   /**

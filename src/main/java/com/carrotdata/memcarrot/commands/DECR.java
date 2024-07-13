@@ -13,6 +13,7 @@ package com.carrotdata.memcarrot.commands;
 
 import com.carrotdata.cache.support.Memcached;
 import com.carrotdata.cache.util.UnsafeAccess;
+import com.carrotdata.memcarrot.CommandProcessor.OutputConsumer;
 
 /**
  * Commands "incr" and "decr" are used to change data for some item in-place, incrementing or
@@ -37,7 +38,7 @@ import com.carrotdata.cache.util.UnsafeAccess;
 public class DECR extends INCR {
 
   @Override
-  public int execute(Memcached support, long outBuffer, int outBufferSize) {
+  public int execute(Memcached support, long outBuffer, int outBufferSize, OutputConsumer consumer) {
     try {
       long result = support.decr(keyPtr, keySize, value);
       if (!this.noreply) {

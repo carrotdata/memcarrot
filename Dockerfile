@@ -1,4 +1,5 @@
-FROM openjdk:11-jre-slim AS builder
+#FROM openjdk:11-jre-slim AS builder
+FROM bitnami/minideb AS builder
 
 LABEL org.opencontainers.image.source = "https://github.com/carrotdata/memcarrot"
 LABEL org.opencontainers.image.description = "memcarrot docker image"

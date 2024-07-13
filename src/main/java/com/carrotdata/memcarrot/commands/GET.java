@@ -11,9 +11,13 @@
  */
 package com.carrotdata.memcarrot.commands;
 
+import java.io.IOException;
+import java.nio.BufferOverflowException;
+
 import com.carrotdata.cache.support.Memcached;
 import com.carrotdata.cache.support.Memcached.Record;
 import com.carrotdata.cache.util.UnsafeAccess;
+import com.carrotdata.memcarrot.CommandProcessor.OutputConsumer;
 
 public class GET extends RetrievalCommand {
 
@@ -35,7 +39,7 @@ public class GET extends RetrievalCommand {
   public static long executeTime = 0;
 
   @Override
-  public int execute(Memcached support, long outBuffer, int outBufferSize) {
+  public int execute(Memcached support, long outBuffer, int outBufferSize, OutputConsumer consumer) throws IOException {
     long t1 = System.nanoTime();
     int outSize = 0;
     int count = this.keys.length;
@@ -44,7 +48,16 @@ public class GET extends RetrievalCommand {
       if (r.value == null) continue;
       int size = r.write(keys[i], keySizes[i], outBuffer + outSize, outBufferSize - outSize, isCAS);
       if (size > outBufferSize - outSize - 5 /* END\r\n */) {
-        break;
+        if (outSize > 0) {
+          // FIXME: Partial return - problem
+          //break;
+          consumer.consume(outSize);
+          outSize = 0;
+          i--;
+          continue;
+        } else {
+          throw new BufferOverflowException();
+        }
       }
       outSize += size;
     }

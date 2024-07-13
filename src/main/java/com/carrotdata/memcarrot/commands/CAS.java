@@ -14,6 +14,7 @@ package com.carrotdata.memcarrot.commands;
 import com.carrotdata.cache.support.Memcached;
 import com.carrotdata.cache.support.Memcached.OpResult;
 import com.carrotdata.cache.util.UnsafeAccess;
+import com.carrotdata.memcarrot.CommandProcessor.OutputConsumer;
 
 public class CAS extends StorageCommand {
 
@@ -22,7 +23,7 @@ public class CAS extends StorageCommand {
   }
 
   @Override
-  public int execute(Memcached support, long outBuffer, int outBufferSize) {
+  public int execute(Memcached support, long outBuffer, int outBufferSize, OutputConsumer consumer) {
     OpResult result = support.cas(keyPtr, keySize, valPtr, valSize, (int) flags, exptime, cas);
     if (!this.noreply) {
       switch (result) {

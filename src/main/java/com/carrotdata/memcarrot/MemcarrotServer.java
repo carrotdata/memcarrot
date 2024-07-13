@@ -88,7 +88,7 @@ public class MemcarrotServer {
   public MemcarrotServer(String host, int port) throws IOException {
     this.port = port;
     this.host = host;
-    this.bufferSize = MemcarrotConf.getConf().getIOBufferSize();
+    this.bufferSize = MemcarrotConf.getConf().getKeyValueMaxSize();
     this.tcpSndRcvBufferSize = MemcarrotConf.getConf().getSndRcvBufferSize();
 
   }
@@ -97,7 +97,7 @@ public class MemcarrotServer {
     MemcarrotConf config = MemcarrotConf.getConf();
     this.port = config.getServerPort();
     this.host = config.getServerAddress();
-    this.bufferSize = config.getIOBufferSize();
+    this.bufferSize = config.getKeyValueMaxSize();
     this.tcpSndRcvBufferSize = MemcarrotConf.getConf().getSndRcvBufferSize();
 
   }
@@ -105,7 +105,7 @@ public class MemcarrotServer {
   public MemcarrotServer(MemcarrotConf config) throws IOException {
     this.port = config.getServerPort();
     this.host = config.getServerAddress();
-    this.bufferSize = config.getIOBufferSize();
+    this.bufferSize = config.getKeyValueMaxSize();
     this.tcpSndRcvBufferSize = config.getSndRcvBufferSize();
   }
 

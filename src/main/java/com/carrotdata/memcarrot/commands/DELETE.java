@@ -11,6 +11,7 @@
  */
 package com.carrotdata.memcarrot.commands;
 
+import com.carrotdata.memcarrot.CommandProcessor.OutputConsumer;
 import com.carrotdata.memcarrot.support.IllegalFormatException;
 
 import static com.carrotdata.cache.util.Utils.compareTo;
@@ -73,7 +74,7 @@ public class DELETE extends AbstractMemcachedCommand {
   }
 
   @Override
-  public int execute(Memcached support, long outBuffer, int outBufferSize) {
+  public int execute(Memcached support, long outBuffer, int outBufferSize, OutputConsumer consumer) {
     OpResult result = support.delete(keyPtr, keySize);
     if (!this.noreply) {
       if (result == OpResult.DELETED) {

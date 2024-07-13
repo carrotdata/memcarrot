@@ -16,6 +16,7 @@ import static com.carrotdata.cache.util.Utils.strToLongDirect;
 
 import com.carrotdata.cache.support.Memcached;
 import com.carrotdata.cache.util.UnsafeAccess;
+import com.carrotdata.memcarrot.CommandProcessor.OutputConsumer;
 import com.carrotdata.memcarrot.support.IllegalFormatException;
 
 /**
@@ -94,7 +95,7 @@ public class TOUCH extends AbstractMemcachedCommand {
   }
 
   @Override
-  public int execute(Memcached support, long outBuffer, int outBufferSize) {
+  public int execute(Memcached support, long outBuffer, int outBufferSize, OutputConsumer consumer) {
     long result = support.touch(keyPtr, keySize, exptime);
     if (!this.noreply) {
       if (result >= 0) {
