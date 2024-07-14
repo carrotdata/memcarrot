@@ -36,6 +36,8 @@ public class TestSimpleClient {
   MemcarrotServer server;
   SimpleClient client;
   
+  boolean localRun = true;
+  
   static long startTime = System.nanoTime();
   
   @Before
@@ -58,6 +60,8 @@ public class TestSimpleClient {
       server.start();
       host = server.getHost();
       port = server.getPort();
+    } else {
+      localRun = false;
     }
     logger.info("kv-max-size={}", MemcarrotConf.getConf().getKeyValueMaxSize());
     client = new SimpleClient(host, port);
@@ -115,8 +119,11 @@ public class TestSimpleClient {
     long expire = expireIn(100);
     boolean noreply = false;
     ResponseCode code = client.set(bkey, bvalue, flags, expire, noreply);
-    assertTrue(code == ResponseCode.CLIENT_ERROR);
-
+    if (localRun) {
+      assertTrue(code == ResponseCode.CLIENT_ERROR);
+    } else {
+      assertTrue(code == ResponseCode.STORED);      
+    }
 
   }
   
@@ -1022,59 +1029,66 @@ public class TestSimpleClient {
   public static void main(String[] args) throws IOException, InterruptedException {
     
     TestSimpleClient test = new TestSimpleClient();
-//    test.setUp();
-//    test.testAddGet();
-//    test.tearDown();
-//    test.setUp();
-//    test.testAddGetMulti();
-//    test.tearDown();
-//    test.setUp();
-//    test.testAppendGet();
-//    test.tearDown();
-//    test.setUp();
-//    test.testAppendGetMulti();
-//    test.tearDown();
-//    test.setUp();
-//    test.testCAS();
-//    test.tearDown();
-//    test.setUp();
-//    test.testCASGMulti();
-//    test.tearDown();
-//    test.setUp();
-//    test.testDecrGetMulti();
-//    test.tearDown();
-//    test.setUp();
-//    test.testDeleteGetMulti();
-//    test.tearDown();
-//    test.setUp();
-//    test.testIncrGetMulti();
-//    test.tearDown();
-//    test.setUp();
-//    test.testPrependGet();
-//    test.tearDown();
-//    test.setUp();
-//    test.testPrependGetMulti();
-//    test.tearDown();
-//    test.setUp();
-//    test.testReplaceGet();
-//    test.tearDown();
-//    test.setUp();
-//    test.testSetGat();
-//    test.tearDown();
-//    test.setUp();
-//    test.testSetGats();
-//    test.tearDown();
-//    test.setUp();
-//    test.testSetGet();
-//    test.tearDown();
-//    test.setUp();
-//    test.testSetGetMulti();
-//    test.tearDown();
-//    test.setUp();
-//    test.testSetGets();
-//    test.tearDown();
+    test.setUp();
+    test.testAddGet();
+    test.tearDown();
+    test.setUp();
+    test.testAddGetMulti();
+    test.tearDown();
+    test.setUp();
+    test.testAppendGet();
+    test.tearDown();
+    test.setUp();
+    test.testAppendGetMulti();
+    test.tearDown();
+    test.setUp();
+    test.testCAS();
+    test.tearDown();
+    test.setUp();
+    test.testCASGMulti();
+    test.tearDown();
+    test.setUp();
+    test.testDecrGetMulti();
+    test.tearDown();
+    test.setUp();
+    test.testDeleteGetMulti();
+    test.tearDown();
+    test.setUp();
+    test.testIncrGetMulti();
+    test.tearDown();
+    test.setUp();
+    test.testPrependGet();
+    test.tearDown();
+    test.setUp();
+    test.testPrependGetMulti();
+    test.tearDown();
+    test.setUp();
+    test.testReplaceGet();
+    test.tearDown();
+    test.setUp();
+    test.testSetGat();
+    test.tearDown();
+    test.setUp();
+    test.testSetGats();
+    test.tearDown();
+    test.setUp();
+    test.testSetGet();
+    test.tearDown();
+    test.setUp();
+    test.testSetGetMulti();
+    test.tearDown();
+    test.setUp();
+    test.testSetGets();
+    test.tearDown();
+    test.setUp();
+    test.testSetGetMultiWithOverflow();
+    test.tearDown();
+    test.setUp();
+    test.testInputTooLarge();
+    test.tearDown();
     test.setUp();
     test.testTouchGetMulti();
     test.tearDown();
+    
   }
 }
