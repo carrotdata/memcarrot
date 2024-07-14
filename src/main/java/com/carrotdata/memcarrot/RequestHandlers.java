@@ -111,20 +111,21 @@ public class RequestHandlers {
 
 class WorkThread extends Thread {
   static class ChannelOutputConsumer implements OutputConsumer {
-    
+
     SocketChannel channel;
     ByteBuffer out;
-    
+
     @Override
     public void consume(int upto) throws IOException {
       out.limit(upto);
       out.position(0);
-      while(out.hasRemaining()) {
+      while (out.hasRemaining()) {
         channel.write(out);
       }
     }
-    
+
   }
+
   private static final Logger log = LogManager.getLogger(WorkThread.class);
 
   /*
@@ -209,7 +210,7 @@ class WorkThread extends Thread {
    * @param key selection key
    */
   void nextKey(SelectionKey key) {
-    if(key.attachment() ==  null) {
+    if (key.attachment() == null) {
       key.attach(new RequestHandlers.Attachment());
     } else {
       RequestHandlers.Attachment att = (RequestHandlers.Attachment) key.attachment();
@@ -235,7 +236,9 @@ class WorkThread extends Thread {
   private SelectionKey waitForKey() {
     long counter = 0;
     long timeout = 50000;
+    long idleTimeout = 50000000; // 50ms
     SelectionKey key = null;
+    long idleTimeStart = 0;
     // wait for next task
     while ((key = nextKey.get()) == null) {
       if (Thread.interrupted()) {
@@ -246,7 +249,16 @@ class WorkThread extends Thread {
         counter++;
         Thread.onSpinWait();
       } else {
-        LockSupport.parkNanos(timeout);
+        if (idleTimeStart == 0) {
+          idleTimeStart = System.nanoTime();
+        }
+        long tout = 0;
+        if (System.nanoTime() - idleTimeStart > idleTimeout) {
+          tout = 200 * timeout; // 20ms
+        } else {
+          tout = timeout;
+        }
+        LockSupport.parkNanos(tout);
       }
     }
     return key;
@@ -274,14 +286,14 @@ class WorkThread extends Thread {
       ByteBuffer out = getOutputBuffer();
       in.clear();
       out.clear();
-      
+
       consumer.channel = channel;
       consumer.out = out;
-      
+
       try {
-        long startCounter = 0; 
+        long startCounter = 0;
         long max_wait_ns = 500_000_000; // 500ms - FIXME - make it configurable
-        int inputSize  = 0;
+        int inputSize = 0;
 
         outer: while (true) {
           // Before read check input size
@@ -324,8 +336,9 @@ class WorkThread extends Thread {
           }
           startCounter = 0;
           int consumed = 0;
-          inputSize += num;;
-          
+          inputSize += num;
+          ;
+
           while (consumed < inputSize) {
             // Try to parse
             // Process request using buffer's addresses
