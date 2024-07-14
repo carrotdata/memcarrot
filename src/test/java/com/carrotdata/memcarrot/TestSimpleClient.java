@@ -81,6 +81,7 @@ public class TestSimpleClient {
   
   @Test
   public void testSetGet() throws IOException {
+    logger.info("Running testSetGet");
     String key = TestUtils.randomString(20);
     String value = TestUtils.randomString(200);
     byte[] bkey = key.getBytes();
@@ -102,11 +103,14 @@ public class TestSimpleClient {
     assertTrue(TestUtils.equals(bkey, gr.key));
     assertTrue(TestUtils.equals(bvalue, gr.value));
     assertEquals(flags, gr.flags);
+    logger.info("Finished testSetGet");
 
   }
 
   @Test
   public void testInputTooLarge() throws IOException {
+    logger.info("Running testInputTooLarge");
+
     MemcarrotConf conf = MemcarrotConf.getConf();
     int max_kv_size = conf.getKeyValueMaxSize();
     
@@ -124,11 +128,14 @@ public class TestSimpleClient {
     } else {
       assertTrue(code == ResponseCode.STORED);      
     }
+    logger.info("Finished testInputTooLarge");
 
   }
   
   @Test
   public void testSetGets() throws IOException {
+    logger.info("Running testSetGets");
+
     String key = TestUtils.randomString(20);
     String value = TestUtils.randomString(200);
     byte[] bkey = key.getBytes();
@@ -152,11 +159,14 @@ public class TestSimpleClient {
     assertEquals(flags, gr.flags);
     assertTrue(gr.cas.isPresent());
     assertTrue(gr.cas.getAsLong() != 0);
+    logger.info("Finished testSetGets");
 
   }
 
   @Test
   public void testSetGats() throws IOException {
+    logger.info("Running testSetGats");
+
     String key = TestUtils.randomString(20);
     String value = TestUtils.randomString(200);
     byte[] bkey = key.getBytes();
@@ -184,10 +194,14 @@ public class TestSimpleClient {
     // Expired
     result = client.get(new byte[][] { bkey });
     assertEquals(0, result.size());
+    logger.info("Finished testSetGats");
+
   }
 
   @Test
   public void testSetGat() throws IOException {
+    logger.info("Running testSetGat");
+
     String key = TestUtils.randomString(20);
     String value = TestUtils.randomString(200);
     byte[] bkey = key.getBytes();
@@ -214,10 +228,14 @@ public class TestSimpleClient {
     // Expired
     result = client.get(new byte[][] { bkey });
     assertEquals(0, result.size());
+    logger.info("Finished testSetGat");
+
   }
 
   @Test
   public void testAddGet() throws IOException {
+    logger.info("Running testAddGet");
+
     String key = TestUtils.randomString(20);
     String value = TestUtils.randomString(200);
     byte[] bkey = key.getBytes();
@@ -242,11 +260,14 @@ public class TestSimpleClient {
     assertTrue(TestUtils.equals(bkey, gr.key));
     assertTrue(TestUtils.equals(bvalue, gr.value));
     assertEquals(flags, gr.flags);
+    logger.info("Finished testAddGet");
 
   }
 
   @Test
   public void testAppendGet() throws IOException {
+    logger.info("Running testAppendGet");
+
     String key = TestUtils.randomString(20);
     String value = TestUtils.randomString(200);
     String value1 = TestUtils.randomString(200);
@@ -275,11 +296,14 @@ public class TestSimpleClient {
     assertTrue(TestUtils.equals(bkey, gr.key));
     assertTrue(TestUtils.equals((value + value1).getBytes(), gr.value));
     assertEquals(flags, gr.flags);
+    logger.info("Finished testAppendGet");
 
   }
 
   @Test
   public void testPrependGet() throws IOException {
+    logger.info("Running testPrependGet");
+
     String key = TestUtils.randomString(20);
     String value = TestUtils.randomString(200);
     String value1 = TestUtils.randomString(200);
@@ -308,11 +332,14 @@ public class TestSimpleClient {
     assertTrue(TestUtils.equals(bkey, gr.key));
     assertTrue(TestUtils.equals((value1 + value).getBytes(), gr.value));
     assertEquals(flags, gr.flags);
+    logger.info("Finished testPrependGet");
 
   }
 
   @Test
   public void testReplaceGet() throws IOException {
+    logger.info("Running testReplaceGet");
+
     String key = TestUtils.randomString(20);
     String value = TestUtils.randomString(200);
     byte[] bkey = key.getBytes();
@@ -340,11 +367,14 @@ public class TestSimpleClient {
     assertTrue(TestUtils.equals(bkey, gr.key));
     assertTrue(TestUtils.equals(bvalue, gr.value));
     assertEquals(flags, gr.flags);
+    logger.info("Finished testReplaceGet");
 
   }
 
   @Test
   public void testCAS() throws IOException {
+    logger.info("Running testCAS");
+
     String key = TestUtils.randomString(20);
     String value = TestUtils.randomString(200);
     byte[] bkey = key.getBytes();
@@ -378,11 +408,14 @@ public class TestSimpleClient {
     assertTrue(TestUtils.equals(bkey, gr.key));
     assertTrue(TestUtils.equals(bkey, gr.value));
     assertEquals(flags, gr.flags);
+    logger.info("Finished testCAS");
 
   }
 
   @Test
   public void testSetGetMulti() throws IOException {
+    logger.info("Running testSetGetMulti");
+
     String key = getIdString();
     String value = TestUtils.randomString(200);
     byte[] bvalue = value.getBytes();
@@ -406,6 +439,9 @@ public class TestSimpleClient {
       long t1 = System.nanoTime();
       List<GetResult> list = client.get(keys);
       getTime += System.nanoTime() - t1;
+      if (list.size() != batchSize) {
+        logger.error("list size={} i={}", list.size(), i);
+      }
       assertTrue(list.size() == batchSize);
       list.stream().forEach(x -> assertTrue(TestUtils.equals(bvalue, x.value)));
 
@@ -415,11 +451,14 @@ public class TestSimpleClient {
       getTime / 1_000_000);
     
     deleteAll(n);
+    logger.info("Finished testSetGetMulti");
 
   }
 
   @Test
   public void testSetGetMultiWithOverflow() throws IOException {
+    logger.info("Running testSetGetMultiWithOverflow");
+
     String key = getIdString();
     String value = TestUtils.randomString(200);
     byte[] bvalue = value.getBytes();
@@ -446,6 +485,9 @@ public class TestSimpleClient {
       long t1 = System.nanoTime();
       List<GetResult> list = client.get(keys);
       getTime += System.nanoTime() - t1;
+      if (list.size() != batchSize) {
+        logger.error("list size={} i={}", list.size(), i);
+      }
       assertTrue(list.size() == batchSize);
       list.stream().forEach(x -> assertTrue(TestUtils.equals(bvalue, x.value)));
 
@@ -455,11 +497,14 @@ public class TestSimpleClient {
       getTime / 1_000_000);
     
     deleteAll(n);
+    logger.info("Finished testSetGetMultiWithOverflow");
 
   }
   
   @Test
   public void testAddGetMulti() throws IOException {
+    logger.info("Running testAddGetMulti");
+
     String key = getIdString();
     String value = TestUtils.randomString(200);
     byte[] bvalue = value.getBytes();
@@ -480,6 +525,9 @@ public class TestSimpleClient {
     for (int i = 0; i < n / batchSize; i++) {
       byte[][] keys = getBatch(i, batchSize);
       List<GetResult> list = client.get(keys);
+      if (list.size() != batchSize) {
+        logger.error("list size={} i={}", list.size(), i);
+      }
       assertTrue(list.size() == batchSize);
       list.stream().forEach(x -> assertTrue(TestUtils.equals(bvalue, x.value)));
 
@@ -487,11 +535,14 @@ public class TestSimpleClient {
     long getend = System.currentTimeMillis();
     logger.info("GET total={} batch={} time={}ms", n, batchSize, getend - end);
     deleteAll(n);
+    logger.info("Finished testAddGetMulti");
 
   }
 
   @Test
   public void testAppendGetMulti() throws IOException {
+    logger.info("Running testAppendGetMulti");
+
     String key = getIdString();
     String value = TestUtils.randomString(200);
     String value1 = TestUtils.randomString(200);
@@ -525,6 +576,9 @@ public class TestSimpleClient {
     for (int i = 0; i < n / batchSize; i++) {
       byte[][] keys = getBatch(i, batchSize);
       List<GetResult> list = client.get(keys);
+      if (list.size() != batchSize) {
+        logger.error("list size={} i={}", list.size(), i);
+      }
       assertTrue(list.size() == batchSize);
       list.stream().forEach(x -> assertTrue(TestUtils.equals(bv, x.value)));
 
@@ -532,11 +586,14 @@ public class TestSimpleClient {
     long getend = System.currentTimeMillis();
     logger.info("GET total={} batch={} time={}ms", n, batchSize, getend - start);
     deleteAll(n);
+    logger.info("Finished testAppendGetMulti");
 
   }
 
   @Test
   public void testPrependGetMulti() throws IOException {
+    logger.info("Running testPrependGetMulti");
+
     String key = getIdString();
     String value = TestUtils.randomString(20);
     String value1 = TestUtils.randomString(20);
@@ -570,6 +627,9 @@ public class TestSimpleClient {
     for (int i = 0; i < n / batchSize; i++) {
       byte[][] keys = getBatch(i, batchSize);
       List<GetResult> list = client.get(keys);
+      if (list.size() != batchSize) {
+        logger.error("list size={} i={}", list.size(), i);
+      }
       assertTrue(list.size() == batchSize);
       for (int j = 0; j < list.size(); j++) {
         assertTrue(TestUtils.equals(bv, list.get(j).value));
@@ -578,11 +638,14 @@ public class TestSimpleClient {
     long getend = System.currentTimeMillis();
     logger.info("GET total={} batch={} time={}ms", n, batchSize, getend - start);
     deleteAll(n);
+    logger.info("Finished testPrependGetMulti");
 
   }
 
   @Test
   public void testReplaceGetMulti() throws IOException {
+    logger.info("Running testReplaceGetMulti");
+
     String key = getIdString();
     String value = TestUtils.randomString(200);
     byte[] bvalue = value.getBytes();
@@ -613,6 +676,9 @@ public class TestSimpleClient {
     for (int i = 0; i < n / batchSize; i++) {
       byte[][] keys = getBatch(i, batchSize);
       List<GetResult> list = client.get(keys);
+      if (list.size() != batchSize) {
+        logger.error("list size={} i={}", list.size(), i);
+      }
       assertTrue(list.size() == batchSize);
       list.stream().forEach(x -> assertTrue(TestUtils.equals(bvalue, x.value)));
 
@@ -620,11 +686,14 @@ public class TestSimpleClient {
     long getend = System.currentTimeMillis();
     logger.info("GET total={} batch={} time={}ms", n, batchSize, getend - end);
     deleteAll(n);
+    logger.info("Finished testReplaceGetMulti");
 
   }
 
   @Test
   public void testTouchGetMulti() throws IOException, InterruptedException {
+    logger.info("Running testTouchGetMulti");
+
     String key = getIdString();
     String value = TestUtils.randomString(200);
     byte[] bvalue = value.getBytes();
@@ -666,6 +735,9 @@ public class TestSimpleClient {
     for (int i = 0; i < n / batchSize; i++) {
       byte[][] keys = getBatch(i, batchSize);
       List<GetResult> list = client.get(keys);
+      if (list.size() != batchSize) {
+        logger.error("list size={} i={}", list.size(), i);
+      }
       assertTrue(list.size() == batchSize);
       list.stream().forEach(x -> assertTrue(TestUtils.equals(bvalue, x.value)));
     }
@@ -697,6 +769,9 @@ public class TestSimpleClient {
     for (int i = 0; i < n / batchSize; i++) {
       byte[][] keys = getBatch(i, batchSize);
       List<GetResult> list = client.get(keys);
+      if (list.size() != batchSize) {
+        logger.error("list size={} i={}", list.size(), i);
+      }
       assertTrue(list.size() == batchSize);
       list.stream().forEach(x -> assertTrue(TestUtils.equals(bvalue, x.value)));
     }
@@ -722,11 +797,14 @@ public class TestSimpleClient {
     start = System.currentTimeMillis();
     logger.info("GET total={} batch={} time={}ms", n, batchSize, start - end);
     deleteAll(n);
+    logger.info("Finished testTouchGetMulti");
 
   }
 
   @Test
   public void testDeleteGetMulti() throws IOException {
+    logger.info("Running testDeleteGetMulti");
+
     String key = getIdString();
     String value = TestUtils.randomString(20);
     byte[] bvalue = value.getBytes();
@@ -768,11 +846,14 @@ public class TestSimpleClient {
     long getend = System.currentTimeMillis();
     logger.info("GET total={} batch={} time={}ms", n, batchSize, getend - end);
     deleteAll(n);
+    logger.info("Finished testDeleteGetMulti");
 
   }
 
   @Test
   public void testIncrGetMulti() throws IOException {
+    logger.info("Running testIncrGetMulti");
+
     String key = getIdString();
     long start = System.currentTimeMillis();
 
@@ -834,11 +915,14 @@ public class TestSimpleClient {
     start = System.currentTimeMillis();
     logger.info("INCR Time={}ms", start - end);
     deleteAll(n);
+    logger.info("Finished testIncrGetMulti");
 
   }
 
   @Test
   public void testDecrGetMulti() throws IOException {
+    logger.info("Running testDecrGetMulti");
+
     String key = getIdString();
     long start = System.currentTimeMillis();
 
@@ -900,11 +984,14 @@ public class TestSimpleClient {
     start = System.currentTimeMillis();
     logger.info("DECR Time={}ms", start - end);
     deleteAll(n);
+    logger.info("Finished testDecrGetMulti");
 
   }
 
   @Test
   public void testCASGMulti() throws IOException {
+    logger.info("Running testCASGMulti");
+
     String key = getIdString();
     String value = TestUtils.randomString(200);
     String value1 = TestUtils.randomString(200);
@@ -931,6 +1018,9 @@ public class TestSimpleClient {
       long t1 = System.nanoTime();
       List<GetResult> list = client.gets(keys);
       getTime += System.nanoTime() - t1;
+      if (list.size() != batchSize) {
+        logger.error("list size={} i={}", list.size(), i);
+      }
       assertTrue(list.size() == batchSize);
       for (int j = 0; j < list.size(); j++) {
         GetResult r = list.get(j);
@@ -960,6 +1050,9 @@ public class TestSimpleClient {
     for (int i = 0; i < n / batchSize; i++) {
       byte[][] keys = getBatch(i, batchSize);
       List<GetResult> list = client.gets(keys);
+      if (list.size() != batchSize) {
+        logger.error("list size={} i={}", list.size(), i);
+      }
       assertTrue(list.size() == batchSize);
       for (int j = 0; j < list.size(); j++) {
         GetResult r = list.get(j);
@@ -985,6 +1078,9 @@ public class TestSimpleClient {
     for (int i = 0; i < n / batchSize; i++) {
       byte[][] keys = getBatch(i, batchSize);
       List<GetResult> list = client.gets(keys);
+      if (list.size() != batchSize) {
+        logger.error("list size={} i={}", list.size(), i);
+      }
       assertTrue(list.size() == batchSize);
       for (int j = 0; j < list.size(); j++) {
         GetResult r = list.get(j);
@@ -994,6 +1090,8 @@ public class TestSimpleClient {
     getend = System.currentTimeMillis();
     logger.info("GET total={} batch={} time={}ms", n, batchSize, getend - end);
     deleteAll(n);
+    logger.info("Finished testCASGMulti");
+
 
   }
 
