@@ -50,6 +50,7 @@ public class Utils {
 
   public static int nextTokenStart(long ptr, int limit) {
     int off = 0;
+    if (limit == 0) return -1;
     while (UnsafeAccess.toByte(ptr + off) == (byte) ' ') {
       off++;
       if (off == limit) {
@@ -61,6 +62,7 @@ public class Utils {
 
   public static int nextTokenEnd(long ptr, int limit) {
     int off = 0;
+    if (limit == 0) return -1;
     while (UnsafeAccess.toByte(ptr + off) != (byte) ' '
         && UnsafeAccess.toByte(ptr + off) != (byte) '\r') {
       off++;

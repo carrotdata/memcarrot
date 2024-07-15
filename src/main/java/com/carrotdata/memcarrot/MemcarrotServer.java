@@ -54,7 +54,7 @@ public class MemcarrotServer {
    * Buffer size
    */
   int bufferSize;
-  
+
   /**
    * TCP Send/Receive buffer size
    */
@@ -290,7 +290,6 @@ public class MemcarrotServer {
       try {
         // Wait for an event
         selector.select();
-
         // Iterate over the set of selected keys
         Iterator<SelectionKey> keys = selector.selectedKeys().iterator();
         while (keys.hasNext()) {
@@ -307,7 +306,7 @@ public class MemcarrotServer {
         }
       } catch (IOException e) {
         log.error("Error during select: ", e);
-        //FIXME
+        // FIXME
       } catch (CancelledKeyException e) {
         // swallow
       }

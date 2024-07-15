@@ -1,16 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<configuration status="info">
-   <appenders>
+<Configuration status="warn">
+    <Appenders>
         <Console name="STDOUT" target="SYSTEM_OUT">
             <PatternLayout pattern="%d %p %c{1.} [%t] %m%n"/>
         </Console>
-
-    </appenders>
-
+    </Appenders>
     <Loggers>
-        <Root level="all">
+        <Root level="info">
             <AppenderRef ref="STDOUT"/>
         </Root>
     </Loggers>
+</Configuration>
 
-</configuration>
