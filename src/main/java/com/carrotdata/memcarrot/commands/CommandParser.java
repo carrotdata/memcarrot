@@ -67,6 +67,10 @@ public class CommandParser {
 
   private static long shutdown_cmd = UnsafeAccess.allocAndCopy("shutdown", 0, 8);
   private static int shutdown_cmd_len = 8;
+  
+  private static long quit_cmd = UnsafeAccess.allocAndCopy("quit", 0, 4);
+  private static int quit_cmd_len = 4;
+
 
   /**
    * TODO: Add new commands support Parse input memory buffer
@@ -75,20 +79,14 @@ public class CommandParser {
    */
   public static MemcachedCommand parse(long buf, int size)
       throws IllegalFormatException, UnsupportedCommand {
-    // if (!endcrlf(buf, size)) {
-    // return null;
-    // }
-    // // size >= 2 and command ends with \r\n
-    // if (size == 2) {
-    // throw new IllegalFormatException("malformed request");
-    // }
+   
     if (size < 3) {
       return null;
     }
     int start = Utils.nextTokenStart(buf, size);
     if (start > 0) {
       // TODO check binary protocol
-      throw new IllegalFormatException("P1 malformed request");
+      throw new IllegalFormatException("malformed request");
     } else if (start < 0) {
       return null;// stream is incomplete
     }
@@ -124,6 +122,8 @@ public class CommandParser {
         cmd = new DECR();
       } else if (compareTo(buf, len, save_cmd, len) == 0) {
         cmd = new SAVE();
+      } else if (compareTo(buf, len, quit_cmd, len) == 0) {
+        cmd = new QUIT();
       } else {
         throw new UnsupportedCommand(new String(toBytes(buf, len)));
       }
