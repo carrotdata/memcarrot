@@ -44,21 +44,40 @@ public class TestXMemcachedClient {
   MemcarrotServer server;
   XMemcachedClient client;
 
+  int n = 50_000;
+  
   @Before
   public void setUp() throws IOException {
-    Cache c = TestUtils.createCache(400_000_000, 4_000_000, true, true);
-    Memcached m = new Memcached(c);
-    server = new MemcarrotServer();
-    server.setMemachedSupport(m);
-    server.start();
-    client = new XMemcachedClient(server.getHost(), server.getPort());
+    
+    System.setProperty(MemcarrotConf.CONF_KV_SIZE_MAX, "262144");
+    String host = null;
+    int port = 0;
+    
+    host = System.getProperty("host");
+    String ps = System.getProperty("port");
+    if (ps != null) {
+      port = Integer.parseInt(ps);
+    }
+    if (host == null) {
+      Cache c = TestUtils.createCache(800_000_000, 4_000_000, true, true);
+      Memcached m = new Memcached(c);
+      server = new MemcarrotServer();
+      server.setMemachedSupport(m);
+      server.start();
+      host = server.getHost();
+      port = server.getPort();
+    } 
+    logger.info("kv-max-size={}", MemcarrotConf.getConf().getKeyValueMaxSize());
+    client = new XMemcachedClient(host, port);
+
   }
 
   @After
   public void tearDown() throws IOException {
     client.shutdown();
-    ;
-    server.stop();
+    if (server != null) {
+      server.stop();
+    }
   }
 
   @Test
@@ -414,7 +433,6 @@ public class TestXMemcachedClient {
     String key = "KEY:";
     String value = TestUtils.randomString(200);
     long start = System.currentTimeMillis();
-    int n = 10000;
     for (int i = 0; i < n; i++) {
       int expire = 100;
       if (i % 100 == 0) {
@@ -426,6 +444,8 @@ public class TestXMemcachedClient {
     }
     long end = System.currentTimeMillis();
     logger.info("SET Time={}ms", end - start);
+    Thread.sleep(500);
+    end = System.currentTimeMillis();
 
     int batchSize = 100;
 
@@ -438,7 +458,7 @@ public class TestXMemcachedClient {
     }
     long getend = System.currentTimeMillis();
     logger.info("GET total={} batch={} time={}ms", n, batchSize, getend - end);
-
+    delete(n);
   }
 
   private List<String> getBatch(int batchNum, int batchSize) {
@@ -455,7 +475,6 @@ public class TestXMemcachedClient {
     String key = "KEY:";
     String value = TestUtils.randomString(200);
     long start = System.currentTimeMillis();
-    int n = 10000;
     for (int i = 0; i < n; i++) {
       int expire = 100;
       if (i % 100 == 0) {
@@ -467,6 +486,9 @@ public class TestXMemcachedClient {
     }
     long end = System.currentTimeMillis();
     logger.info("ADD Time={}ms", end - start);
+    
+    Thread.sleep(500);
+    end = System.currentTimeMillis();
 
     int batchSize = 100;
 
@@ -479,7 +501,7 @@ public class TestXMemcachedClient {
     }
     long getend = System.currentTimeMillis();
     logger.info("GET total={} batch={} time={}ms", n, batchSize, getend - end);
-
+    delete(n);
   }
 
   @Test
@@ -489,7 +511,6 @@ public class TestXMemcachedClient {
     String value = TestUtils.randomString(200);
     String value1 = TestUtils.randomString(200);
     long start = System.currentTimeMillis();
-    int n = 10000;
     for (int i = 0; i < n; i++) {
       int expire = 100;
       if (i % 100 == 0) {
@@ -501,6 +522,9 @@ public class TestXMemcachedClient {
     }
     long end = System.currentTimeMillis();
     logger.info("ADD Time={}ms", end - start);
+    
+    Thread.sleep(500);
+    end = System.currentTimeMillis();
     for (int i = 0; i < n; i++) {
       if (i % 100 == 0) {
         boolean res = client.append((key + i), value1);
@@ -511,7 +535,9 @@ public class TestXMemcachedClient {
     }
     start = System.currentTimeMillis();
     logger.info("APPEND Time={}ms", start - end);
-
+    
+    Thread.sleep(500);
+    start = System.currentTimeMillis();
     int batchSize = 100;
     String newValue = value + value1;
     for (int i = 0; i < n / batchSize; i++) {
@@ -523,7 +549,7 @@ public class TestXMemcachedClient {
     }
     long getend = System.currentTimeMillis();
     logger.info("GET total={} batch={} time={}ms", n, batchSize, getend - start);
-
+    delete(n);
   }
 
   @Test
@@ -533,7 +559,6 @@ public class TestXMemcachedClient {
     String value = TestUtils.randomString(200);
     String value1 = TestUtils.randomString(200);
     long start = System.currentTimeMillis();
-    int n = 10000;
     for (int i = 0; i < n; i++) {
       int expire = 100;
       if (i % 100 == 0) {
@@ -545,6 +570,9 @@ public class TestXMemcachedClient {
     }
     long end = System.currentTimeMillis();
     logger.info("ADD Time={}ms", end - start);
+    
+    Thread.sleep(500);
+    end = System.currentTimeMillis();
     for (int i = 0; i < n; i++) {
       if (i % 100 == 0) {
         boolean res = client.prepend((key + i), value1);
@@ -556,6 +584,9 @@ public class TestXMemcachedClient {
     start = System.currentTimeMillis();
     logger.info("PREPEND Time={}ms", start - end);
 
+    Thread.sleep(500);
+    start = System.currentTimeMillis();
+    
     int batchSize = 100;
     String newValue = value1 + value;
     for (int i = 0; i < n / batchSize; i++) {
@@ -567,6 +598,8 @@ public class TestXMemcachedClient {
     }
     long getend = System.currentTimeMillis();
     logger.info("GET total={} batch={} time={}ms", n, batchSize, getend - start);
+    
+    delete(n);
   }
 
   @Test
@@ -576,7 +609,6 @@ public class TestXMemcachedClient {
     String value = TestUtils.randomString(200);
     String value1 = TestUtils.randomString(200);
     long start = System.currentTimeMillis();
-    int n = 10000;
     for (int i = 0; i < n; i++) {
       int expire = 100;
       if (i % 100 == 0) {
@@ -588,6 +620,9 @@ public class TestXMemcachedClient {
     }
     long end = System.currentTimeMillis();
     logger.info("ADD Time={}ms", end - start);
+    
+    Thread.sleep(500);
+    end = System.currentTimeMillis();
     for (int i = 0; i < n; i++) {
       int expire = 20;
 
@@ -600,7 +635,10 @@ public class TestXMemcachedClient {
     }
     start = System.currentTimeMillis();
     logger.info("REPLACE Time={}ms", start - end);
+    
+    Thread.sleep(500);
 
+    start = System.currentTimeMillis();
     int batchSize = 100;
     for (int i = 0; i < n / batchSize; i++) {
       List<String> keys = getBatch(i, batchSize);
@@ -611,6 +649,8 @@ public class TestXMemcachedClient {
     }
     long getend = System.currentTimeMillis();
     logger.info("GET total={} batch={} time={}ms", n, batchSize, getend - start);
+    
+    delete(n);
 
   }
 
@@ -620,7 +660,6 @@ public class TestXMemcachedClient {
     String key = "KEY:";
     String value = TestUtils.randomString(200);
     long start = System.currentTimeMillis();
-    int n = 1000;
     for (int i = 0; i < n; i++) {
       int expire = 100;
       if (i % 100 == 0) {
@@ -632,14 +671,16 @@ public class TestXMemcachedClient {
     }
     long end = System.currentTimeMillis();
     logger.info("ADD Time={}ms", end - start);
+    
+    Thread.sleep(500);
+    end = System.currentTimeMillis();
     for (int i = 0; i < n; i++) {
-      int expire = 5;
+      int expire = 10;
       boolean res = client.touch((key + i), expire);
       assertTrue(res);
     }
     start = System.currentTimeMillis();
     logger.info("TOUCH Time={}ms", start - end);
-
     int batchSize = 100;
     for (int i = 0; i < n / batchSize; i++) {
       List<String> keys = getBatch(i, batchSize);
@@ -650,7 +691,7 @@ public class TestXMemcachedClient {
     end = System.currentTimeMillis();
     logger.info("GET total={} batch={} time={}ms", n, batchSize, end - start);
 
-    Thread.sleep(5000);
+    Thread.sleep(10000);
     start = System.currentTimeMillis();
     // Must all expired
     for (int i = 0; i < n / batchSize; i++) {
@@ -660,7 +701,8 @@ public class TestXMemcachedClient {
     }
     long getend = System.currentTimeMillis();
     logger.info("GET total={} batch={} time={}ms", n, batchSize, getend - start);
-
+    
+    delete(n);
   }
 
   @Test
@@ -669,7 +711,6 @@ public class TestXMemcachedClient {
     String key = "KEY:";
     String value = TestUtils.randomString(200);
     long start = System.currentTimeMillis();
-    int n = 10_000;
     for (int i = 0; i < n; i++) {
       int expire = 100;
       if (i % 100 == 0) {
@@ -682,6 +723,8 @@ public class TestXMemcachedClient {
     long end = System.currentTimeMillis();
     logger.info("ADD Time={}ms", end - start);
 
+    Thread.sleep(500);
+    end = System.currentTimeMillis();
     int batchSize = 100;
     for (int i = 0; i < n / batchSize; i++) {
       List<String> keys = getBatch(i, batchSize);
@@ -703,6 +746,8 @@ public class TestXMemcachedClient {
     end = System.currentTimeMillis();
     logger.info("DELETE Time={}ms", end - start);
 
+    Thread.sleep(500);
+
     start = System.currentTimeMillis();
     // Must all be deleted
     for (int i = 0; i < n / batchSize; i++) {
@@ -714,6 +759,23 @@ public class TestXMemcachedClient {
     logger.info("GET total={} batch={} time={}ms", n, batchSize, getend - start);
 
   }
+  
+  private void delete(int n) throws TimeoutException, InterruptedException, MemcachedException {
+    
+    String key = "KEY:";
+    long start = System.currentTimeMillis();
+    for (int i = 0; i < n; i++) {
+      if (i % 100 == 0) {
+        boolean res = client.delete((key + i));
+      } else {
+        client.deleteWithNoReply((key + i));
+      }
+    }
+    long end = System.currentTimeMillis();
+    logger.info("DELETE Time={}ms", end - start);
+    Thread.sleep(500);
+
+  }
 
   @Test
   public void testIncrMulti()
@@ -721,7 +783,6 @@ public class TestXMemcachedClient {
     String key = "KEY:";
     String value = "0";
     long start = System.currentTimeMillis();
-    int n = 10_000;
     for (int i = 0; i < n; i++) {
       int expire = 100;
       if (i % 100 == 0) {
@@ -733,6 +794,9 @@ public class TestXMemcachedClient {
     }
     long end = System.currentTimeMillis();
     logger.info("ADD Time={}ms", end - start);
+    
+    Thread.sleep(500);
+    end = System.currentTimeMillis();
 
     for (int i = 0; i < n; i++) {
       if (i % 100 == 0) {
@@ -744,6 +808,8 @@ public class TestXMemcachedClient {
     }
     start = System.currentTimeMillis();
     logger.info("INCR Time={}ms", start - end);
+    Thread.sleep(500);
+    start = System.currentTimeMillis();
 
     for (int i = 0; i < n; i++) {
       long v = client.incr((key + i), 10);
@@ -751,6 +817,8 @@ public class TestXMemcachedClient {
     }
     end = System.currentTimeMillis();
     logger.info("INCR Time={}ms", end - start);
+    
+    delete(n);
   }
 
   @Test
@@ -759,7 +827,6 @@ public class TestXMemcachedClient {
     String key = "KEY:";
     String value = "100";
     long start = System.currentTimeMillis();
-    int n = 10_000;
     for (int i = 0; i < n; i++) {
       int expire = 100;
       if (i % 100 == 0) {
@@ -772,6 +839,10 @@ public class TestXMemcachedClient {
     long end = System.currentTimeMillis();
     logger.info("ADD Time={}ms", end - start);
 
+    Thread.sleep(500);
+
+    end = System.currentTimeMillis();
+
     for (int i = 0; i < n; i++) {
       if (i % 100 == 0) {
         long v = client.decr((key + i), 10);
@@ -782,6 +853,8 @@ public class TestXMemcachedClient {
     }
     start = System.currentTimeMillis();
     logger.info("DECR Time={}ms", start - end);
+    Thread.sleep(500);
+    start = System.currentTimeMillis();
 
     for (int i = 0; i < n; i++) {
       long v = client.decr((key + i), 100);
@@ -789,15 +862,17 @@ public class TestXMemcachedClient {
     }
     end = System.currentTimeMillis();
     logger.info("DECR Time={}ms", end - start);
+    
+    delete(n);
   }
 
+  
   // There issues with CAS noreply in xmemcached library
   @Test
-  public void TestCASMulti() throws TimeoutException, InterruptedException, MemcachedException {
+  public void testCASMulti() throws TimeoutException, InterruptedException, MemcachedException {
     String key = "KEY:";
     String value = TestUtils.randomString(200);
     long start = System.currentTimeMillis();
-    int n = 10_000;
     for (int i = 0; i < n; i++) {
       int expire = 100;
       if (i % 100 == 0) {
@@ -809,6 +884,9 @@ public class TestXMemcachedClient {
     }
     long end = System.currentTimeMillis();
     logger.info("ADD Time={}ms", end - start);
+
+    Thread.sleep(500);
+    end = System.currentTimeMillis();
 
     List<GetsResponse<String>> results = new ArrayList<GetsResponse<String>>();
     for (int i = 0; i < n; i++) {
@@ -842,6 +920,9 @@ public class TestXMemcachedClient {
     }
     end = System.currentTimeMillis();
     logger.info("CAS Time={}ms", end - start);
+    
+    Thread.sleep(500);
+    end = System.currentTimeMillis();
 
     for (int i = 0; i < n; i++) {
       Object res = client.get(key + i);
@@ -850,5 +931,44 @@ public class TestXMemcachedClient {
     }
     start = System.currentTimeMillis();
     logger.info("GET total={} time={}ms", n, start - end);
+    
+    delete(n);
+  }
+  
+  public static void main(String[] args)
+      throws IOException, TimeoutException, InterruptedException, MemcachedException {
+    TestXMemcachedClient client = new TestXMemcachedClient();
+
+    client.setUp();
+    client.testAddMulti();
+    client.tearDown();
+    client.setUp();
+    client.testAppendMulti();
+    client.tearDown();
+    client.setUp();
+    client.testCASMulti();
+    client.tearDown();
+    client.setUp();
+    client.testDecrMulti();
+    client.tearDown();
+    client.setUp();
+    client.testIncrMulti();
+    client.tearDown();
+    client.setUp();
+    client.testDeleteMulti();
+    client.tearDown();
+    client.setUp();
+    client.testPrependMulti();
+    client.tearDown();
+    client.setUp();
+    client.testReplaceMulti();
+    client.tearDown();
+    client.setUp();
+    client.testSetMulti();
+    client.tearDown();
+    client.setUp();
+    client.testTouchMulti();
+    client.tearDown();
+
   }
 }

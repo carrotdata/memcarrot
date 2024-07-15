@@ -27,6 +27,7 @@ import org.apache.logging.log4j.Logger;
 import com.carrotdata.cache.support.Memcached;
 import com.carrotdata.cache.util.UnsafeAccess;
 import com.carrotdata.memcarrot.CommandProcessor.OutputConsumer;
+import com.carrotdata.memcarrot.commands.QUIT;
 import com.carrotdata.memcarrot.util.Errors;
 
 public class RequestHandlers {
@@ -131,7 +132,7 @@ class WorkThread extends Thread {
   /*
    * Busy loop max iteration
    */
-  private static final long BUSY_LOOP_MAX = 10000;
+  private static final long BUSY_LOOP_MAX = 10000000;
 
   /*
    * Input buffer
@@ -254,7 +255,7 @@ class WorkThread extends Thread {
         }
         long tout = 0;
         if (System.nanoTime() - idleTimeStart > idleTimeout) {
-          tout = 200 * timeout; // 20ms
+          tout = 200 * timeout; // 0.5ms
         } else {
           tout = timeout;
         }
@@ -365,6 +366,10 @@ class WorkThread extends Thread {
               }
             }
             consumed += CommandProcessor.getLastExecutedCommand().inputConsumed();
+            if (CommandProcessor.getLastExecutedCommand() instanceof QUIT) {
+              key.cancel();
+              channel.close();
+            }
           }
           break;
         }

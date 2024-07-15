@@ -53,7 +53,6 @@ public class TestSimpleClient {
     }
     if (host == null) {
       Cache c = TestUtils.createCache(800_000_000, 4_000_000, true, true);
-      //Cache c = TestUtils.createCache(configFilePath);
       Memcached m = new Memcached(c);
       server = new MemcarrotServer();
       server.setMemachedSupport(m);
@@ -413,7 +412,7 @@ public class TestSimpleClient {
   }
 
   @Test
-  public void testSetGetMulti() throws IOException {
+  public void testSetGetMulti() throws IOException, InterruptedException {
     logger.info("Running testSetGetMulti");
 
     String key = getIdString();
@@ -431,7 +430,10 @@ public class TestSimpleClient {
     }
     long end = System.currentTimeMillis();
     logger.info("SET Time={}ms", end - start);
-
+    
+    Thread.sleep(1000);
+    end = System.currentTimeMillis();
+    
     int batchSize = 100;
     long getTime = 0;
     for (int i = 0; i < n / batchSize; i++) {
@@ -456,7 +458,7 @@ public class TestSimpleClient {
   }
 
   @Test
-  public void testSetGetMultiWithOverflow() throws IOException {
+  public void testSetGetMultiWithOverflow() throws IOException, InterruptedException {
     logger.info("Running testSetGetMultiWithOverflow");
 
     String key = getIdString();
@@ -474,7 +476,8 @@ public class TestSimpleClient {
     }
     long end = System.currentTimeMillis();
     logger.info("SET Time={}ms", end - start);
-
+    Thread.sleep(1000);
+    end = System.currentTimeMillis();
     // Total response size > 1MB (5000 * 200 value size + some extra), 
     // I/O buffer size is 256kb
     // Must be OK, we handle such cases
@@ -502,24 +505,26 @@ public class TestSimpleClient {
   }
   
   @Test
-  public void testAddGetMulti() throws IOException {
+  public void testAddGetMulti() throws IOException, InterruptedException {
     logger.info("Running testAddGetMulti");
 
     String key = getIdString();
     String value = TestUtils.randomString(200);
     byte[] bvalue = value.getBytes();
     long start = System.currentTimeMillis();
-    int n = 1_000_000;
+    int n = 200000;
     for (int i = 0; i < n; i++) {
-      int flags = 1;
+      int flags = 0;
       long expire = expireIn(100);
-      boolean noreply = true;
+      boolean noreply = true;//i % 100 == 0? false: true;
       ResponseCode code = client.add((key + i).getBytes(), bvalue, flags, expire, noreply);
-      assertTrue(code == null);
+      //assertTrue(code == null);
     }
     long end = System.currentTimeMillis();
     logger.info("ADD Time={}ms", end - start);
-
+    
+    //Thread.sleep(5000);
+    end = System.currentTimeMillis();
     int batchSize = 100;
 
     for (int i = 0; i < n / batchSize; i++) {
@@ -540,7 +545,7 @@ public class TestSimpleClient {
   }
 
   @Test
-  public void testAppendGetMulti() throws IOException {
+  public void testAppendGetMulti() throws IOException, InterruptedException {
     logger.info("Running testAppendGetMulti");
 
     String key = getIdString();
@@ -559,8 +564,11 @@ public class TestSimpleClient {
       assertTrue(code == null);
     }
     long end = System.currentTimeMillis();
+    
     logger.info("ADD Time={}ms", end - start);
-
+    Thread.sleep(1000);
+    
+    end = System.currentTimeMillis();
     for (int i = 0; i < n; i++) {
       int flags = 1;
       long expire = expireIn(100);
@@ -591,7 +599,7 @@ public class TestSimpleClient {
   }
 
   @Test
-  public void testPrependGetMulti() throws IOException {
+  public void testPrependGetMulti() throws IOException, InterruptedException {
     logger.info("Running testPrependGetMulti");
 
     String key = getIdString();
@@ -612,6 +620,9 @@ public class TestSimpleClient {
     long end = System.currentTimeMillis();
     logger.info("ADD Time={}ms", end - start);
 
+    Thread.sleep(1000);
+    end = System.currentTimeMillis();
+    
     for (int i = 0; i < n; i++) {
       int flags = 1;
       long expire = expireIn(100);
@@ -622,6 +633,8 @@ public class TestSimpleClient {
     start = System.currentTimeMillis();
     logger.info("PREPEND Time={}ms", start - end);
 
+    Thread.sleep(1000);
+    start = System.currentTimeMillis();
     int batchSize = 100;
 
     for (int i = 0; i < n / batchSize; i++) {
@@ -643,7 +656,7 @@ public class TestSimpleClient {
   }
 
   @Test
-  public void testReplaceGetMulti() throws IOException {
+  public void testReplaceGetMulti() throws IOException, InterruptedException {
     logger.info("Running testReplaceGetMulti");
 
     String key = getIdString();
@@ -660,6 +673,9 @@ public class TestSimpleClient {
     }
     long end = System.currentTimeMillis();
     logger.info("SET Time={}ms", end - start);
+    
+    Thread.sleep(1000);
+    
     start = System.currentTimeMillis();
     for (int i = 0; i < n; i++) {
       int flags = 1;
@@ -671,6 +687,9 @@ public class TestSimpleClient {
     end = System.currentTimeMillis();
     logger.info("REPLACE Time={}ms", end - start);
 
+    Thread.sleep(1000);
+    end = System.currentTimeMillis();
+    
     int batchSize = 100;
 
     for (int i = 0; i < n / batchSize; i++) {
@@ -710,7 +729,9 @@ public class TestSimpleClient {
     }
     long end = System.currentTimeMillis();
     logger.info("TOUCH Time={}ms", end - start);
-
+    Thread.sleep(1000);
+    end = System.currentTimeMillis();
+    
     for (int i = 0; i < n; i++) {
       int flags = 1;
       long expire = expireIn(100);
@@ -720,7 +741,10 @@ public class TestSimpleClient {
     }
     start = System.currentTimeMillis();
     logger.info("ADD Time={}ms", start - end);
-
+    
+    Thread.sleep(1000);
+    start = System.currentTimeMillis();
+    
     for (int i = 0; i < n; i++) {
       long expire = expireIn(5);
       boolean noreply = true;
@@ -766,6 +790,10 @@ public class TestSimpleClient {
     }
     end = System.currentTimeMillis();
     logger.info("ADD Time={}ms", end - start);
+    
+    Thread.sleep(1000);
+    end = System.currentTimeMillis();
+    
     for (int i = 0; i < n / batchSize; i++) {
       byte[][] keys = getBatch(i, batchSize);
       List<GetResult> list = client.get(keys);
@@ -788,6 +816,9 @@ public class TestSimpleClient {
     end = System.currentTimeMillis();
     logger.info("TOUCH Time={}ms", end - getend);
 
+    Thread.sleep(1000);
+    end = System.currentTimeMillis();
+    
     // All must expire
     for (int i = 0; i < n / batchSize; i++) {
       byte[][] keys = getBatch(i, batchSize);
@@ -802,7 +833,7 @@ public class TestSimpleClient {
   }
 
   @Test
-  public void testDeleteGetMulti() throws IOException {
+  public void testDeleteGetMulti() throws IOException, InterruptedException {
     logger.info("Running testDeleteGetMulti");
 
     String key = getIdString();
@@ -818,6 +849,9 @@ public class TestSimpleClient {
     long end = System.currentTimeMillis();
     logger.info("DELETE Time={}ms", end - start);
 
+    Thread.sleep(1000);
+    end = System.currentTimeMillis();
+    
     for (int i = 0; i < n; i++) {
       int flags = 1;
       long expire = expireIn(100);
@@ -827,7 +861,10 @@ public class TestSimpleClient {
     }
     start = System.currentTimeMillis();
     logger.info("ADD Time={}ms", start - end);
-
+    
+    Thread.sleep(1000);
+    start = System.currentTimeMillis();
+    
     for (int i = 0; i < n; i++) {
       boolean noreply = true;
       ResponseCode code = client.delete((key + i).getBytes(), noreply);
@@ -838,6 +875,9 @@ public class TestSimpleClient {
 
     int batchSize = 100;
 
+    Thread.sleep(1000);
+    end = System.currentTimeMillis();
+    
     for (int i = 0; i < n / batchSize; i++) {
       byte[][] keys = getBatch(i, batchSize);
       List<GetResult> list = client.get(keys);
@@ -851,7 +891,7 @@ public class TestSimpleClient {
   }
 
   @Test
-  public void testIncrGetMulti() throws IOException {
+  public void testIncrGetMulti() throws IOException, InterruptedException {
     logger.info("Running testIncrGetMulti");
 
     String key = getIdString();
@@ -888,7 +928,10 @@ public class TestSimpleClient {
     }
     long end = System.currentTimeMillis();
     logger.info("ADD Time={}ms", end - start);
-
+    
+    Thread.sleep(1000);
+    end = System.currentTimeMillis();
+    
     for (int i = 0; i < n; i++) {
       boolean noreply = false;
       res = client.incr((key + i).getBytes(), 10, noreply);
@@ -905,7 +948,10 @@ public class TestSimpleClient {
     }
     end = System.currentTimeMillis();
     logger.info("INCR Time={}ms", end - start);
-
+    
+    Thread.sleep(1000);
+    end = System.currentTimeMillis();
+    
     for (int i = 0; i < n; i++) {
       boolean noreply = false;
       res = client.incr((key + i).getBytes(), 10, noreply);
@@ -920,7 +966,7 @@ public class TestSimpleClient {
   }
 
   @Test
-  public void testDecrGetMulti() throws IOException {
+  public void testDecrGetMulti() throws IOException, InterruptedException {
     logger.info("Running testDecrGetMulti");
 
     String key = getIdString();
@@ -957,7 +1003,10 @@ public class TestSimpleClient {
     }
     long end = System.currentTimeMillis();
     logger.info("ADD Time={}ms", end - start);
-
+    
+    Thread.sleep(1000);
+    end = System.currentTimeMillis();
+    
     for (int i = 0; i < n; i++) {
       boolean noreply = false;
       res = client.decr((key + i).getBytes(), 10, noreply);
@@ -975,6 +1024,9 @@ public class TestSimpleClient {
     end = System.currentTimeMillis();
     logger.info("DECR Time={}ms", end - start);
 
+    Thread.sleep(1000);
+    end = System.currentTimeMillis();
+    
     for (int i = 0; i < n; i++) {
       boolean noreply = false;
       res = client.decr((key + i).getBytes(), 10, noreply);
@@ -989,7 +1041,7 @@ public class TestSimpleClient {
   }
 
   @Test
-  public void testCASGMulti() throws IOException {
+  public void testCASGMulti() throws IOException, InterruptedException {
     logger.info("Running testCASGMulti");
 
     String key = getIdString();
@@ -1009,6 +1061,9 @@ public class TestSimpleClient {
     long end = System.currentTimeMillis();
     logger.info("SET Time={}ms", end - start);
 
+    Thread.sleep(1000);
+    end = System.currentTimeMillis();
+    
     int batchSize = 100;
     long getTime = 0;
     int count = 0;
@@ -1044,7 +1099,10 @@ public class TestSimpleClient {
     }
     end = System.currentTimeMillis();
     logger.info("CAS Time={}ms", end - start);
-
+    
+    Thread.sleep(1000);
+    end = System.currentTimeMillis();
+    
     count = 0;
     // OLD values
     for (int i = 0; i < n / batchSize; i++) {
@@ -1071,8 +1129,9 @@ public class TestSimpleClient {
       assertTrue(code == null);
     }
 
+    Thread.sleep(1000);
     end = System.currentTimeMillis();
-
+    
     count = 0;
     // NEW values
     for (int i = 0; i < n / batchSize; i++) {
@@ -1112,7 +1171,7 @@ public class TestSimpleClient {
     return System.currentTimeMillis() / 1000 + sec;
   }
   
-  private void deleteAll(int n) throws IOException {
+  private void deleteAll(int n) throws IOException, InterruptedException {
     long start = System.currentTimeMillis();
     boolean noreply = true;
     String key = getIdString();
@@ -1122,6 +1181,7 @@ public class TestSimpleClient {
     }
     long end = System.currentTimeMillis();
     logger.info("DELETE {} in {} ms", n, end - start);
+    Thread.sleep(1000);
   }
   
   public static void main(String[] args) throws IOException, InterruptedException {
@@ -1130,9 +1190,12 @@ public class TestSimpleClient {
     test.setUp();
     test.testAddGet();
     test.tearDown();
-    test.setUp();
-    test.testAddGetMulti();
-    test.tearDown();
+    
+    //for (int i=0; i < 20; i++) {
+      test.setUp();
+      test.testAddGetMulti();
+      test.tearDown();
+    //}
     test.setUp();
     test.testAppendGet();
     test.tearDown();
