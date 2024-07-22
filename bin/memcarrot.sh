@@ -12,12 +12,19 @@ cd "${APP_DIR}" || exit
 
 . ./bin/setenv.sh
 
-export JVM_OPTS="-Xmx${MAX_HEAP_SIZE} --add-opens java.base/jdk.internal.misc=ALL-UNNAMED \
-  --add-opens java.base/java.nio=ALL-UNNAMED --add-opens java.base/java.security=ALL-UNNAMED \
-  --add-opens jdk.unsupported/sun.misc=ALL-UNNAMED --add-opens java.base/sun.security.action=ALL-UNNAMED \
-  --add-opens jdk.naming.rmi/com.sun.jndi.rmi.registry=ALL-UNNAMED --add-opens java.base/sun.net=ALL-UNNAMED \
-  --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED \
-  -Dlocation=${MEMCARROT_INSTANCE_NAME} ${MEMCARROT_APP_OPTS}"
+export JVM_OPTS="-Xmx${MAX_HEAP_SIZE} -XX:MaxDirectMemorySize=256m --add-opens java.base/jdk.internal.misc=ALL-UNNAMED --add-opens java.base/java.nio=ALL-UNNAMED \
+        --add-opens java.base/java.security=ALL-UNNAMED --add-opens jdk.unsupported/sun.misc=ALL-UNNAMED \
+        --add-opens java.base/sun.security.action=ALL-UNNAMED --add-opens jdk.naming.rmi/com.sun.jndi.rmi.registry=ALL-UNNAMED \
+        --add-opens=java.base/java.lang.invoke=ALL-UNNAMED \
+        --add-opens=java.base/java.io=ALL-UNNAMED \
+        --add-opens=java.base/java.net=ALL-UNNAMED \
+        --add-opens=java.base/java.util=ALL-UNNAMED \
+        --add-opens=java.base/java.util.concurrent=ALL-UNNAMED \
+        --add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED \
+        --add-opens=java.base/sun.nio.ch=ALL-UNNAMED \
+        --add-opens java.base/sun.net=ALL-UNNAMED --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED \
+        -DSTATS_TASK -DSTATS_TASK_INTERVAL=300 \
+        -Dlocation=${MEMCARROT_INSTANCE_NAME} ${MEMCARROT_APP_OPTS}"
 
 #===== find pid =====
 pid() {
@@ -33,7 +40,7 @@ start() {
   fi
 
   exec_cmd="${JAVA_HOME}/bin/java ${JVM_OPTS} -jar lib/${MEMCARROT_RELEASE} ${MEMCARROT_APPS_PARAMS} start"
-  #echo "${exec_cmd}"
+  echo "${exec_cmd}"
   mkdir -p logs
   nohup ${exec_cmd} >>logs/memcarrot-stdout.log &
   echo "${MEMCARROT_RELEASE} instance is starting, please wait..."
