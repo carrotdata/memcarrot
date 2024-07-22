@@ -59,10 +59,24 @@ public abstract class AbstractMemcachedCommand implements MemcachedCommand {
     boolean safe = this.keyPtr > 0 && this.keySize > 0;
     safe = safe && (this.keyPtr > memptr) && (this.keyPtr + this.keySize < memptr + memsize);
     if (this instanceof StorageCommand) {
-      safe = safe && (this.valPtr > 0 && this.valSize > 0);
+      safe = safe && (this.valPtr > 0 && this.valSize >= 0 /* special case for null value*/);
       safe = safe && (this.valPtr > memptr && this.valPtr + this.valSize < memptr + memsize);
       safe = safe && (this.valPtr > this.keyPtr + this.keySize);
     }
     return safe;
+  }
+  
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("ka=" + keyPtr);
+    sb.append(" ks=" + keySize);
+    sb.append(" va=" + valPtr);
+    sb.append(" vs=" + valSize);
+    sb.append(" flags=" + flags);
+    sb.append(" exptime==" + exptime);
+    sb.append(" vs=" + valSize);
+    sb.append(" cas=" + cas);
+    sb.append(" noreply=" + noreply);
+    return sb.toString();
   }
 }
