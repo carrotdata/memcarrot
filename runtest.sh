@@ -5,7 +5,7 @@ APP_DIR=$(dirname "$(realpath "$0")")
 
 cd "${APP_DIR}" || exit
 
-MEMCARROT_RELEASE=memcarrot-0.11-SNAPSHOT-jar-with-dependencies.jar
+source bin/setenv.sh
 CPATH="${APP_DIR}/conf:${APP_DIR}/lib/${MEMCARROT_RELEASE}:./target/test-classes:${HOME}/.m2/repository/junit/junit/4.13.2/junit-4.13.2.jar"
 
 export JVM_OPTS="-Xmx1g --add-opens java.base/jdk.internal.misc=ALL-UNNAMED --add-opens java.base/java.nio=ALL-UNNAMED \

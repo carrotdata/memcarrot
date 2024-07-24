@@ -4,7 +4,8 @@
 # JAVA_HOME variable could be set on stand alone not-dev server.
 #export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk-11.0.11.jdk/Contents/Home
 export MAX_HEAP_SIZE=100m
-export MEMCARROT_RELEASE=memcarrot-0.11-SNAPSHOT-jar-with-dependencies.jar
+export MEMCARROT_VERSION=0.11
+export MEMCARROT_RELEASE=carrotdata-memcached-${MEMCARROT_VERSION}-bundle.jar
 export MEMCARROT_INSTANCE_NAME=I_$(pwd)
 export MEMCARROT_APP_OPTS="-Dlog4j2.configurationFile=./conf/log4j2.xml"
 export MEMCARROT_APPS_PARAMS="./conf/memcarrot.cfg"
