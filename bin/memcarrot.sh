@@ -49,7 +49,7 @@ start() {
 
   PID=$(pid)
   if [ ! -z "${PID}" ]; then
-    echo "${MEMCARROT_VERSION} instance successfully started. PID ${PID}"
+    echo "Memcarrot ${MEMCARROT_VERSION} instance successfully started. PID ${PID}"
     exit 0
   fi
 

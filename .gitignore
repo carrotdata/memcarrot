@@ -27,3 +27,4 @@ replay_pid*
 target/
 logs/
 *.iml
+nohup.out
