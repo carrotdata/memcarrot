@@ -42,15 +42,19 @@ public class Memcarrot {
   }
 
   private static void startServer(String configFile) throws IOException {
-    log.info("Starting Memcarrot server ...");
+    log.info("Starting Memcarrot server");
+    log.info("version=" + System.getProperty("MEMCARROT_VERSION"));
     MemcarrotConf conf = MemcarrotConf.getConf(configFile);
+    long start = System.currentTimeMillis();
     MemcarrotServer server = new MemcarrotServer(conf);
     server.start();
-    log.info("Memcarrot started on {}:{}", server.getHost(), server.getPort());
+    long end = System.currentTimeMillis();
+    log.info("Memcarrot started on {}:{} in {}ms", server.getHost(), server.getPort(), end - start);
+    
   }
 
   private static void usage() {
-    log.info("Usage: ./bin/memcarrot.sh config_file_path [start|stop]");
+    log.info("Usage: ./bin/memcarrot.sh [config_file_path] [start|stop]");
     System.exit(-1);
   }
 

@@ -302,11 +302,23 @@ public class TestCommandParser extends TestBase {
   @Test
   public void testSHUTDOWNCommand() {
     inputBuffer.clear();
-    writeShutdown(FaultType.NONE, inputBuffer);
+    writeShutdownCommand(FaultType.NONE, inputBuffer);
     MemcachedCommand c = CommandParser.parse(inputPtr, inputBuffer.position());
     assertTrue(c instanceof SHUTDOWN);
     inputBuffer.clear();
-    writeShutdown(FaultType.INCOMPLETE, inputBuffer);
+    writeShutdownCommand(FaultType.INCOMPLETE, inputBuffer);
+    c = CommandParser.parse(inputPtr, inputBuffer.position());
+    assertTrue(c == null);
+  }
+  
+  @Test
+  public void testVERSIONCommand() {
+    inputBuffer.clear();
+    writeVersionCommand(FaultType.NONE, inputBuffer);
+    MemcachedCommand c = CommandParser.parse(inputPtr, inputBuffer.position());
+    assertTrue(c instanceof VERSION);
+    inputBuffer.clear();
+    writeVersionCommand(FaultType.INCOMPLETE, inputBuffer);
     c = CommandParser.parse(inputPtr, inputBuffer.position());
     assertTrue(c == null);
   }

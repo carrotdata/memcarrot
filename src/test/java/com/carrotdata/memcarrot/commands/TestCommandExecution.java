@@ -12,6 +12,7 @@
 package com.carrotdata.memcarrot.commands;
 
 import java.io.IOException;
+import java.nio.BufferOverflowException;
 import java.util.List;
 import java.util.Random;
 
@@ -25,6 +26,7 @@ import com.carrotdata.cache.Cache;
 import com.carrotdata.cache.support.Memcached;
 import com.carrotdata.cache.support.Memcached.OpResult;
 import com.carrotdata.cache.support.Memcached.Record;
+import com.carrotdata.cache.util.UnsafeAccess;
 import com.carrotdata.memcarrot.support.IllegalFormatException;
 import com.carrotdata.memcarrot.util.TestUtils;
 import static org.junit.Assert.*;
@@ -1255,4 +1257,24 @@ public class TestCommandExecution extends TestBase {
     assertTrue(((String) result).startsWith("CLIENT_ERROR "));
   }
 
+  @Test
+  public void testVERSIONCommand() throws BufferOverflowException, IOException {
+    String version = "memcarrot-1.0";
+    System.setProperty("MEMCARROT_VERSION", version);
+    
+    inputBuffer.clear();
+
+    writeVersionCommand(FaultType.NONE, inputBuffer);
+    int bufSize = inputBuffer.position();
+    MemcachedCommand c = CommandParser.parse(inputPtr, inputBuffer.position());
+    assertEquals(bufSize, c.inputConsumed());
+    assertTrue(c instanceof VERSION);
+    int size = c.execute(support, outputPtr, bufferSize, null);
+    assertTrue(size == version.length() + 10);
+    byte[] buf = new byte[size - 2];
+    UnsafeAccess.copy(outputPtr, buf, 0 , buf.length);
+    String s = new String(buf);
+    assertTrue(s.startsWith("VERSION "));
+    assertTrue(s.indexOf(version) > 0);
+  }
 }
