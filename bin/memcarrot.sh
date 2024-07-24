@@ -42,7 +42,7 @@ start() {
   exec_cmd="${JAVA_HOME}/bin/java ${JVM_OPTS} -jar lib/${MEMCARROT_RELEASE} ${MEMCARROT_APPS_PARAMS} start"
   echo "${exec_cmd}"
   mkdir -p logs
-  nohup ${exec_cmd} >>logs/memcarrot-stdout.log &
+  nohup ${exec_cmd} &
   echo "${MEMCARROT_VERSION} instance is starting, please wait..."
 
   sleep 1

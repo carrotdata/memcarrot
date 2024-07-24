@@ -4,9 +4,9 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>carrotdata</groupId>
-    <artifactId>memcached</artifactId>
+    <artifactId>memcarrot</artifactId>
     <packaging>jar</packaging>
-    <name>Memcarrot memcached Server</name>
+    <name>Memcarrot Server</name>
     <version>0.11</version>
     <url>http://www.server.com</url>
     <build>
