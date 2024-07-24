@@ -39,7 +39,7 @@ start() {
     exit 1
   fi
 
-  exec_cmd="${JAVA_HOME}/bin/java ${JVM_OPTS} -jar lib/${MEMCARROT_RELEASE} ${MEMCARROT_APPS_PARAMS} start"
+  exec_cmd="${JAVA_HOME}/bin/java ${JVM_OPTS} -jar ${MEMCARROT_RELEASE} ${MEMCARROT_APPS_PARAMS} start"
   echo "${exec_cmd}"
   mkdir -p logs
   nohup ${exec_cmd} &
@@ -61,7 +61,7 @@ start() {
 stop() {
   PID=$(pid)
   if [ ! -z "${PID}" ]; then
-    exec_cmd="${JAVA_HOME}/bin/java ${JVM_OPTS} -jar lib/${MEMCARROT_RELEASE} ${MEMCARROT_APPS_PARAMS} stop"
+    exec_cmd="${JAVA_HOME}/bin/java ${JVM_OPTS} -jar ${MEMCARROT_RELEASE} ${MEMCARROT_APPS_PARAMS} stop"
     nohup ${exec_cmd} >> /dev/null &
     echo "Memcarrot instance is terminating on PID ${PID}, please wait..."
 
