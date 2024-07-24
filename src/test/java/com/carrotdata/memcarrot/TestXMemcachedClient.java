@@ -18,6 +18,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -43,8 +44,10 @@ public class TestXMemcachedClient {
 
   MemcarrotServer server;
   XMemcachedClient client;
-
+  String version = "1.0";
   int n = 50_000;
+  boolean localRun = true;
+
   
   @Before
   public void setUp() throws IOException {
@@ -66,7 +69,10 @@ public class TestXMemcachedClient {
       server.start();
       host = server.getHost();
       port = server.getPort();
-    } 
+      System.setProperty("MEMCARROT_VERSION", version);
+    } else {
+      localRun = false;
+    }
     logger.info("kv-max-size={}", MemcarrotConf.getConf().getKeyValueMaxSize());
     client = new XMemcachedClient(host, port);
 
@@ -105,6 +111,18 @@ public class TestXMemcachedClient {
   }
 
   @Test
+  public void testVersion()
+      throws IOException, TimeoutException, InterruptedException, MemcachedException {
+    
+    if (!localRun) return;
+    Map<InetSocketAddress, String> result = client.getVersions();
+    assertTrue(result.size() == 1);
+    String v = result.values().iterator().next();
+    assertEquals(v, version);
+
+  }
+  
+  @Test 
   public void testGet()
       throws IOException, TimeoutException, InterruptedException, MemcachedException {
     String key = TestUtils.randomString(20);

@@ -11,22 +11,17 @@
  */
 package com.carrotdata.memcarrot.commands;
 
+import com.carrotdata.cache.support.Memcached;
+import com.carrotdata.cache.util.UnsafeAccess;
 import com.carrotdata.memcarrot.CommandProcessor.OutputConsumer;
 import com.carrotdata.memcarrot.support.IllegalFormatException;
 
-import java.io.IOException;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import com.carrotdata.cache.support.Memcached;
-import com.carrotdata.cache.util.UnsafeAccess;
-
 /**
- * Format : shutdown\r\n Reply: OK shutting down the server\r\n, OK shutdown is in progress\r\
+ * Format : version\r\n Reply:VERSION xxx\r\n
  */
-public class SHUTDOWN implements MemcachedCommand {
-  private static final Logger log = LogManager.getLogger(SHUTDOWN.class);
+public class VERSION implements MemcachedCommand {
+  private static long VERSION = UnsafeAccess.allocAndCopy("VERSION ", 0, 8);
+  private static long CRLF    = UnsafeAccess.allocAndCopy("\r\n", 0, 2); 
 
   @Override
   public boolean parse(long inBuffer, int bufferSize) throws IllegalFormatException {
@@ -38,30 +33,20 @@ public class SHUTDOWN implements MemcachedCommand {
 
   @Override
   public int execute(Memcached support, long outBuffer, int outBufferSize, OutputConsumer consumer) {
-    log.info("Shutting down the server ...");
-    long start = System.currentTimeMillis();
-    int size = 0;
-    String msg = null;
-    try {
-      support.getCache().shutdown();
-      log.info("Done in {}ms", System.currentTimeMillis() - start);
-      System.exit(0);
-    } catch (IOException e) {
-      msg = "SERVER_ERROR " + e.getMessage() + "\r\n";
-      // TODO log the error
-      log.error(e);
-      size = msg.length();
-      byte[] buf = msg.getBytes();
-      UnsafeAccess.copy(buf, 0, outBuffer, buf.length);
-      return size;
+    String version = System.getProperty("MEMCARROT_VERSION");
+    if (version == null) {
+      version = "unknown";
     }
-    // Unreachable code
-    return 0;
+    UnsafeAccess.copy(VERSION, outBuffer, 8);
+    int len = version.length();
+    UnsafeAccess.copy(version.getBytes(), 0, outBuffer + 8, len);
+    UnsafeAccess.copy(CRLF, outBuffer + 8 + len, 2);
+    return 10 + len;
   }
 
   @Override
   public int inputConsumed() {
-    return 10;
+    return 9;
   }
 
   @Override

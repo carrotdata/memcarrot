@@ -71,6 +71,8 @@ public class CommandParser {
   private static long quit_cmd = UnsafeAccess.allocAndCopy("quit", 0, 4);
   private static int quit_cmd_len = 4;
 
+  private static long version_cmd = UnsafeAccess.allocAndCopy("version", 0, 7);
+  private static int version_cmd_len = 7;
 
   /**
    * TODO: Add new commands support Parse input memory buffer
@@ -148,6 +150,8 @@ public class CommandParser {
         cmd = new PREPEND();
       } else if (compareTo(buf, len, replace_cmd, len) == 0) {
         cmd = new REPLACE();
+      } else if (compareTo(buf, len, version_cmd, len) == 0) {
+        cmd = new VERSION();
       } else {
         throw new UnsupportedCommand(new String(toBytes(buf, len)));
       }

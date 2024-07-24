@@ -435,7 +435,7 @@ public class TestBase {
     }
   }
 
-  public static void writeShutdown(FaultType fault, ByteBuffer b) {
+  public static void writeShutdownCommand(FaultType fault, ByteBuffer b) {
     byte[] cmd = "shutdown\r\n".getBytes();
     b.put(cmd);
     if (fault == FaultType.INCOMPLETE) {
@@ -443,6 +443,13 @@ public class TestBase {
     }
   }
 
+  public static void writeVersionCommand(FaultType fault, ByteBuffer b) {
+    byte[] cmd = "version\r\n".getBytes();
+    b.put(cmd);
+    if (fault == FaultType.INCOMPLETE) {
+      makeIncomplete(b);
+    }
+  }
   /**
    * Utility methods
    */
