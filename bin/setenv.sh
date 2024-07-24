@@ -5,7 +5,7 @@
 #export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk-11.0.11.jdk/Contents/Home
 export MEMCARROT_VERSION="memcarrot-0.11"
 export MAX_HEAP_SIZE=100m
-export MEMCARROT_RELEASE=lib/carrotdata-${MEMCARROT_VERSION}-bundle.jar
+export MEMCARROT_RELEASE=lib/${MEMCARROT_VERSION}-bundle.jar
 export MEMCARROT_APPS_PARAMS="./conf/memcarrot.cfg"
 export MEMCARROT_INSTANCE_NAME=I_$(pwd)
 export MEMCARROT_APP_OPTS="-DMEMCARROT_VERSION=${MEMCARROT_VERSION} -DSTATS_TASK -DSTATS_TASK_INTERVAL=300 -Dlocation=${MEMCARROT_INSTANCE_NAME} -Dlog4j2.configurationFile=./conf/log4j2.xml"
