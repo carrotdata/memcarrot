@@ -1277,4 +1277,23 @@ public class TestCommandExecution extends TestBase {
     assertTrue(s.startsWith("VERSION "));
     assertTrue(s.indexOf(version) > 0);
   }
+  
+  @Test
+  public void testSTATSCommand() throws BufferOverflowException, IOException {    
+    inputBuffer.clear();
+
+    writeStatsCommand(FaultType.NONE, inputBuffer);
+    int bufSize = inputBuffer.position();
+    MemcachedCommand c = CommandParser.parse(inputPtr, inputBuffer.position());
+    assertEquals(bufSize, c.inputConsumed());
+    assertTrue(c instanceof STATS);
+    int size = c.execute(support, outputPtr, bufferSize, null);
+    
+    byte[] buf = new byte[size - 2];
+    UnsafeAccess.copy(outputPtr, buf, 0 , buf.length);
+    String s = new String(buf);
+    assertTrue(s.startsWith("STAT "));
+    assertTrue(s.endsWith("END"));
+    log.info(s);
+  }
 }

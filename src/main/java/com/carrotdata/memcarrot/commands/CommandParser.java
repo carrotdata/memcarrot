@@ -74,6 +74,9 @@ public class CommandParser {
   private static long version_cmd = UnsafeAccess.allocAndCopy("version", 0, 7);
   private static int version_cmd_len = 7;
 
+  private static long stats_cmd = UnsafeAccess.allocAndCopy("stats", 0, 5);
+  private static int stats_cmd_len = 5;
+  
   /**
    * TODO: Add new commands support Parse input memory buffer
    * @param buffer address
@@ -132,6 +135,8 @@ public class CommandParser {
     } else if (len == 5) {
       if (compareTo(buf, len, touch_cmd, len) == 0) {
         cmd = new TOUCH();
+      } else if (compareTo(buf, len, stats_cmd, len) == 0) {
+        cmd = new STATS();
       } else {
         throw new UnsupportedCommand(new String(toBytes(buf, len)));
       }

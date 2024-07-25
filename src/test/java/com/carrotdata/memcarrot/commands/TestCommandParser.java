@@ -322,4 +322,16 @@ public class TestCommandParser extends TestBase {
     c = CommandParser.parse(inputPtr, inputBuffer.position());
     assertTrue(c == null);
   }
+  
+  @Test
+  public void testSTATSCommand() {
+    inputBuffer.clear();
+    writeStatsCommand(FaultType.NONE, inputBuffer);
+    MemcachedCommand c = CommandParser.parse(inputPtr, inputBuffer.position());
+    assertTrue(c instanceof STATS);
+    inputBuffer.clear();
+    writeStatsCommand(FaultType.INCOMPLETE, inputBuffer);
+    c = CommandParser.parse(inputPtr, inputBuffer.position());
+    assertTrue(c == null);
+  }
 }

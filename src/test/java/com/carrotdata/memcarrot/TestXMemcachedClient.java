@@ -122,6 +122,20 @@ public class TestXMemcachedClient {
 
   }
   
+  @Test
+  public void testStats()
+      throws IOException, TimeoutException, InterruptedException, MemcachedException {
+    
+    if (!localRun) return;
+    Map<InetSocketAddress, Map<String,String>> result = client.getStats();
+    assertTrue(result.size() == 1);
+    Map<String, String> stats = result.values().iterator().next();
+    for (Map.Entry<String, String> entry: stats.entrySet()) {
+      logger.info(entry.getKey() + " " + entry.getValue());
+    }
+
+  }
+  
   @Test 
   public void testGet()
       throws IOException, TimeoutException, InterruptedException, MemcachedException {

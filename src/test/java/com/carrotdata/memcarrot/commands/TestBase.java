@@ -450,6 +450,15 @@ public class TestBase {
       makeIncomplete(b);
     }
   }
+  
+  public static void writeStatsCommand(FaultType fault, ByteBuffer b) {
+    byte[] cmd = "stats\r\n".getBytes();
+    b.put(cmd);
+    if (fault == FaultType.INCOMPLETE) {
+      makeIncomplete(b);
+    }
+  }
+  
   /**
    * Utility methods
    */
