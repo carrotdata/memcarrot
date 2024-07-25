@@ -1,5 +1,12 @@
 #!/usr/bin/env bash
 
+usage() {
+  echo "Usage: $0 {start|stop}"
+  echo "  when $0 start 'github user name' 'github token'"
+  echo "  when $0 stop 'docker's container name'"
+  exit 1
+}
+
 #===== start Memcarrot in docker container =====
 start() {
   username="${GITHUB_USERNAME}"
@@ -9,7 +16,7 @@ start() {
     if [ -z "$1" ] || [ -z "$2" ];
     then
       echo "Github user name and token are required"
-      echo "Please enter your Github username and token in interactive mode..."
+      usage
     else
       username="$1"
       token="$2"
@@ -56,9 +63,6 @@ case "$1" in
     stop $2
     ;;
   *)
-    echo "Usage: $0 {start|stop}"
-    echo "  when $0 start 'github user name' 'github token'"
-    echo "  when $0 stop 'docker's container name'"
-    exit 1
+    usage
     ;;
 esac
