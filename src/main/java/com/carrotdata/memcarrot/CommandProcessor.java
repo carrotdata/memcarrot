@@ -13,7 +13,6 @@ package com.carrotdata.memcarrot;
 
 import java.io.IOException;
 import java.nio.BufferOverflowException;
-import java.nio.ByteBuffer;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

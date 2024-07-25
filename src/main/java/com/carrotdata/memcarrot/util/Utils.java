@@ -14,7 +14,6 @@ package com.carrotdata.memcarrot.util;
 import java.nio.ByteBuffer;
 
 import com.carrotdata.cache.util.UnsafeAccess;
-import com.carrotdata.memcarrot.support.IllegalFormatException;
 
 public class Utils {
   public static boolean requestIsComplete(ByteBuffer buf) {
