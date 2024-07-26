@@ -12,8 +12,12 @@ cd "${APP_DIR}" || exit
 
 . ./bin/setenv.sh
 
-CPATH="${APP_DIR}/conf:${APP_DIR}/lib/${MEMCARROT_RELEASE}"
+if [ -z "${JAVA_HOME}" ]; then
+  echo "Please set the environment variables JAVA_HOME"
+  exit 1
+fi
 
+#===== set JVM options =====
 export JVM_OPTS="-Xmx${MAX_HEAP_SIZE} -XX:MaxDirectMemorySize=256m --add-opens java.base/jdk.internal.misc=ALL-UNNAMED --add-opens java.base/java.nio=ALL-UNNAMED \
         --add-opens java.base/java.security=ALL-UNNAMED --add-opens jdk.unsupported/sun.misc=ALL-UNNAMED \
         --add-opens java.base/sun.security.action=ALL-UNNAMED --add-opens jdk.naming.rmi/com.sun.jndi.rmi.registry=ALL-UNNAMED \
@@ -24,7 +28,9 @@ export JVM_OPTS="-Xmx${MAX_HEAP_SIZE} -XX:MaxDirectMemorySize=256m --add-opens j
         --add-opens=java.base/java.util.concurrent=ALL-UNNAMED \
         --add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED \
         --add-opens=java.base/sun.nio.ch=ALL-UNNAMED \
-        --add-opens java.base/sun.net=ALL-UNNAMED --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED -cp .:${CPATH} ${MEMCARROT_APP_OPTS}"
+        --add-opens java.base/sun.net=ALL-UNNAMED --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED \
+        -DSTATS_TASK -DSTATS_TASK_INTERVAL=300 \
+        -Dlocation=${MEMCARROT_INSTANCE_NAME} ${MEMCARROT_APP_OPTS}"
 
 #===== find pid =====
 pid() {
@@ -39,10 +45,10 @@ start() {
     exit 1
   fi
 
-  exec_cmd="${JAVA_HOME}/bin/java ${JVM_OPTS} com.carrotdata.memcarrot.Memcarrot ${MEMCARROT_APPS_PARAMS} start"
-  #echo "${exec_cmd}"
+  exec_cmd="${JAVA_HOME}/bin/java ${JVM_OPTS} -jar ${MEMCARROT_RELEASE} ${MEMCARROT_APPS_PARAMS} start"
+  echo "${exec_cmd}"
   mkdir -p logs
-  nohup ${exec_cmd} >>logs/memcarrot-stdout.log &
+  nohup ${exec_cmd} &
   echo "Memcarrot ${MEMCARROT_VERSION} instance is starting, please wait..."
 
   sleep 1
@@ -61,7 +67,7 @@ start() {
 stop() {
   PID=$(pid)
   if [ ! -z "${PID}" ]; then
-    exec_cmd="${JAVA_HOME}/bin/java ${JVM_OPTS} com.carrotdata.memcarrot.Memcarrot ${MEMCARROT_APPS_PARAMS} stop"
+    exec_cmd="${JAVA_HOME}/bin/java ${JVM_OPTS} -jar ${MEMCARROT_RELEASE} ${MEMCARROT_APPS_PARAMS} stop"
     nohup ${exec_cmd} >> /dev/null &
     echo "Memcarrot instance is terminating on PID ${PID}, please wait..."
 

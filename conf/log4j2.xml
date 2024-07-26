@@ -1,14 +1,29 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8"?>
 <Configuration status="warn">
     <Appenders>
-        <Console name="STDOUT" target="SYSTEM_OUT">
+        <!-- Rolling File Appender configuration -->
+        <RollingFile name="RollingFile" fileName="logs/memcarrot-stdout.log"
+                     filePattern="logs/$${date:yyyy-MM}/memcarrot-stdout-%d{yyyy-MM-dd}-%i.log.gz">
             <PatternLayout pattern="%d %p %c{1.} [%t] %m%n"/>
-        </Console>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+                <SizeBasedTriggeringPolicy size="10MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="20">
+                <Delete basePath="logs" maxDepth="2">
+                    <IfFileName glob="*/memcarrot-stdout-*.log.gz" />
+                    <IfLastModified age="30d"/>
+                </Delete>
+            </DefaultRolloverStrategy>
+        </RollingFile>
     </Appenders>
     <Loggers>
+        <Logger name="com.carrotdata.memcarrot" level="debug" additivity="false">
+            <AppenderRef ref="RollingFile"/>
+        </Logger>
+
         <Root level="info">
-            <AppenderRef ref="STDOUT"/>
+            <AppenderRef ref="RollingFile"/>
         </Root>
     </Loggers>
 </Configuration>
-
