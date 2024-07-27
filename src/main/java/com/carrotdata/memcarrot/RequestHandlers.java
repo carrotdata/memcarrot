@@ -29,6 +29,7 @@ import com.carrotdata.cache.util.UnsafeAccess;
 import com.carrotdata.memcarrot.CommandProcessor.OutputConsumer;
 import com.carrotdata.memcarrot.commands.QUIT;
 import com.carrotdata.memcarrot.util.Errors;
+import com.esotericsoftware.kryo.kryo5.minlog.Log;
 
 public class RequestHandlers {
 
@@ -95,6 +96,9 @@ public class RequestHandlers {
     }
     while (true) {
       for (int i = 0; i < workers.length; i++) {
+        if (!workers[i].isAlive()) {
+          continue;
+        }
         if (workers[i].isBusy()) continue;
         workers[i].nextKey(key);
         return;
@@ -269,138 +273,144 @@ class WorkThread extends Thread {
    * Main loop
    */
   public void run() {
+    try {
+      final ChannelOutputConsumer consumer = new ChannelOutputConsumer();
+      // infinite loop
+      log.info("Thread {} started.", Thread.currentThread().getName());
 
-    final ChannelOutputConsumer consumer = new ChannelOutputConsumer();
-    // infinite loop
-    while (true) {
-      final SelectionKey key = waitForKey();
+      while (true) {
+        final SelectionKey key = waitForKey();
 
-      if (key == null) {
-        log.debug("Thread {} got interrupt signal, exiting", Thread.currentThread().getName());
-        return;
-      }
-      // We are busy now
-      final SocketChannel channel = (SocketChannel) key.channel();
+        if (key == null) {
+          log.info("Thread {} got interrupt signal, exiting", Thread.currentThread().getName());
+          return;
+        }
+        // We are busy now
+        final SocketChannel channel = (SocketChannel) key.channel();
 
-      // Read request first
-      ByteBuffer in = getInputBuffer();
-      ByteBuffer out = getOutputBuffer();
-      in.clear();
-      out.clear();
+        // Read request first
+        ByteBuffer in = getInputBuffer();
+        ByteBuffer out = getOutputBuffer();
+        in.clear();
+        out.clear();
 
-      consumer.channel = channel;
-      consumer.out = out;
+        consumer.channel = channel;
+        consumer.out = out;
 
-      try {
-        long startCounter = 0;
-        long max_wait_ns = 500_000_000; // 500ms - FIXME - make it configurable
-        int inputSize = 0;
+        try {
+          long startCounter = 0;
+          long max_wait_ns = 500_000_000; // 500ms - FIXME - make it configurable
+          int inputSize = 0;
 
-        outer: while (true) {
-          // Before read check input size
-          if (inputSize == bufferSize) {
-            // Input is too large
-            out.clear();
-            out.put(Errors.INPUT_TOO_LARGE);
-            out.flip();
-            // send response back
-            while (out.hasRemaining()) {
-              // FIXME: Can we stuck here?
-              channel.write(out);
-            }
-            // We need to close channel
-            // because now we are not able to restore
-            // correct position of the next command
-            key.cancel();
-            channel.close();
-            break;
-          }
-          int num = channel.read(in);
-          if (num < 0) {
-            // End-Of-Stream - socket was closed, cancel the key
-            key.cancel();
-            channel.close();
-            break;
-          } else if (num == 0) {
-            if (startCounter == 0) {
-              startCounter = System.nanoTime();
-            }
-            if (System.nanoTime() - startCounter > max_wait_ns) {
-              // FIXME: Request timeout
-              // timeout
-              key.cancel();
-              channel.close();
-              break;
-            }
-            Thread.onSpinWait();
-            continue;
-          }
-          startCounter = 0;
-          int consumed = 0;
-          inputSize += num;
-          ;
-
-          while (consumed < inputSize) {
-            // Try to parse
-            // Process request using buffer's addresses
-            int responseLength = CommandProcessor.process(store, in_ptr + consumed,
-              inputSize - consumed, out_ptr, bufferSize, consumer);
-            if (responseLength < 0) {
-              // command is incomplete
-              // check if we consumed something, then compact input buffer
-              if (consumed > 0) {
-                // compact input buffer
-                UnsafeAccess.copy(in_ptr + consumed, in_ptr, inputSize - consumed);
-                inputSize -= consumed;
-                in.position(inputSize);
-              }
-              continue outer;
-            }
-            if (responseLength > 0) {
-              out.limit(responseLength);
-              out.position(0);
+          outer: while (true) {
+            // Before read check input size
+            if (inputSize == bufferSize) {
+              // Input is too large
+              out.clear();
+              out.put(Errors.INPUT_TOO_LARGE);
+              out.flip();
               // send response back
               while (out.hasRemaining()) {
                 // FIXME: Can we stuck here?
                 channel.write(out);
               }
-            }
-            consumed += CommandProcessor.getLastExecutedCommand().inputConsumed();
-            if (CommandProcessor.getLastExecutedCommand() instanceof QUIT) {
+              // We need to close channel
+              // because now we are not able to restore
+              // correct position of the next command
               key.cancel();
               channel.close();
+              break;
             }
+            int num = channel.read(in);
+            if (num < 0) {
+              // End-Of-Stream - socket was closed, cancel the key
+              key.cancel();
+              channel.close();
+              break;
+            } else if (num == 0) {
+              if (startCounter == 0) {
+                startCounter = System.nanoTime();
+              }
+              if (System.nanoTime() - startCounter > max_wait_ns) {
+                // FIXME: Request timeout
+                // timeout
+                key.cancel();
+                channel.close();
+                break;
+              }
+              Thread.onSpinWait();
+              continue;
+            }
+            startCounter = 0;
+            int consumed = 0;
+            inputSize += num;
+            ;
+
+            while (consumed < inputSize) {
+              // Try to parse
+              // Process request using buffer's addresses
+              int responseLength = CommandProcessor.process(store, in_ptr + consumed,
+                inputSize - consumed, out_ptr, bufferSize, consumer);
+              if (responseLength < 0) {
+                // command is incomplete
+                // check if we consumed something, then compact input buffer
+                if (consumed > 0) {
+                  // compact input buffer
+                  UnsafeAccess.copy(in_ptr + consumed, in_ptr, inputSize - consumed);
+                  inputSize -= consumed;
+                  in.position(inputSize);
+                }
+                continue outer;
+              }
+              if (responseLength > 0) {
+                out.limit(responseLength);
+                out.position(0);
+                // send response back
+                while (out.hasRemaining()) {
+                  // FIXME: Can we stuck here?
+                  channel.write(out);
+                }
+              }
+              consumed += CommandProcessor.getLastExecutedCommand().inputConsumed();
+              if (CommandProcessor.getLastExecutedCommand() instanceof QUIT) {
+                key.cancel();
+                channel.close();
+              }
+            }
+            break;
           }
-          break;
-        }
-      } catch (IOException e) {
-        String msg = e.getMessage();
-        if (!msg.equals("Connection reset by peer")) {
+        } catch (IOException e) {
+          String msg = e.getMessage();
+          // if (!msg.equals("Connection reset by peer")) {
           // TODO
           log.error("StackTrace: ", e);
-        }
-        key.cancel();
-      } catch (BufferOverflowException ee) {
-        out.clear();
-        out.put(Errors.OUTPUT_TOO_LARGE);
-        out.flip();
-        // send response back
-        while (out.hasRemaining()) {
-          // FIXME: Can we stuck here?
-          try {
-            channel.write(out);
-          } catch (IOException eee) {
-            key.cancel();
-            // what to do with channel?
+          // }
+          key.cancel();
+        } catch (BufferOverflowException ee) {
+          out.clear();
+          out.put(Errors.OUTPUT_TOO_LARGE);
+          out.flip();
+          // send response back
+          while (out.hasRemaining()) {
+            // FIXME: Can we stuck here?
+            try {
+              channel.write(out);
+            } catch (IOException eee) {
+              key.cancel();
+              // what to do with channel?
+            }
           }
+        } finally {
+          // Release selection key - ready for the next request
+          release(key);
+          nextKey.set(null);
+          // set busy flag to false
+          busy = false;
         }
-      } finally {
-        // Release selection key - ready for the next request
-        release(key);
-        nextKey.set(null);
-        // set busy flag to false
-        busy = false;
       }
+    } catch (Throwable t) {
+      // This is where we can hit OOM error
+      log.error("PANIC: thread died due to uncaught exception", t);
     }
   }
 }
