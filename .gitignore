@@ -28,3 +28,4 @@ target/
 logs/
 *.iml
 nohup.out
+.DS_Store
