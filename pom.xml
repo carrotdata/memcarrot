@@ -124,6 +124,27 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <!-- Create the lib directory if it doesn't exist -->
+                                <mkdir dir="lib" />
+                                <!-- Copy the JAR file to the lib directory -->
+                                <copy file="./target/${project.artifactId}-${project.version}-bundle.jar" todir="lib" />
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
     <!--dependencyManagement-->
