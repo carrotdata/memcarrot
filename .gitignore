@@ -29,3 +29,4 @@ logs/
 *.iml
 nohup.out
 data/
+.DS_Store
