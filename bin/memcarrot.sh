@@ -28,9 +28,7 @@ export JVM_OPTS="-Xmx${MAX_HEAP_SIZE} -XX:MaxDirectMemorySize=256m --add-opens j
         --add-opens=java.base/java.util.concurrent=ALL-UNNAMED \
         --add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED \
         --add-opens=java.base/sun.nio.ch=ALL-UNNAMED \
-        --add-opens java.base/sun.net=ALL-UNNAMED --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED \
-        -DSTATS_TASK -DSTATS_TASK_INTERVAL=300 \
-        -Dlocation=${MEMCARROT_INSTANCE_NAME} ${MEMCARROT_APP_OPTS}"
+        --add-opens java.base/sun.net=ALL-UNNAMED --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED ${MEMCARROT_APP_OPTS}"
 
 #===== find pid =====
 pid() {
