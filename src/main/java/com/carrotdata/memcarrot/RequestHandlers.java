@@ -29,7 +29,6 @@ import com.carrotdata.cache.util.UnsafeAccess;
 import com.carrotdata.memcarrot.CommandProcessor.OutputConsumer;
 import com.carrotdata.memcarrot.commands.QUIT;
 import com.carrotdata.memcarrot.util.Errors;
-import com.esotericsoftware.kryo.kryo5.minlog.Log;
 
 public class RequestHandlers {
 
@@ -190,6 +189,7 @@ class WorkThread extends Thread {
     if (inBuf == null) {
       inBuf = ByteBuffer.allocateDirect(bufferSize);
       in_ptr = UnsafeAccess.address(inBuf);
+      UnsafeAccess.mallocStats.allocEvent(in_ptr, bufferSize);
     }
     return inBuf;
   }
@@ -198,6 +198,7 @@ class WorkThread extends Thread {
     if (outBuf == null) {
       outBuf = ByteBuffer.allocateDirect(bufferSize);
       out_ptr = UnsafeAccess.address(outBuf);
+      UnsafeAccess.mallocStats.allocEvent(out_ptr, bufferSize);
     }
     return outBuf;
   }
