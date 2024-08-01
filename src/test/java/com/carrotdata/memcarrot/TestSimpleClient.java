@@ -512,7 +512,7 @@ public class TestSimpleClient {
     String value = TestUtils.randomString(200);
     byte[] bvalue = value.getBytes();
     long start = System.currentTimeMillis();
-    int n = 200000;
+    int n = 1_000_000;
     for (int i = 0; i < n; i++) {
       int flags = 0;
       long expire = expireIn(100);
