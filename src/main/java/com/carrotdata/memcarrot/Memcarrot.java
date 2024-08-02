@@ -45,8 +45,11 @@ public class Memcarrot {
     log.info("Starting Memcarrot server");
     log.info("version=" + System.getProperty("MEMCARROT_VERSION"));
     log.info("build=" + configFile);
-//    MemcarrotConfYaml confYaml = MemcarrotConfYaml.loadConfiguration();
-//    log.info("Configuration:\n{}", confYaml);
+
+    //    TOOO conf/memcarrot-prod.yaml is hardcoded for demo purposes only
+    MemcarrotConfYaml confYaml = MemcarrotConfYaml.loadConfigProfile("conf/memcarrot-prod.yaml");
+    log.info("Configuration:\n{}", confYaml.toYaml());
+
     MemcarrotConf conf = MemcarrotConf.getConf(configFile);
     log.trace("Configuration:\n{}", conf);
     long start = System.currentTimeMillis();

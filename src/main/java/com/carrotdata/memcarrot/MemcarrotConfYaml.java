@@ -3,25 +3,20 @@ package com.carrotdata.memcarrot;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
 import org.yaml.snakeyaml.representer.Representer;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringWriter;
+import java.io.*;
 import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @Data
-@NoArgsConstructor
 public class MemcarrotConfYaml {
-
   private ServerConfig server;
   private WorkerConfig workers;
   private KVConfig kv;
@@ -61,7 +56,48 @@ public class MemcarrotConfYaml {
   private ObjectCacheConfig objectcache;
   private long vacuumCleanerInterval;
 
-  public static MemcarrotConfYaml loadConfigDefault() throws IOException {
+  public static void main(String[] args) {
+    try {
+      var config = MemcarrotConfYaml.loadConfigProfile("conf/memcarrot-prod.yaml");
+      // Print some properties to verify loading
+      System.out.println("Server port: " + config.getServer().getPort());
+      System.out.println("Server address: " + config.getServer().getAddress());
+      System.out.println("Cache names: " + config.getCacheProps().getNames());
+      System.out.println("Cache values: " + config.getCacheProps().getValues());
+
+      System.out.println("Config json: " + config.toJson());
+      System.out.println("Config yaml: " + config.toYaml());
+    } catch (IOException e) {
+      System.out.println("Error loading configuration" + e);
+    }
+  }
+
+  public static MemcarrotConfYaml loadConfigProfile(String filePath) throws IOException {
+    var defaultConfig = loadConfigDefault();
+    if ("default".equals(filePath) || "".equals(filePath) || Objects.isNull(filePath)) {
+      return defaultConfig;
+    }
+
+    if (!new File(filePath).exists()) {
+      System.out.println("File not found: {}\n loaded default profile only" + filePath);
+      return defaultConfig;
+    }
+
+    var options = new LoaderOptions();
+    var constructor = new Constructor(MemcarrotConfYaml.class, options);
+    var yaml = new Yaml(constructor);
+
+    MemcarrotConfYaml config;
+    try (InputStream inputStream = new FileInputStream(filePath)) {
+      config = yaml.load(inputStream);
+    }
+    if (config == null) {
+      return defaultConfig;
+    }
+    return mergeConfigurations(defaultConfig, config);
+  }
+
+  private static MemcarrotConfYaml loadConfigDefault() throws IOException {
     String fileName = System.getProperty("memcarrot.config", "memcarrot.yaml");
     LoaderOptions options = new LoaderOptions();
     Constructor constructor = new Constructor(MemcarrotConfYaml.class, options);
@@ -76,20 +112,11 @@ public class MemcarrotConfYaml {
     }
   }
 
-  public static MemcarrotConfYaml loadConfigProfile(String filePath) throws IOException {
-    LoaderOptions options = new LoaderOptions();
-    Constructor constructor = new Constructor(MemcarrotConfYaml.class, options);
-    Yaml yaml = new Yaml(constructor);
-
-    try (InputStream inputStream = new FileInputStream(filePath)) {
-      return yaml.load(inputStream);
-    }
-  }
-
-  public static void mergeConfigurations(MemcarrotConfYaml baseConfig,
+  private static MemcarrotConfYaml mergeConfigurations(MemcarrotConfYaml baseConfig,
       MemcarrotConfYaml overrideConfig) {
     if (overrideConfig == null) {
-      return;
+      System.out.println("Override configuration is null, returning default configuration");
+      return baseConfig;
     }
 
     try {
@@ -101,8 +128,9 @@ public class MemcarrotConfYaml {
         }
       }
     } catch (IllegalAccessException e) {
-      e.printStackTrace();
+      System.out.println("Error merging configurations" + e);
     }
+    return baseConfig;
   }
 
   public String toYaml() {
@@ -119,24 +147,6 @@ public class MemcarrotConfYaml {
   public String toJson() {
     Gson gson = new GsonBuilder().setPrettyPrinting().create();
     return gson.toJson(this);
-  }
-
-  public static void main(String[] args) {
-    try {
-      var config = MemcarrotConfYaml.loadConfigDefault();
-      var configProfile = MemcarrotConfYaml.loadConfigProfile("conf/memcarrot-prod.yaml");
-      MemcarrotConfYaml.mergeConfigurations(config, configProfile);
-      // Print some properties to verify loading
-      System.out.println("Server port: " + config.getServer().getPort());
-      System.out.println("Server address: " + config.getServer().getAddress());
-      System.out.println("Cache names: " + config.getCacheProps().getNames());
-      System.out.println("Cache values: " + config.getCacheProps().getValues());
-
-      System.out.println("Config json: " + config.toJson());
-      System.out.println("Config yaml: " + config.toYaml());
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
   }
 
   @Data

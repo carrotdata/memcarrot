@@ -1,5 +1,5 @@
 #################################################################################
-# Memcarrot configuration
+# Memcarrot configuration for production it merged with default configuration
 ################################################################################
 server:
   port: 11212
