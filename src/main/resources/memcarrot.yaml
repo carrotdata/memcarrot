@@ -1,0 +1,239 @@
+#################################################################################
+# Memcarrot configuration
+################################################################################
+server:
+  port: 11211
+  address: localhost
+
+workers:
+  # Worker pool size
+  poolSize: 1
+
+kv:
+  # I/O buffer size
+  sizeMax: 4_194_304
+
+tcp:
+  # TCP Send/Receive buffer size
+  bufferSize: 32_768
+
+# List of all caches logical names, comma-separated
+cacheProps:
+  names: [ default, C1 ]
+  values:
+    default:
+      types: memory
+      storageSizeMax: 8_147_483_648
+      waitPutMaxMs: 20
+      maxKvSize: 268_435_448
+    C1:
+      types: memory
+      storageSizeMax: 4_073_741_824
+      waitPutMaxMs: 20
+      maxKvSize: 268_435_448
+
+victim:
+  # Cache victim names. If cache name is 'C1', then to lookup for its victim name
+  # we must request 'C1.victim.name' property value
+  name:
+  # Promote item from victim cache on hit
+  promotionOnHit: true
+  # Victim cache promotion popularity threshold
+  promotionThreshold: 0.9
+
+# Cache root directory - where to save cached data and snapshot
+rootDirPath: ./data
+
+# Data segment size
+# Default is 4MB (Memory)
+dataSegmentSize: 16_777_216
+
+scavenger:
+  # When to start GC (garbage collection) - size of the cache as a fraction of the maximum cache size
+  ratioStart: 0.99
+  # When to stop GC (garbage collection) - size of the cache as a fraction of the maximum cache size
+  ratioStop: 0.9
+  # Discard cached entry if it in this lower percentile - start value
+  dumpEntryBelowMin: 0.1
+  # Discard cached entry if it in this lower percentile - stop value (maximum)
+  dumpEntryBelowMax: 0.5
+  # Scavenger adjustment step
+  scavengerDumpEntryBelowStep: 0.1
+  # Scavenger number of threads
+  numberThreads: 1
+  # Scavenger run interval in seconds
+  runIntervalSec: 60
+
+# Number of popularity ranks (or bins to insert incoming writes to)
+popularityNumberRanks: 8
+
+active:
+  # Minimum active data set ratio
+  datasetRatioMin: 0.9
+
+storage:
+  # IO Pool size for FileIO save segments to disk
+  ioPoolSize: 4
+
+eviction:
+  # Number of segments in S-LRU (Eviction)
+  slruNumberSegments: 8
+  # New item insertion point for SLRU (Eviction)
+  slruInsertPoint: 7
+  # Class name for cache eviction policy implementation
+  policyImpl: com.onecache.core.eviction.SLRUEvictionPolicy
+
+admission:
+  # Admission Queue start size in fraction of a full cache size
+  queueSizeRatioStart: 0.5
+  queue:
+    # Admission Queue minimum size in fraction of a full cache size
+    sizeRatioMin: 0.1
+    # Admission Queue maximum size in fraction of a full cache size
+    sizeRatioMax: 0.5
+  # Class name for cache admission controller implementation (no default)
+  controllerImpl:
+
+promotion:
+  queue:
+    # Promotion Queue start size in fraction of a full cache size
+    sizeRatioStart: 0.5
+    # Promotion Queue minimum size in fraction of a full cache size
+    sizeRatioMin: 0.1
+    # Promotion Queue maximum size in fraction of a full cache size
+    sizeRatioMax: 0.5
+
+random:
+  # Random configuration parameter for random promotion controller
+  promotionProbability: 0.1
+  # Random admission controller ratio start
+  admissionRatioStart: 1.0
+  # Random admission controller ratio stop
+  admissionRatioStop: 0.0
+
+# Cumulative average write rate limit  (bytes/sec) (SSD - based caches)
+# when throughput controller is enabled
+writeAvgRateLimit: 52_428_800
+
+# Some file systems : ext4, xfs, APFS etc supports sparse files and so called
+# "hole punching" - discarding  regions of files. We use different algorithm of compaction when file system
+#  supports these features. Default: false. (not supported yet)
+sparseFilesSupport: false
+
+index:
+  # Index starting number of slots power of 2 - L ( N = 2**L) N - number of slots
+  # Default: 16 - 64K slots (2**16)
+  slotsPower: 16
+  data:
+    # Does index support memory embedding (not implemented yet)
+    embedded: false
+    # Maximum data size to embed
+    embeddedSizeMax: 100
+  format:
+    # Class name for main queue index format implementation
+    impl: com.carrotdata.cache.index.SubCompactBaseNoSizeIndexFormat
+    # Class name for admission queue index format implementation
+    aqImpl: com.onecache.core.index.AQIndexFormat
+
+throughput:
+  # Cache write throughput check interval key
+  checkIntervalSec: 3600
+  # Cache write throughput controller tolerance limit
+  toleranceLimit: 0.05
+  # Throughput controller number of adjustment steps
+  adjustmentSteps: 10
+  # Class name for cache throughput controller implementation (no default)
+  controllerImpl:
+
+# Class name for cache promotion controller implementation (no default)
+promotionControllerImpl:
+
+# Class name for cache recycling controller implementation
+recyclingSelectorImpl: com.onecache.core.controllers.MinAliveRecyclingSelector
+
+# Class name for cache data writer implementation
+dataWriterImpl: com.onecache.core.io.BaseDataWriter
+
+memory:
+  # Class name for cache data reader implementation (Memory)
+  dataReaderImpl: com.onecache.core.io.BaseMemoryDataReader
+  # Memory buffer pool size
+  bufferPoolSizeMax: 4
+
+file:
+  # Class name for cache data reader implementation (File)
+  dataReaderImpl: com.onecache.core.io.BaseFileDataReader
+  # File prefetch buffer size
+  prefetchBufferSize: 4_194_304
+
+# Block writer block size
+blockWriterBlockSize: 4096
+
+expire:
+  # Cache expiration support implementation
+  # supports range 1 sec - ~ 32678 (2^15) min
+  supportImpl: com.onecache.core.expire.ExpireSupportSecondsMinutes
+  # For expiration based admission controller - minimum expiration supported in seconds
+  binValueStart: 60
+  # For expiration  based admission controller - bin value multiplier
+  multiplierValue: 2
+
+# Cache eviction disabled mode
+evictionDisabled: false
+
+# Spin wait time on high pressure in nanoseconds during PUT operation
+spinWaitTimeNs: 10000
+
+# JMX metrics domain name
+jmxMetricsDomainName: com.carrotdata.cache
+
+# Hybrid mode of operation. When inverse mode is on data goes first to victim cache and later will be promoted
+# to the parent cache.
+hybridInverseMode: false
+
+# Thread local storage support. Must be enabled for the server (memcached)
+tls:
+  supported: false
+  buffer:
+    # Initial buffer size for thread local storage
+    sizeStart: 65_536
+    # Maximum buffer size for thread local storage
+    sizeMax: 268_435_456
+
+compression:
+  # Cache compression enabled
+  enabled: true
+  # Compression block size
+  blockSize: 4096
+  # Compression dictionary size
+  dictionarySize: 1_048_576
+  # Compression level (0-22 for ZSTD)
+  level: 3
+  # Compression codec
+  codec: ZSTD
+  # Compression dictionary enabled
+  dictionaryEnabled: true
+  # Train dictionary on keys as well?
+  keysEnabled: true
+  # Dictionary training mode (full async is not supported yet)
+  dictionaryTrainingAsync: true
+
+# Save cache on process shutdown
+saveOnShutdown: true
+
+# Estimated average key-value size in bytes
+estimatedAvgKvSize: 1024
+
+# Pro-active expiration check probability (0-1)
+proactiveExpirationFactor: 0.25
+
+objectcache:
+  buffer:
+    # Object Cache initial output buffer size - not relevant for server
+    sizeStart: 64_536
+    # Object Cache maximum output buffer size - not relevant for server
+    sizeMax: -1
+
+# Vacuum cleaner interval in seconds
+# Default: -1 - disabled
+vacuumCleanerInterval: -1

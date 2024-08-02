@@ -1,11 +1,11 @@
 /*
- * Copyright (C) 2024-present Carrot Data, Inc. 
+ * Copyright (C) 2024-present Carrot Data, Inc.
  * <p>This program is free software: you can redistribute it
  * and/or modify it under the terms of the Server Side Public License, version 1, as published by
  * MongoDB, Inc.
  * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- * PURPOSE. See the Server Side Public License for more details. 
+ * PURPOSE. See the Server Side Public License for more details.
  * <p>You should have received a copy of the Server Side Public License along with this program. If not, see
  * <http://www.mongodb.com/licensing/server-side-public-license>.
  */
@@ -44,13 +44,19 @@ public class Memcarrot {
   private static void startServer(String configFile) throws IOException {
     log.info("Starting Memcarrot server");
     log.info("version=" + System.getProperty("MEMCARROT_VERSION"));
+    log.info("build=" + configFile);
+//    MemcarrotConfYaml confYaml = MemcarrotConfYaml.loadConfiguration();
+//    log.info("Configuration:\n{}", confYaml);
     MemcarrotConf conf = MemcarrotConf.getConf(configFile);
+    log.trace("Configuration:\n{}", conf);
     long start = System.currentTimeMillis();
+    log.info("Starting Memcarrot server");
     MemcarrotServer server = new MemcarrotServer(conf);
+    log.trace("Starting server");
     server.start();
+    log.trace("Server started");
     long end = System.currentTimeMillis();
     log.info("Memcarrot started on {}:{} in {}ms", server.getHost(), server.getPort(), end - start);
-    
   }
 
   private static void usage() {
