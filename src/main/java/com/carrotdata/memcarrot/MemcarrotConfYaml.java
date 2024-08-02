@@ -1,20 +1,27 @@
 package com.carrotdata.memcarrot;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
+import org.yaml.snakeyaml.representer.Representer;
 
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringWriter;
+import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
 
 @Data
 @NoArgsConstructor
 public class MemcarrotConfYaml {
+
   private ServerConfig server;
   private WorkerConfig workers;
   private KVConfig kv;
@@ -54,7 +61,7 @@ public class MemcarrotConfYaml {
   private ObjectCacheConfig objectcache;
   private long vacuumCleanerInterval;
 
-  public static MemcarrotConfYaml loadConfiguration() throws IOException {
+  public static MemcarrotConfYaml loadConfigDefault() throws IOException {
     String fileName = System.getProperty("memcarrot.config", "memcarrot.yaml");
     LoaderOptions options = new LoaderOptions();
     Constructor constructor = new Constructor(MemcarrotConfYaml.class, options);
@@ -69,14 +76,64 @@ public class MemcarrotConfYaml {
     }
   }
 
+  public static MemcarrotConfYaml loadConfigProfile(String filePath) throws IOException {
+    LoaderOptions options = new LoaderOptions();
+    Constructor constructor = new Constructor(MemcarrotConfYaml.class, options);
+    Yaml yaml = new Yaml(constructor);
+
+    try (InputStream inputStream = new FileInputStream(filePath)) {
+      return yaml.load(inputStream);
+    }
+  }
+
+  public static void mergeConfigurations(MemcarrotConfYaml baseConfig,
+      MemcarrotConfYaml overrideConfig) {
+    if (overrideConfig == null) {
+      return;
+    }
+
+    try {
+      for (Field field : MemcarrotConfYaml.class.getDeclaredFields()) {
+        field.setAccessible(true);
+        Object overrideValue = field.get(overrideConfig);
+        if (overrideValue != null) {
+          field.set(baseConfig, overrideValue);
+        }
+      }
+    } catch (IllegalAccessException e) {
+      e.printStackTrace();
+    }
+  }
+
+  public String toYaml() {
+    DumperOptions options = new DumperOptions();
+    options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
+    options.setPrettyFlow(true);
+    Representer representer = new Representer(options);
+    Yaml yaml = new Yaml(representer, options);
+    StringWriter writer = new StringWriter();
+    yaml.dump(this, writer);
+    return writer.toString();
+  }
+
+  public String toJson() {
+    Gson gson = new GsonBuilder().setPrettyPrinting().create();
+    return gson.toJson(this);
+  }
+
   public static void main(String[] args) {
     try {
-      MemcarrotConfYaml config = MemcarrotConfYaml.loadConfiguration();
+      var config = MemcarrotConfYaml.loadConfigDefault();
+      var configProfile = MemcarrotConfYaml.loadConfigProfile("conf/memcarrot-prod.yaml");
+      MemcarrotConfYaml.mergeConfigurations(config, configProfile);
       // Print some properties to verify loading
       System.out.println("Server port: " + config.getServer().getPort());
       System.out.println("Server address: " + config.getServer().getAddress());
       System.out.println("Cache names: " + config.getCacheProps().getNames());
       System.out.println("Cache values: " + config.getCacheProps().getValues());
+
+      System.out.println("Config json: " + config.toJson());
+      System.out.println("Config yaml: " + config.toYaml());
     } catch (IOException e) {
       e.printStackTrace();
     }

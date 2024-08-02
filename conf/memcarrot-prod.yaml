@@ -1,0 +1,26 @@
+#################################################################################
+# Memcarrot configuration
+################################################################################
+server:
+  port: 11212
+  address: 172.0.0.1
+
+# List of all caches logical names, comma-separated
+cacheProps:
+  names: [ default, C1, C2 ]
+  values:
+    default:
+      types: memory
+      storageSizeMax: 8_147_483_648
+      waitPutMaxMs: 20
+      maxKvSize: 268_435_448
+    C1:
+      types: memory
+      storageSizeMax: 4_073_741_824
+      waitPutMaxMs: 20
+      maxKvSize: 268_435_448
+    C2:
+      types: memory
+      storageSizeMax: 4_073_741_824
+      waitPutMaxMs: 20
+      maxKvSize: 268_435_448
