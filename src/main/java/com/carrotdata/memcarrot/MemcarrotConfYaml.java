@@ -67,6 +67,7 @@ public class MemcarrotConfYaml {
 
       System.out.println("Config json: " + config.toJson());
       System.out.println("Config yaml: " + config.toYaml());
+      System.out.println("Config yaml: " + config.toString());
     } catch (IOException e) {
       System.out.println("Error loading configuration" + e);
     }
