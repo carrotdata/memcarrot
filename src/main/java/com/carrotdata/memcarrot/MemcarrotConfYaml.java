@@ -58,19 +58,31 @@ public class MemcarrotConfYaml {
 
   public static void main(String[] args) {
     try {
-      var config = MemcarrotConfYaml.loadConfigProfile("conf/memcarrot-prod.yaml");
+      var config = MemcarrotConfYaml.loadConfigProfile();
+      System.out.println("Server port: " + config.getServer().getPort());
+      System.out.println("Server address: " + config.getServer().getAddress());
+      System.out.println("Cache names: " + config.getCacheProps().getNames());
+      System.out.println("Cache values: " + config.getCacheProps().getValues());
+
+      config = MemcarrotConfYaml.loadConfigProfile("conf/memcarrot-prod.yaml");
       // Print some properties to verify loading
       System.out.println("Server port: " + config.getServer().getPort());
       System.out.println("Server address: " + config.getServer().getAddress());
       System.out.println("Cache names: " + config.getCacheProps().getNames());
       System.out.println("Cache values: " + config.getCacheProps().getValues());
 
+
       System.out.println("Config json: " + config.toJson());
       System.out.println("Config yaml: " + config.toYaml());
       System.out.println("Config yaml: " + config.toString());
+
     } catch (IOException e) {
       System.out.println("Error loading configuration" + e);
     }
+  }
+
+  public static MemcarrotConfYaml loadConfigProfile() throws IOException {
+    return loadConfigProfile("default");
   }
 
   public static MemcarrotConfYaml loadConfigProfile(String filePath) throws IOException {
