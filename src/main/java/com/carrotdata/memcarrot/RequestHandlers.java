@@ -215,7 +215,7 @@ class WorkThread extends Thread {
    * Submits next selection key for processing
    * @param key selection key
    */
-  void nextKey(SelectionKey key) {
+  synchronized void nextKey(SelectionKey key) {
     if (key.attachment() == null) {
       key.attach(new RequestHandlers.Attachment());
     } else {
@@ -345,7 +345,6 @@ class WorkThread extends Thread {
             startCounter = 0;
             int consumed = 0;
             inputSize += num;
-            ;
 
             while (consumed < inputSize) {
               // Try to parse
@@ -382,10 +381,11 @@ class WorkThread extends Thread {
           }
         } catch (IOException e) {
           String msg = e.getMessage();
-          // if (!msg.equals("Connection reset by peer")) {
-          // TODO
-          log.error("StackTrace: ", e);
-          // }
+          if (!msg.equals("Connection reset by peer")) {
+            log.error(e);
+          } else {
+            log.debug("{}:{}", msg, channel.getRemoteAddress());
+          }
           key.cancel();
         } catch (BufferOverflowException ee) {
           out.clear();

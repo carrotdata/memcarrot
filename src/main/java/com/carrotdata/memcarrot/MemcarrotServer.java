@@ -13,6 +13,7 @@ package com.carrotdata.memcarrot;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.net.SocketOption;
 import java.net.StandardSocketOptions;
 import java.nio.channels.CancelledKeyException;
 import java.nio.channels.ClosedSelectorException;
@@ -21,6 +22,7 @@ import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.Iterator;
+import java.util.Set;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -278,8 +280,14 @@ public class MemcarrotServer {
 
     InetSocketAddress serverAddr = new InetSocketAddress(host, port);
 
-    serverSocket.bind(serverAddr);
+    // Does not work on Mac OS properly - it has limited backlog buffer (128?)
+    serverSocket.bind(serverAddr, Integer.MAX_VALUE);
     serverSocket.configureBlocking(false);
+    Set<SocketOption<?>> options = serverSocket.supportedOptions();
+    serverSocket.setOption(StandardSocketOptions.SO_REUSEADDR, true);
+    serverSocket.setOption(StandardSocketOptions.SO_REUSEPORT, true);
+
+    logOptions(options);
     serverSocket.register(selector, SelectionKey.OP_ACCEPT);
 
     log.info("Memcarrot Server started on: {}. Ready to accept new connections.", serverAddr);
@@ -313,6 +321,12 @@ public class MemcarrotServer {
     }
   }
 
+  private void logOptions(Set<SocketOption<?>> options) {
+    for (SocketOption<?> option: options) {
+      log.info("{}", option);
+    }
+  }
+
   private void accept(SelectionKey key) throws IOException {
     ServerSocketChannel serverSocketChannel = (ServerSocketChannel) key.channel();
     SocketChannel client = serverSocketChannel.accept();
@@ -322,7 +336,7 @@ public class MemcarrotServer {
     client.setOption(StandardSocketOptions.SO_RCVBUF, this.tcpSndRcvBufferSize);
     client.setOption(StandardSocketOptions.SO_REUSEADDR, true);
     client.register(selector, SelectionKey.OP_READ);
-    log.debug("[{}] Connection Accepted: remote={}]", Thread.currentThread().getName(),
+    log.trace("[{}] Connection Accepted: remote={}]", Thread.currentThread().getName(),
       client.getRemoteAddress());
   }
 
