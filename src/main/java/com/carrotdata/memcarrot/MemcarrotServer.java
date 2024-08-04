@@ -13,7 +13,6 @@ package com.carrotdata.memcarrot;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.net.SocketOption;
 import java.net.StandardSocketOptions;
 import java.nio.channels.CancelledKeyException;
 import java.nio.channels.ClosedSelectorException;
@@ -21,8 +20,7 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.function.Consumer;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -194,136 +192,64 @@ public class MemcarrotServer {
     }
   }
 
-  // private void run() throws IOException {
-  // // Create memcached support instance if not null
-  // // It is not null in tests
-  // if (memcached == null) {
-  // memcached = new Memcached();
-  // }
-  // // Start request handlers
-  // startRequestHandlers();
-  //
-  // selector = Selector.open(); // selector is open here
-  // log.debug("Selector started");
-  //
-  // // ServerSocketChannel: selectable channel for stream-oriented listening sockets
-  // serverSocket = ServerSocketChannel.open();
-  // log.debug("Server socket opened");
-  //
-  // InetSocketAddress serverAddr = new InetSocketAddress(host, port);
-  //
-  // // Binds the channel's socket to a local address and configures the socket to listen for
-  // // connections
-  // serverSocket.bind(serverAddr);
-  // // Adjusts this channel's blocking mode.
-  // serverSocket.configureBlocking(false);
-  // int ops = serverSocket.validOps();
-  // serverSocket.register(selector, ops, null);
-  //
-  // log.info("Memcarrot Server started on: {}. Ready to accept new connections.", serverAddr);
-  //
-  // this.started = true;
-  //
-  // Consumer<SelectionKey> action = key -> {
-  // try {
-  // if (!key.isValid()) return;
-  // if (key.isValid() && key.isAcceptable()) {
-  // SocketChannel client = serverSocket.accept();
-  // // Adjusts this channel's blocking mode to false
-  // client.configureBlocking(false);
-  // client.setOption(StandardSocketOptions.TCP_NODELAY, true);
-  // client.setOption(StandardSocketOptions.SO_SNDBUF, 64 * 1024);
-  // client.setOption(StandardSocketOptions.SO_RCVBUF, 64 * 1024);
-  // //client.setOption(StandardSocketOptions.SO_REUSEADDR, true);
-  // // Operation-set bit for read operations
-  // client.register(selector, SelectionKey.OP_READ);
-  // log.debug("[{}] Connection Accepted: remote={}]", Thread.currentThread().getName(),
-  // client.getRemoteAddress());
-  // } else if (key.isValid() && key.isReadable()) {
-  // // Check if it is in use
-  // RequestHandlers.Attachment att = (RequestHandlers.Attachment) key.attachment();
-  // if (att != null && att.inUse()) return;
-  // // process request
-  // service.submit(key);
-  // }
-  // } catch (IOException e) {
-  // log.error(e.getMessage());
-  // try {
-  // key.channel().close();
-  // } catch (IOException ee) {
-  // //FIXME: is this correct?
-  // }
-  // //key.cancel();
-  // } catch (CancelledKeyException eee) {
-  // // swallow
-  // }
-  // };
-  // // Infinite loop..
-  // // Keep server running
-  // while (true) {
-  // // Selects a set of keys whose corresponding channels are ready for I/O operations
-  // selector.select(action);
-  // }
-  // }
-
   private void run() throws IOException {
+    // Create memcached support instance if not null
+    // It is not null in tests
     if (memcached == null) {
       memcached = new Memcached();
     }
+    // Start request handlers
     startRequestHandlers();
 
-    selector = Selector.open();
+    selector = Selector.open(); // selector is open here
     log.debug("Selector started");
 
+    // ServerSocketChannel: selectable channel for stream-oriented listening sockets
     serverSocket = ServerSocketChannel.open();
     log.debug("Server socket opened");
 
     InetSocketAddress serverAddr = new InetSocketAddress(host, port);
 
-    // Does not work on Mac OS properly - it has limited backlog buffer (128?)
+    // Binds the channel's socket to a local address and configures the socket to listen for
+    // connections
     serverSocket.bind(serverAddr, Integer.MAX_VALUE);
-    serverSocket.configureBlocking(false);
-    Set<SocketOption<?>> options = serverSocket.supportedOptions();
     serverSocket.setOption(StandardSocketOptions.SO_REUSEADDR, true);
     serverSocket.setOption(StandardSocketOptions.SO_REUSEPORT, true);
-
-    logOptions(options);
-    serverSocket.register(selector, SelectionKey.OP_ACCEPT);
+    // Adjusts this channel's blocking mode.
+    serverSocket.configureBlocking(false);
+    int ops = serverSocket.validOps();
+    serverSocket.register(selector, ops, null);
 
     log.info("Memcarrot Server started on: {}. Ready to accept new connections.", serverAddr);
 
     this.started = true;
 
-    while (true) {
+    Consumer<SelectionKey> action = key -> {
       try {
-        // Wait for an event
-        selector.select();
-        // Iterate over the set of selected keys
-        Iterator<SelectionKey> keys = selector.selectedKeys().iterator();
-        while (keys.hasNext()) {
-          SelectionKey key = keys.next();
-          keys.remove();
-
-          if (!key.isValid()) continue;
-
-          if (key.isAcceptable()) {
-            accept(key);
-          } else if (key.isReadable()) {
-            read(key);
-          }
+        if (!key.isValid()) return;
+        if (key.isValid() && key.isAcceptable()) {
+          accept(key);
+        } else if (key.isValid() && key.isReadable()) {
+          read(key);
         }
       } catch (IOException e) {
-        log.error("Error during select: ", e);
-        // FIXME
-      } catch (CancelledKeyException e) {
+        log.error(e.getMessage());
+        try {
+          key.channel().close();
+        } catch (IOException ee) {
+          // FIXME: is this correct?
+          log.error("Error during select: ", e);
+        }
+        // key.cancel();
+      } catch (CancelledKeyException eee) {
         // swallow
       }
-    }
-  }
-
-  private void logOptions(Set<SocketOption<?>> options) {
-    for (SocketOption<?> option: options) {
-      log.info("{}", option);
+    };
+    // Infinite loop..
+    // Keep server running
+    while (true) {
+      // Selects a set of keys whose corresponding channels are ready for I/O operations
+      selector.select(action);
     }
   }
 
@@ -334,9 +260,8 @@ public class MemcarrotServer {
     client.setOption(StandardSocketOptions.TCP_NODELAY, true);
     client.setOption(StandardSocketOptions.SO_SNDBUF, this.tcpSndRcvBufferSize);
     client.setOption(StandardSocketOptions.SO_RCVBUF, this.tcpSndRcvBufferSize);
-    client.setOption(StandardSocketOptions.SO_REUSEADDR, true);
     client.register(selector, SelectionKey.OP_READ);
-    log.trace("[{}] Connection Accepted: remote={}]", Thread.currentThread().getName(),
+    log.debug("[{}] Connection Accepted: remote={}]", Thread.currentThread().getName(),
       client.getRemoteAddress());
   }
 
