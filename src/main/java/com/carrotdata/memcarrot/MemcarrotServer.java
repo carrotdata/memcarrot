@@ -74,10 +74,15 @@ public class MemcarrotServer {
    * Server runner thread
    */
   Thread serverRunner;
+  
   /**
    * Server started and ready to accept connections
    */
   volatile boolean started;
+  /**
+   * Server failed to start
+   */
+  volatile boolean failed;
 
   /**
    * Constructor
@@ -146,9 +151,13 @@ public class MemcarrotServer {
     serverRunner.start();
     while (!this.started) {
       try {
-        Thread.sleep(1);
+        Thread.sleep(10);
       } catch (InterruptedException e) {
 
+      }
+      if (this.failed) {
+        // Silent exit, we have already message and stack trace in the log file
+        System.exit(-1);
       }
     }
   }
@@ -193,63 +202,72 @@ public class MemcarrotServer {
   }
 
   private void run() throws IOException {
-    // Create memcached support instance if not null
-    // It is not null in tests
-    if (memcached == null) {
-      memcached = new Memcached();
-    }
-    // Start request handlers
-    startRequestHandlers();
 
-    selector = Selector.open(); // selector is open here
-    log.debug("Selector started");
-
-    // ServerSocketChannel: selectable channel for stream-oriented listening sockets
-    serverSocket = ServerSocketChannel.open();
-    log.debug("Server socket opened");
-
-    InetSocketAddress serverAddr = new InetSocketAddress(host, port);
-
-    // Binds the channel's socket to a local address and configures the socket to listen for
-    // connections
-    serverSocket.bind(serverAddr, Integer.MAX_VALUE);
-    serverSocket.setOption(StandardSocketOptions.SO_REUSEADDR, true);
-    serverSocket.setOption(StandardSocketOptions.SO_REUSEPORT, true);
-    // Adjusts this channel's blocking mode.
-    serverSocket.configureBlocking(false);
-    int ops = serverSocket.validOps();
-    serverSocket.register(selector, ops, null);
-
-    log.info("Memcarrot Server started on: {}. Ready to accept new connections.", serverAddr);
-
-    this.started = true;
-
-    Consumer<SelectionKey> action = key -> {
-      try {
-        if (!key.isValid()) return;
-        if (key.isValid() && key.isAcceptable()) {
-          accept(key);
-        } else if (key.isValid() && key.isReadable()) {
-          read(key);
-        }
-      } catch (IOException e) {
-        log.error(e.getMessage());
-        try {
-          key.channel().close();
-        } catch (IOException ee) {
-          // FIXME: is this correct?
-          log.error("Error during select: ", e);
-        }
-        // key.cancel();
-      } catch (CancelledKeyException eee) {
-        // swallow
+    try {
+      // Create memcached support instance if not null
+      // It is not null in tests
+      if (memcached == null) {
+        memcached = new Memcached();
       }
-    };
-    // Infinite loop..
-    // Keep server running
-    while (true) {
-      // Selects a set of keys whose corresponding channels are ready for I/O operations
-      selector.select(action);
+      // Start request handlers
+      startRequestHandlers();
+
+      selector = Selector.open(); // selector is open here
+      log.debug("Selector started");
+
+      // ServerSocketChannel: selectable channel for stream-oriented listening sockets
+      serverSocket = ServerSocketChannel.open();
+      log.debug("Server socket opened");
+
+      InetSocketAddress serverAddr = new InetSocketAddress(host, port);
+
+      // Binds the channel's socket to a local address and configures the socket to listen for
+      // connections
+      serverSocket.bind(serverAddr, Integer.MAX_VALUE);
+      serverSocket.setOption(StandardSocketOptions.SO_REUSEADDR, true);
+      // Adjusts this channel's blocking mode.
+      serverSocket.configureBlocking(false);
+      int ops = serverSocket.validOps();
+      serverSocket.register(selector, ops, null);
+
+      log.info("Memcarrot Server started on: {}. Ready to accept new connections.", serverAddr);
+
+      this.started = true;
+
+      Consumer<SelectionKey> action = key -> {
+        try {
+          if (!key.isValid()) {
+            return;
+          }
+          if (key.isValid() && key.isAcceptable()) {
+            accept(key);
+          } else if (key.isValid() && key.isReadable()) {
+            read(key);
+          }
+        } catch (IOException e) {
+          log.error(e.getMessage());
+          try {
+            key.cancel();
+            key.channel().close();
+          } catch (IOException ee) {
+            // FIXME: is this correct?
+            log.error("Error during select: ", e);
+          }
+        } catch (CancelledKeyException eee) {
+          // swallow
+        }
+      };
+      // Infinite loop..
+      // Keep server running
+      while (true) {
+        // Selects a set of keys whose corresponding channels are ready for I/O operations
+        selector.select(action);
+      }
+    } catch (Throwable t) {
+      if (!(t instanceof ClosedSelectorException)) {
+        log.error(t);
+        this.failed = true;
+      }
     }
   }
 

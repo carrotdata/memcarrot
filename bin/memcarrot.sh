@@ -57,7 +57,7 @@ start() {
     exit 0
   fi
 
-  echo "Memcarrot instance failed to start"
+  echo "Memcarrot instance failed to start, see log file for details"
   exit 1
 }
 
