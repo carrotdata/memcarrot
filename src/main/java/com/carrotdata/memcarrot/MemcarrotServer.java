@@ -279,8 +279,7 @@ public class MemcarrotServer {
     client.setOption(StandardSocketOptions.SO_SNDBUF, this.tcpSndRcvBufferSize);
     client.setOption(StandardSocketOptions.SO_RCVBUF, this.tcpSndRcvBufferSize);
     client.register(selector, SelectionKey.OP_READ);
-    log.debug("[{}] Connection Accepted: remote={}]", Thread.currentThread().getName(),
-      client.getRemoteAddress());
+    log.debug("Connection Accepted: remote={}]", client.getRemoteAddress());
   }
 
   private void read(SelectionKey key) {
