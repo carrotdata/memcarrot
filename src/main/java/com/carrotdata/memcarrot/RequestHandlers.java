@@ -17,6 +17,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 import java.util.Arrays;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.LockSupport;
@@ -95,9 +96,6 @@ public class RequestHandlers {
     }
     while (true) {
       for (int i = 0; i < workers.length; i++) {
-        if (!workers[i].isAlive()) {
-          continue;
-        }
         if (workers[i].isBusy()) continue;
         workers[i].nextKey(key);
         return;
@@ -135,7 +133,7 @@ class WorkThread extends Thread {
   /*
    * Busy loop max iteration
    */
-  private static final long BUSY_LOOP_MAX = 10000000;
+  private long busyLoopMax = 250000;
 
   /*
    * Input buffer
@@ -215,7 +213,7 @@ class WorkThread extends Thread {
    * Submits next selection key for processing
    * @param key selection key
    */
-  synchronized void nextKey(SelectionKey key) {
+  void nextKey(SelectionKey key) {
     if (key.attachment() == null) {
       key.attach(new RequestHandlers.Attachment());
     } else {
@@ -251,7 +249,7 @@ class WorkThread extends Thread {
         return null;
       }
       // Exponential (actually, linear :)) back off
-      if (counter < BUSY_LOOP_MAX) {
+      if (counter < busyLoopMax) {
         counter++;
         Thread.onSpinWait();
       } else {
