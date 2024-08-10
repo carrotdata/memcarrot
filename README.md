@@ -13,7 +13,8 @@ Memcarrot is a caching server fully compatible with the Memcached protocol, offe
 - **CacheGuard Protected** - Combines a cache admission policy with a scan-resistant cache eviction algorithm, significantly reducing SSD wear and increasing longevity.
 - **Low SSD Write Amplification (DWA) and Cache Level Write Amplification (CLWA)** - With estimates of DLWA = 1.1 at 75% SSD usage, and 1.8 at 100%, even nearly full SSDs do not incur significant DLWA.
 - **Low RAM Overhead for Cached Items** - Overhead ranges from 8 bytes per item for both RAM and SSD, including expiration support. The overhead depends on the index format used. Several index formats, both with and without expiration support, are provided out of the box.
-- **Low Meta Overhead in RAM** - For example, managing 1M data items in `Memcarrot` requires less than 1MB of Java heap and less than 10MB of Java off-heap memory for metadata.
+- **Low Meta Overhead in RAM** - For example, managing 10M data items in `Memcarrot` requires less than 1MB of Java heap and less than 100MB of Java off-heap memory for metadata. To keep index data for 5B objects in memory 55GB of RAM is required, this is roughly 11 bytes per object.
+- **Fragmentation and slab calcification free** storage engine. No more periodic server restarts are reqired to fight these problems (as for Redis amd Memcached)
 - **Multiple Eviction Algorithms** - Available out of the box, including Segmented LRU (default), LRU, and FIFO. Segmented LRU is a scan-resistant algorithm. Eviction policies are pluggable, allowing customers to implement their own.
 - **Scalability** - Supports multiple terabytes of storage, up to 256TB, with only 11 bytes of RAM overhead per cached item for disk storage.
 - **Efficient Expired Item Eviction** - Designed for applications requiring expiration support.
