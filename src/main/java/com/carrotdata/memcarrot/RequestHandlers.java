@@ -323,7 +323,7 @@ class WorkThread extends Thread {
             int num = channel.read(in);
             if (num < 0) {
               // End-Of-Stream - socket was closed, cancel the key
-              log.debug("Closed:{}", channel.getRemoteAddress());
+              log.debug("Connection closed:{}", channel.getRemoteAddress());
               key.cancel();
               channel.close();
               break;
@@ -380,11 +380,14 @@ class WorkThread extends Thread {
           }
         } catch (IOException e) {
           String msg = e.getMessage();
-          if (!msg.equals("Connection reset by peer")) {
-            log.error(e);
-            key.cancel();
-            key.channel().close();
-          } 
+          if (!msg.equals("Connection reset by peer") && !msg.equals("Broken pipe")) {
+            log.error("Error:", e);
+          }
+          if (channel.isOpen()) {
+              log.debug("Connection {} closed, reason:{}", channel.getRemoteAddress(), e.getMessage());
+          }
+          key.cancel();
+          channel.close();
         } catch (BufferOverflowException ee) {
           out.clear();
           out.put(Errors.OUTPUT_TOO_LARGE);
