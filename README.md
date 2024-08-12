@@ -161,6 +161,7 @@ Table 1. RAM Usage and load throughput. Each result cell contains three numbers:
 | Memcarrot 0.11 | 20M, 8.38GB, 356K | 40M, 8.9GB, 535K | 20M, 10.8GB, 302K | 50M, 6.2GB, 680K | 40M, 3.0GB, 734K | 100M, 4.16GB, 805K | 10M, 3.33GB, 368K | 40M, 4GB, 655K | 10M, 5.4GB, 293K | 50M, 5.11GB, 755K |
 | memcached 1.6.29 | 20M, 19.4GB, 518K | 40M, 18.23GB, 576K | 20M, 20.44GB, 521K | 50M, 18.7GB, 670K | 40M, 14.2GB, 582K | 100M, 18.9GB, 644K | 10M, 13.0GB, 419K | 40M, 22.0GB, 556K | 10M, 11.7GB, 426K | 50M, 16.4GB, 726K |
 
+> Client-side compression was used in the ```memcached``` benchmarks. Codec - zlib, level = 3
 
 Picture 1. Memory usage in GB.
 ![Memory usage in GB](https://github.com/carrotdata/membench/blob/main/assets/memory.png)
