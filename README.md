@@ -152,7 +152,12 @@ L2.storage.size.max=107,374,182,400
 
 ## Benchmarks
 
-See [membench](https://github.com/carrotdata/membench) for benchmark description.
+Hardware: MacOS Studio, 64GB RAM, SSD: 1TB
+OS: Ubuntu Linux 22.04 (Parallels VM) 
+
+### Memory usage 
+
+See [```membench```](https://github.com/carrotdata/membench) for benchmark description.
 
 Table 1. RAM Usage and load throughput. Each result cell contains three numbers: number of objects loaded, server memory usage at the end of a benchmark run and average load throughput in records per second
 
@@ -168,6 +173,18 @@ Picture 1. Memory usage in GB.
 
 Picture 2. Load throughput in Kops
 ![Load throughput in Kops](https://github.com/carrotdata/membench/blob/main/assets/perf.png)
+
+### Performance
+
+See [```memtier_benchmark```](https://github.com/RedisLabs/memtier_benchmark) 
+
+**Memcarrot 0.11**
+
+![Memcarrot results](/assets/memcarrot.png)
+
+**Memcached 1.6.29**
+
+![Memcached results](/assets/memcached.png)
 
 Contact: Vladimir Rodionov vlad@trycarrots.io. 
 Copyright (c) Carrot Data, Inc., 2024
