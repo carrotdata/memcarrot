@@ -90,8 +90,8 @@ server.address=0.0.0.0
 cache.names=L1
 cache.types=memory
 L1.cache.compression.enabled=true
-L1.data.segment.size=16_777_216
-L1.storage.size.max=17_179_869_184
+L1.data.segment.size=16777216
+L1.storage.size.max=17179869184
 ```
 
 **Example 2:** Disk cache, maximum size = 100GB, data segment size = 64MB, compression enabled, cache name = "L2", port = 123, host = 0.0.0.0
@@ -105,8 +105,8 @@ server.address=0.0.0.0
 cache.names=L2
 cache.types=file
 L2.cache.compression.enabled=true
-L2.data.segment.size=67,108,864
-L2.storage.size.max=107,374,182,400
+L2.data.segment.size=67108864
+L2.storage.size.max=107374182400
 ```
 
 **Example 3:** Hybrid cache (memory -> disk), both with compression enabled
@@ -121,12 +121,12 @@ cache.names=L1,L2
 cache.types=memory,file
 
 L1.cache.compression.enabled=true
-L1.data.segment.size=16_777_216
-L1.storage.size.max=17_179_869_184
+L1.data.segment.size=16777216
+L1.storage.size.max=17179869184
 
 L2.cache.compression.enabled=true
-L2.data.segment.size=67,108,864
-L2.storage.size.max=107,374,182,400
+L2.data.segment.size=67108864
+L2.storage.size.max=107374182400
 ```
 
 **Example 4:** Tandem cache (memory -> compressed memory)
@@ -140,12 +140,12 @@ server.address=0.0.0.0
 cache.names=L1,L2
 cache.types=memory,memory
 
-L1.data.segment.size=16_777_216
-L1.storage.size.max=17_179_869_184
+L1.data.segment.size=16777216
+L1.storage.size.max=17179869184
 
 L2.cache.compression.enabled=true
-L2.data.segment.size=67,108,864
-L2.storage.size.max=107,374,182,400
+L2.data.segment.size=67108864
+L2.storage.size.max=107374182400
 ```
 
 ---
