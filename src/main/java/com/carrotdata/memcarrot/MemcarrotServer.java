@@ -23,7 +23,9 @@ import java.nio.channels.SocketChannel;
 import java.util.function.Consumer;
 
 import org.apache.logging.log4j.LogManager;
+
 import org.apache.logging.log4j.Logger;
+
 
 import com.carrotdata.cache.Cache;
 import com.carrotdata.cache.support.Memcached;
@@ -265,7 +267,7 @@ public class MemcarrotServer {
       }
     } catch (Throwable t) {
       if (!(t instanceof ClosedSelectorException)) {
-        log.error(t);
+        log.fatal("FATAL", t);
         this.failed = true;
       }
     }
