@@ -25,7 +25,7 @@ Memcarrot is a caching server fully compatible with the Memcached protocol, offe
 ## Requirements
 
 - Java 11+
-- Supported platforms: Linux (amd64, aarch64), macOS (x86_64, aarch64)
+- Supported platforms: Linux (amd64, aarch64) + glibc 2.31+, MacOS Sonoma(x86_64, aarch64)
 
 ## Installation
 
@@ -52,6 +52,7 @@ If your platform is not supported yet, you can build binaries from the source co
 - Java 11+
 - Git
 - Maven 3.x
+- gcc
 
 ### Building Memcarrot from Source
 
