@@ -53,6 +53,7 @@ public class CommandProcessor {
     try {
 
       // Execute Memcached command
+      lastCommand.set(null);
       MemcachedCommand cmd = CommandParser.parse(inputPtr, inputSize);
       if (cmd == null) {
         return -1; // input is incomplete
@@ -69,12 +70,12 @@ public class CommandProcessor {
       return result;
     } catch (UnsupportedCommand ee) {
       byte[] buf = "ERROR\r\n".getBytes();
-      logger.error(ee);
+      logger.error("UnsupportedCommand:", ee);
       UnsafeAccess.copy(buf, 0, outPtr, buf.length);
       return buf.length;
     } catch (IllegalFormatException eee) {
       String msg = "CLIENT_ERROR " + eee.getMessage() + "\r\n";
-      logger.error(msg);
+      logger.error(msg, eee);
       byte[] buf = msg.getBytes();
       UnsafeAccess.copy(buf, 0, outPtr, buf.length);
       return buf.length;

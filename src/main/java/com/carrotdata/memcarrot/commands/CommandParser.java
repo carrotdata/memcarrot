@@ -13,7 +13,11 @@ package com.carrotdata.memcarrot.commands;
 
 import java.nio.ByteBuffer;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import com.carrotdata.cache.util.UnsafeAccess;
+import com.carrotdata.memcarrot.CommandProcessor;
 import com.carrotdata.memcarrot.support.IllegalFormatException;
 import com.carrotdata.memcarrot.support.UnsupportedCommand;
 import com.carrotdata.memcarrot.util.Utils;
@@ -172,7 +176,7 @@ public class CommandParser {
 
     start = Utils.nextTokenStart(buf + len, size - len);
     if (start > 1) {
-      throw new IllegalFormatException("P2 malformed request");
+      throw new IllegalFormatException("malformed request");
     }
     boolean result = cmd.parse(buf + len + start, size - start - len);
     return result ? cmd : null;

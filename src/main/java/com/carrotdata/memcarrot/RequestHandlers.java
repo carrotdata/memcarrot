@@ -28,6 +28,7 @@ import org.apache.logging.log4j.Logger;
 import com.carrotdata.cache.support.Memcached;
 import com.carrotdata.cache.util.UnsafeAccess;
 import com.carrotdata.memcarrot.CommandProcessor.OutputConsumer;
+import com.carrotdata.memcarrot.commands.MemcachedCommand;
 import com.carrotdata.memcarrot.commands.QUIT;
 import com.carrotdata.memcarrot.util.Errors;
 
@@ -370,17 +371,24 @@ class WorkThread extends Thread {
                   channel.write(out);
                 }
               }
-              consumed += CommandProcessor.getLastExecutedCommand().inputConsumed();
-              if (CommandProcessor.getLastExecutedCommand() instanceof QUIT) {
+              MemcachedCommand cmd = CommandProcessor.getLastExecutedCommand();
+              if (cmd != null) {
+                consumed += CommandProcessor.getLastExecutedCommand().inputConsumed();
+              } else {
+                // cmd == null - ERROR, close connection
+              }
+              if (cmd instanceof QUIT || cmd == null) {
                 key.cancel();
                 channel.close();
+                break;
               }
             }
             break;
           }
         } catch (IOException e) {
           String msg = e.getMessage();
-          if (!msg.equals("Connection reset by peer") && !msg.equals("Broken pipe")) {
+          log.error("Error:", e);
+          if ( msg != null && !msg.equals("Connection reset by peer") && !msg.equals("Broken pipe")) {
             log.error("Error:", e);
           }
           if (channel.isOpen()) {
