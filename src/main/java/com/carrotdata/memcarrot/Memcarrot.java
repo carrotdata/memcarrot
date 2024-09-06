@@ -23,8 +23,20 @@ import org.apache.logging.log4j.Logger;
 public class Memcarrot {
 
   private static final Logger log = LogManager.getLogger(Memcarrot.class);
+  private static String version;
+  private static String buildTime;
 
   public static void main(String[] args) throws IOException {
+    version = getManifestAttribute("Implementation-Version");
+    buildTime = getManifestAttribute("Build-Time");
+
+    if (version != null) {
+      System.setProperty("MEMCARROT_VERSION", "memcarrot@" + version);
+    } else if (System.getProperty("MEMCARROT_VERSION") == null) {
+      log.fatal("Cannot find version information in manifest file or system property");
+      System.exit(-255);
+    }
+
     if (args.length != 2) {
       usage();
     }
@@ -38,6 +50,7 @@ public class Memcarrot {
   }
 
   private static void stopServer(String configFile) throws IOException {
+    log.info("Stop Memcarrot server. Version: {}, BuildTime: {}", version, buildTime);
     MemcarrotConf conf = MemcarrotConf.getConf(configFile);
     String node = conf.getNode();
     SimpleClient client = new SimpleClient(node);
@@ -45,16 +58,13 @@ public class Memcarrot {
   }
 
   private static void startServer(String configFile) throws IOException {
-    log.info("Starting Memcarrot server");
-    log.info("version:{}, buildTime: {}", Memcarrot.class.getPackage().getImplementationVersion(),
-        getManifestAttribute("Build-Time"));
+    log.info("Start Memcarrot server. Version: {}, BuildTime: {}", version, buildTime);
     MemcarrotConf conf = MemcarrotConf.getConf(configFile);
     long start = System.currentTimeMillis();
     MemcarrotServer server = new MemcarrotServer(conf);
     server.start();
     long end = System.currentTimeMillis();
     log.info("Memcarrot started on {}:{} in {}ms", server.getHost(), server.getPort(), end - start);
-
   }
 
   private static String getManifestAttribute(String attributeName) {
