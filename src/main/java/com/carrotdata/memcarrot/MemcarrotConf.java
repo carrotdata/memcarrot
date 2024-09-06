@@ -83,7 +83,7 @@ public class MemcarrotConf {
    * @return port
    */
   public int getServerPort() {
-    String sport = System.getProperty(CONF_SERVER_PORT);
+    String sport = System.getenv(CONF_SERVER_PORT);
     if (sport == null) {
       Properties props = this.cacheConfig.getProperties();
       sport =
@@ -106,7 +106,7 @@ public class MemcarrotConf {
    * @return address
    */
   public String getServerAddress() {
-    String saddress = System.getProperty(CONF_SERVER_ADDRESS);
+    String saddress = System.getenv(CONF_SERVER_ADDRESS);
     if (saddress == null) {
       Properties props = this.cacheConfig.getProperties();
       saddress = (String) props.getOrDefault(CONF_SERVER_ADDRESS, DEFAULT_SERVER_ADDRESS);
@@ -128,7 +128,7 @@ public class MemcarrotConf {
    * @return size
    */
   public int getSndRcvBufferSize() {
-    String ssize = System.getProperty(CONF_SND_RCV_BUFFER_SIZE);
+    String ssize = System.getenv(CONF_SND_RCV_BUFFER_SIZE);
     if (ssize == null) {
       Properties props = this.cacheConfig.getProperties();
       ssize = (String) props.getOrDefault(CONF_SND_RCV_BUFFER_SIZE, 
@@ -150,7 +150,7 @@ public class MemcarrotConf {
    * @return pool size
    */
   public int getThreadPoolSize() {
-    String spool = System.getProperty(CONF_THREAD_POOL_SIZE);
+    String spool = System.getenv(CONF_THREAD_POOL_SIZE);
     if (spool == null) {
       Properties props = this.cacheConfig.getProperties();
       spool = (String) props.getOrDefault(CONF_THREAD_POOL_SIZE,
@@ -173,7 +173,7 @@ public class MemcarrotConf {
    * @return max size
    */
   public int getKeyValueMaxSize() {
-    String ssize = System.getProperty(CONF_KV_SIZE_MAX);
+    String ssize = System.getenv(CONF_KV_SIZE_MAX);
     if (ssize == null) {
       Properties props = this.cacheConfig.getProperties();
       ssize =
