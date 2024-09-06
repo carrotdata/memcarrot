@@ -44,7 +44,7 @@ public class TestXMemcachedClient {
 
   MemcarrotServer server;
   XMemcachedClient client;
-  String version = "unknown";
+  String version = "1.0";
   int n = 50_000;
   boolean localRun = true;
 
@@ -157,7 +157,7 @@ public class TestXMemcachedClient {
 
   @Test
   public void testGets()
-      throws IOException, TimeoutException, InterruptedException, MemcachedException {
+      throws TimeoutException, InterruptedException, MemcachedException {
     String key = TestUtils.randomString(20);
     String value = TestUtils.randomString(200);
 
