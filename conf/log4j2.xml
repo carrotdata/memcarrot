@@ -4,7 +4,7 @@
         <!-- Rolling File Appender configuration -->
         <RollingFile name="RollingFile" fileName="logs/memcarrot-stdout.log"
                      filePattern="logs/$${date:yyyy-MM}/memcarrot-stdout-%d{yyyy-MM-dd}-%i.log.gz">
-            <PatternLayout pattern="%d %p %c{1.} [%t] %m%n"/>
+            <PatternLayout pattern="%d %p %c{1}:%L [%t] %m%n"/>
             <Policies>
                 <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
                 <SizeBasedTriggeringPolicy size="10MB"/>
