@@ -2,7 +2,7 @@
 <configuration status="info">
    <appenders>
         <Console name="STDOUT" target="SYSTEM_OUT">
-            <PatternLayout pattern="%d %p %c{1.} [%t] %m%n"/>
+            <PatternLayout pattern="%d %p %c{1}:%L [%t] %m%n"/>
         </Console>
 
     </appenders>
