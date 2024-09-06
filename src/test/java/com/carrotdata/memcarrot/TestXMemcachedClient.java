@@ -44,7 +44,7 @@ public class TestXMemcachedClient {
 
   MemcarrotServer server;
   XMemcachedClient client;
-  String version = "1.0";
+  String version = "unknown";
   int n = 50_000;
   boolean localRun = true;
 
@@ -112,7 +112,7 @@ public class TestXMemcachedClient {
 
   @Test
   public void testVersion()
-      throws IOException, TimeoutException, InterruptedException, MemcachedException {
+      throws TimeoutException, InterruptedException, MemcachedException {
     
     if (!localRun) return;
     Map<InetSocketAddress, String> result = client.getVersions();

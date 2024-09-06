@@ -10,6 +10,16 @@
     <version>0.14</version>
     <url>http://www.server.com</url>
     <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+                <includes>
+                    <include>META-INF/MANIFEST.MF</include>
+                </includes>
+            </resource>
+        </resources>
+
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -50,9 +60,15 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>3.4.1</version>
+                <version>3.4.2</version>
                 <configuration>
                     <finalName>${project.artifactId}-${project.version}</finalName>
+                    <archive>
+                        <manifestEntries>
+                            <Implementation-Version>${project.version}</Implementation-Version>
+                            <Build-Time>${maven.build.timestamp}</Build-Time>
+                        </manifestEntries>
+                    </archive>
                 </configuration>
                 <executions>
                     <execution>
@@ -97,9 +113,7 @@
                         <descriptor>src/main/assembly/assembly.xml</descriptor>
                     </descriptors>
                     <archive>
-                        <manifest>
-                            <mainClass>com.carrotdata.memcarrot.Memcarrot</mainClass>
-                        </manifest>
+                        <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
                     </archive>
                 </configuration>
                 <executions>
@@ -137,9 +151,9 @@
                         <configuration>
                             <target>
                                 <!-- Create the lib directory if it doesn't exist -->
-                                <mkdir dir="lib" />
+                                <mkdir dir="lib"/>
                                 <!-- Copy the JAR file to the lib directory -->
-                                <copy file="./target/${project.artifactId}-${project.version}-bundle.jar" todir="lib" />
+                                <copy file="./target/${project.artifactId}-${project.version}-bundle.jar" todir="lib"/>
                             </target>
                         </configuration>
                     </execution>
@@ -182,6 +196,8 @@
     <!--/dependencyManagement-->
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.build.timestamp.format>yyyy-MM-dd HH:mm:ss</maven.build.timestamp.format>
+        <maven.build.timestamp>${maven.build.timestamp}</maven.build.timestamp>
     </properties>
 </project>
 

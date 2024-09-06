@@ -1259,8 +1259,8 @@ public class TestCommandExecution extends TestBase {
 
   @Test
   public void testVERSIONCommand() throws BufferOverflowException, IOException {
-    String version = "memcarrot-1.0";
-    System.setProperty("MEMCARROT_VERSION", version);
+//    String version = "memcarrot-1.0";
+//    System.setProperty("MEMCARROT_VERSION", version);
     
     inputBuffer.clear();
 

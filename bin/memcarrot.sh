@@ -47,13 +47,13 @@ start() {
   echo "${exec_cmd}"
   mkdir -p logs
   nohup ${exec_cmd} &
-  echo "Memcarrot ${MEMCARROT_VERSION} instance is starting, please wait..."
+  echo "Memcarrot instance is starting, please wait..."
 
   sleep 1
 
   PID=$(pid)
   if [ ! -z "${PID}" ]; then
-    echo "Memcarrot ${MEMCARROT_VERSION} instance successfully started. PID ${PID}"
+    echo "Memcarrot instance successfully started. PID ${PID}"
     exit 0
   fi
 
