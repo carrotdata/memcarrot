@@ -1,11 +1,11 @@
 /*
- * Copyright (C) 2024-present Carrot Data, Inc. 
+ * Copyright (C) 2024-present Carrot Data, Inc.
  * <p>This program is free software: you can redistribute it
  * and/or modify it under the terms of the Server Side Public License, version 1, as published by
  * MongoDB, Inc.
  * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- * PURPOSE. See the Server Side Public License for more details. 
+ * PURPOSE. See the Server Side Public License for more details.
  * <p>You should have received a copy of the Server Side Public License along with this program. If not, see
  * <http://www.mongodb.com/licensing/server-side-public-license>.
  */
@@ -15,16 +15,20 @@ import java.io.IOException;
 import java.util.Properties;
 
 import com.carrotdata.cache.util.CacheConfig;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /** Class which keeps all the configuration parameters for Memcarrot server */
 public class MemcarrotConf {
 
+  private static final Logger log = LogManager.getLogger(MemcarrotConf.class);
+
+  public static final String MEMCARROT_VERSION = "MEMCARROT_VERSION";
   public static final String CONF_SERVER_PORT = "server.port";
   public static final String CONF_SERVER_ADDRESS = "server.address";
   public static final String CONF_THREAD_POOL_SIZE = "workers.pool.size";
   public static final String CONF_KV_SIZE_MAX = "kv.size.max";
   public static final String CONF_SND_RCV_BUFFER_SIZE = "tcp.buffer.size";
-  
 
   public static final int DEFAULT_SERVER_PORT = 11211;
   public static final String DEFAULT_SERVER_ADDRESS = "127.0.0.1";
@@ -83,12 +87,7 @@ public class MemcarrotConf {
    * @return port
    */
   public int getServerPort() {
-    String sport = System.getProperty(CONF_SERVER_PORT);
-    if (sport == null) {
-      Properties props = this.cacheConfig.getProperties();
-      sport =
-        (String) props.getOrDefault(CONF_SERVER_PORT, Integer.toString(DEFAULT_SERVER_PORT));
-    }
+    var sport = getPropertyValue(CONF_SERVER_PORT, Integer.toString(DEFAULT_SERVER_PORT));
     return Integer.parseInt(sport);
   }
 
@@ -106,12 +105,7 @@ public class MemcarrotConf {
    * @return address
    */
   public String getServerAddress() {
-    String saddress = System.getProperty(CONF_SERVER_ADDRESS);
-    if (saddress == null) {
-      Properties props = this.cacheConfig.getProperties();
-      saddress = (String) props.getOrDefault(CONF_SERVER_ADDRESS, DEFAULT_SERVER_ADDRESS);
-    }
-    return saddress;
+    return getPropertyValue(CONF_SERVER_ADDRESS, DEFAULT_SERVER_ADDRESS);
   }
 
   /**
@@ -128,14 +122,10 @@ public class MemcarrotConf {
    * @return size
    */
   public int getSndRcvBufferSize() {
-    String ssize = System.getProperty(CONF_SND_RCV_BUFFER_SIZE);
-    if (ssize == null) {
-      Properties props = this.cacheConfig.getProperties();
-      ssize = (String) props.getOrDefault(CONF_SND_RCV_BUFFER_SIZE, 
-        Integer.toString(DEFAULT_SNDRCV_BUFFER_SIZE));
-    }
+    String ssize = getPropertyValue(CONF_SND_RCV_BUFFER_SIZE, Integer.toString(DEFAULT_SNDRCV_BUFFER_SIZE));
     return Integer.parseInt(ssize);
   }
+
   /**
    * Set server address
    * @param address
@@ -150,12 +140,7 @@ public class MemcarrotConf {
    * @return pool size
    */
   public int getThreadPoolSize() {
-    String spool = System.getProperty(CONF_THREAD_POOL_SIZE);
-    if (spool == null) {
-      Properties props = this.cacheConfig.getProperties();
-      spool = (String) props.getOrDefault(CONF_THREAD_POOL_SIZE,
-      Integer.toString(DEFAULT_THREAD_POOL_SIZE));
-    }
+    String spool = getPropertyValue(CONF_THREAD_POOL_SIZE, Integer.toString(DEFAULT_THREAD_POOL_SIZE));
     return Integer.parseInt(spool);
   }
 
@@ -173,12 +158,7 @@ public class MemcarrotConf {
    * @return max size
    */
   public int getKeyValueMaxSize() {
-    String ssize = System.getProperty(CONF_KV_SIZE_MAX);
-    if (ssize == null) {
-      Properties props = this.cacheConfig.getProperties();
-      ssize =
-        (String) props.getOrDefault(CONF_KV_SIZE_MAX, Integer.toString(DEFAULT_KV_SIZE_MAX));
-    }
+    String ssize = getPropertyValue(CONF_KV_SIZE_MAX, Integer.toString(DEFAULT_KV_SIZE_MAX));
     return Integer.parseInt(ssize);
   }
 
@@ -197,5 +177,22 @@ public class MemcarrotConf {
    */
   public String getNode() {
     return getServerAddress() + ":" + getServerPort();
+  }
+
+  private String getPropertyValue(String key, String defaultValue) {
+    String value = System.getenv(key);
+    if (value != null) {
+      log.debug("key: {}, env value: {}", key, value);
+      return value;
+    }
+    value = System.getProperty(key);
+    if (value != null) {
+      log.debug("key: {}, prop value: {}", key, value);
+      return value;
+    }
+    var props = this.cacheConfig.getProperties();
+    value = (String) props.getOrDefault(key, defaultValue);
+    log.debug("key: {}, DefaultValue: {}", key, value);
+    return value;
   }
 }

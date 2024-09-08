@@ -19,6 +19,8 @@ import java.util.jar.Manifest;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import static com.carrotdata.memcarrot.MemcarrotConf.MEMCARROT_VERSION;
+
 /** Main service launcher */
 public class Memcarrot {
 
@@ -31,8 +33,8 @@ public class Memcarrot {
     buildTime = getManifestAttribute("Build-Time");
 
     if (version != null) {
-      System.setProperty("MEMCARROT_VERSION", "memcarrot@" + version);
-    } else if (System.getProperty("MEMCARROT_VERSION") == null) {
+      System.setProperty(MEMCARROT_VERSION, "memcarrot@" + version);
+    } else if (System.getProperty(MEMCARROT_VERSION) == null) {
       log.fatal("Cannot find version information in manifest file or system property");
       System.exit(-255);
     }

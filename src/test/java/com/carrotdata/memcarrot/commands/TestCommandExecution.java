@@ -29,6 +29,8 @@ import com.carrotdata.cache.support.Memcached.Record;
 import com.carrotdata.cache.util.UnsafeAccess;
 import com.carrotdata.memcarrot.support.IllegalFormatException;
 import com.carrotdata.memcarrot.util.TestUtils;
+
+import static com.carrotdata.memcarrot.MemcarrotConf.MEMCARROT_VERSION;
 import static org.junit.Assert.*;
 import static com.carrotdata.cache.util.Utils.compareTo;
 
@@ -1261,7 +1263,7 @@ public class TestCommandExecution extends TestBase {
   public void testVERSIONCommand() throws BufferOverflowException, IOException {
     //TODO test version command
     String version = "memcarrot-1.0";
-    System.setProperty("MEMCARROT_VERSION", version);
+    System.setProperty(MEMCARROT_VERSION, version);
     
     inputBuffer.clear();
 
