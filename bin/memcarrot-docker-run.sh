@@ -104,9 +104,17 @@ else
     image_name="${image}"
 fi
 
-# Run the memcarrot docker image
-docker run -d \
-  --name "${container_name}" \
+docker network create --driver bridge memcarrot_network
+
+docker run --network memcarrot_network -d \
   -p 11211:11211 \
+  -e server.port=11211 \
   -e server.address=0.0.0.0 \
+  -e save.on.shutdown=true \
   "${image_name}"
+
+sleep 1
+
+docker ps
+docker logs "$(docker ps -q)"
+docker exec "$(docker ps -q)" cat /users/carrotdata/memcarrot/logs/memcarrot.log

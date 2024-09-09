@@ -1,10 +1,9 @@
-
 : '
-  This script is used to stop the memcarrot docker image.
+  This script is used to run the memcarrot docker image.
 '
 
 show_help() {
-    echo "Usage: memcarrot-docker-stop.sh[--name NAME] [--help]"
+    echo "Usage: memcarrot-docker-stop.sh [--name NAME] [--help]"
     echo
     echo "   -n, --image name Specify the container name 'carrotdata/memcarrot'"
     echo "   -h, --help       Display this help message"
@@ -69,3 +68,4 @@ if [ -z "$image_name" ]; then
 fi
 
 docker exec ${image_name} /users/carrotdata/memcarrot/bin/memcarrot.sh stop
+
