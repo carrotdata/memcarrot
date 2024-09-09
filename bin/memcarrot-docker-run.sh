@@ -107,6 +107,7 @@ fi
 docker network create --driver bridge memcarrot_network
 
 docker run --network memcarrot_network -d \
+  --name "${container_name}" \
   -p 11211:11211 \
   -e server.port=11211 \
   -e server.address=0.0.0.0 \
