@@ -33,10 +33,9 @@ public class Memcarrot {
     buildTime = getManifestAttribute("Build-Time");
 
     if (version != null) {
-      System.setProperty(MEMCARROT_VERSION, "memcarrot@" + version);
+      System.setProperty(MEMCARROT_VERSION, version);
     } else if (System.getProperty(MEMCARROT_VERSION) == null) {
-      log.fatal("Cannot find version information in manifest file or system property");
-      System.exit(-255);
+      log.warn("Cannot find version information in manifest file or system property");
     }
 
     if (args.length != 2) {
@@ -78,7 +77,7 @@ public class Memcarrot {
         return attributes.getValue(attributeName);
       }
     } catch (IOException e) {
-      e.printStackTrace();
+      log.error("Get manifest attribute: ", e);
     }
     return null;
   }

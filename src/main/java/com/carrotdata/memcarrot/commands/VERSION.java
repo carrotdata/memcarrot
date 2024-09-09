@@ -14,7 +14,6 @@ package com.carrotdata.memcarrot.commands;
 import com.carrotdata.cache.support.Memcached;
 import com.carrotdata.cache.util.UnsafeAccess;
 import com.carrotdata.memcarrot.CommandProcessor.OutputConsumer;
-import com.carrotdata.memcarrot.Memcarrot;
 import com.carrotdata.memcarrot.support.IllegalFormatException;
 
 /**
@@ -33,9 +32,8 @@ public class VERSION implements MemcachedCommand {
   }
 
   @Override
-  public int execute(Memcached support, long outBuffer, int outBufferSize,
-      OutputConsumer consumer) {
-    String version = Memcarrot.class.getPackage().getImplementationVersion();
+  public int execute(Memcached support, long outBuffer, int outBufferSize, OutputConsumer consumer) {
+    String version = System.getProperty("MEMCARROT_VERSION");
     if (version == null) {
       version = "unknown";
     }
