@@ -1,0 +1,4 @@
+Manifest-Version: 1.0
+Implementation-Version: ${project.version}
+Build-Time: ${maven.build.timestamp}
+Main-Class: com.carrotdata.memcarrot.Memcarrot

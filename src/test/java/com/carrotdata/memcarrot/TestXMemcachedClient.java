@@ -11,6 +11,7 @@
  */
 package com.carrotdata.memcarrot;
 
+import static com.carrotdata.memcarrot.MemcarrotConf.MEMCARROT_VERSION;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -69,7 +70,7 @@ public class TestXMemcachedClient {
       server.start();
       host = server.getHost();
       port = server.getPort();
-      System.setProperty("MEMCARROT_VERSION", version);
+      System.setProperty(MEMCARROT_VERSION, version);
     } else {
       localRun = false;
     }
@@ -112,7 +113,7 @@ public class TestXMemcachedClient {
 
   @Test
   public void testVersion()
-      throws IOException, TimeoutException, InterruptedException, MemcachedException {
+      throws TimeoutException, InterruptedException, MemcachedException {
     
     if (!localRun) return;
     Map<InetSocketAddress, String> result = client.getVersions();
@@ -157,7 +158,7 @@ public class TestXMemcachedClient {
 
   @Test
   public void testGets()
-      throws IOException, TimeoutException, InterruptedException, MemcachedException {
+      throws TimeoutException, InterruptedException, MemcachedException {
     String key = TestUtils.randomString(20);
     String value = TestUtils.randomString(200);
 

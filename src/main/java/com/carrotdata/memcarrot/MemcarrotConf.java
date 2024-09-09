@@ -1,11 +1,11 @@
 /*
- * Copyright (C) 2024-present Carrot Data, Inc. 
+ * Copyright (C) 2024-present Carrot Data, Inc.
  * <p>This program is free software: you can redistribute it
  * and/or modify it under the terms of the Server Side Public License, version 1, as published by
  * MongoDB, Inc.
  * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- * PURPOSE. See the Server Side Public License for more details. 
+ * PURPOSE. See the Server Side Public License for more details.
  * <p>You should have received a copy of the Server Side Public License along with this program. If not, see
  * <http://www.mongodb.com/licensing/server-side-public-license>.
  */
@@ -19,12 +19,13 @@ import com.carrotdata.cache.util.CacheConfig;
 /** Class which keeps all the configuration parameters for Memcarrot server */
 public class MemcarrotConf {
 
+  public static final String MEMCARROT_VERSION = "MEMCARROT_VERSION";
   public static final String CONF_SERVER_PORT = "server.port";
   public static final String CONF_SERVER_ADDRESS = "server.address";
   public static final String CONF_THREAD_POOL_SIZE = "workers.pool.size";
   public static final String CONF_KV_SIZE_MAX = "kv.size.max";
   public static final String CONF_SND_RCV_BUFFER_SIZE = "tcp.buffer.size";
-  
+
 
   public static final int DEFAULT_SERVER_PORT = 11211;
   public static final String DEFAULT_SERVER_ADDRESS = "127.0.0.1";
@@ -131,7 +132,7 @@ public class MemcarrotConf {
     String ssize = System.getenv(CONF_SND_RCV_BUFFER_SIZE);
     if (ssize == null) {
       Properties props = this.cacheConfig.getProperties();
-      ssize = (String) props.getOrDefault(CONF_SND_RCV_BUFFER_SIZE, 
+      ssize = (String) props.getOrDefault(CONF_SND_RCV_BUFFER_SIZE,
         Integer.toString(DEFAULT_SNDRCV_BUFFER_SIZE));
     }
     return Integer.parseInt(ssize);
