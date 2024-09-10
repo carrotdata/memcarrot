@@ -118,7 +118,7 @@ Alternatively, you can provide an environment configuration file to the `docker 
 docker network create --driver bridge memcarrot_network
 docker run --network memcarrot_network -d \
   --name "memcarrot" \
-  --env-file /path/to/env.list
+  --env-file /path/to/env.list \
   -p 11211:11211 \
   "carrotdata/memcarrot:latest-amd64"
 ```
