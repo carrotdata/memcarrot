@@ -66,18 +66,18 @@ If your platform is not supported yet, you can build binaries from the source co
   ```
 ## Docker images
 
-`Carrot Data` provides docker images in the Docker Hub repository for `amd64` and `arm64` platforms.
+`Carrot Data` provides docker images in the Docker Hub repository for `x86_64` and `aarch64` platforms.
 
-Pull `amd64` image:
+Pull `x86_64` image:
 
 ```bash
-docker pull carrotdata/memcarrot:latest-amd64
+docker pull carrotdata/memcarrot:latest-x86_64
 ```
 
-Pull `arm64` image:
+Pull `aarch64` image:
 
 ```bash
-docker pull carrotdata/memcarrot:latest-arm64
+docker pull carrotdata/memcarrot:latest-aarch64
 ```
 
 These images have the following default configurations:
@@ -109,7 +109,7 @@ docker run --network memcarrot_network -d \
   -p 11211:11211 \
   -e workers.pool.size=8 \
   -e storage.size.max=16g \
-  "carrotdata/memcarrot:latest-amd64"
+  "carrotdata/memcarrot:latest-x86_64"
 ```
 
 Alternatively, you can provide an environment configuration file to the `docker run` command using the `--env-file` option:
@@ -120,7 +120,7 @@ docker run --network memcarrot_network -d \
   --name "memcarrot" \
   --env-file /path/to/env.list \
   -p 11211:11211 \
-  "carrotdata/memcarrot:latest-amd64"
+  "carrotdata/memcarrot:latest-x86_64"
 ```
 
 This method allows you to easily pass multiple environment variables to your container in one go, without manually specifying each variable. The environment file should contain key-value pairs in the format `KEY=VALUE`, with each variable on a new line. For example:
