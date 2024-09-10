@@ -69,3 +69,9 @@ fi
 
 docker start ${image_name}
 
+sleep 1
+
+docker ps
+docker logs "$(docker ps -q)"
+docker exec "$(docker ps -q)" cat /users/carrotdata/memcarrot/logs/memcarrot.log
+
