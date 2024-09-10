@@ -64,6 +64,73 @@ If your platform is not supported yet, you can build binaries from the source co
   cd memcarrot
   mvn package -DskipTests
   ```
+## Docker images
+
+`Carrot Data` provides docker images in the Docker Hub repository for `amd64` and `arm64` platforms.
+
+Pull `amd64` image:
+
+```bash
+docker pull carrotdata/memcarrot:latest-amd64
+```
+
+Pull `arm64` image:
+
+```bash
+docker pull carrotdata/memcarrot:latest-arm64
+```
+
+These images have the following default configurations:
+
+```bash
+# Memcarrot - specific
+server.address=0.0.0.0
+server.port=11211
+workers.pool.size=2
+tcp.buffer.size=8192
+
+# Inherited from carrot cache
+storage.size.max=4g
+index.format.impl=com.carrotdata.cache.index.SubCompactBaseNoSizeWithExpireIndexFormat
+recycling.selector.impl=com.onecache.core.controllers.MinAliveRecyclingSelector
+tls.supported=true
+save.om.shutdown=true
+compression.enabled=true
+vacuum.cleaner.interval=30
+```
+
+`Memcarrot` allows configuration properties to be overridden via environment variables, enabling easy configuration of Docker containers.
+Example: start `Memcarrot` docker container with maximum cache size `16GB` and worker pool size - 8:
+
+```bash
+docker network create --driver bridge memcarrot_network
+docker run --network memcarrot_network -d \
+  --name "memcarrot" \
+  -p 11211:11211 \
+  -e workers.pool.size=8 \
+  -e storage.size.max=16g \
+  "carrotdata/memcarrot:latest-amd64"
+```
+
+Alternatively, you can provide an environment configuration file to the `docker run` command using the `--env-file` option:
+
+```bash
+docker network create --driver bridge memcarrot_network
+docker run --network memcarrot_network -d \
+  --name "memcarrot" \
+  --env-file /path/to/env.list
+  -p 11211:11211 \
+  "carrotdata/memcarrot:latest-amd64"
+```
+
+This method allows you to easily pass multiple environment variables to your container in one go, without manually specifying each variable. The environment file should contain key-value pairs in the format `KEY=VALUE`, with each variable on a new line. For example:
+
+```bash
+workers.pool.size=8
+storage.size.max=16g
+```
+
+Using an environment configuration file is especially useful when dealing with complex setups that require numerous configuration options. It helps keep your `docker run` commands cleaner and more manageable, and it ensures that your environment variables can be versioned and shared across different environments (e.g., development, staging, production).
 
 ## Server Configuration
 
