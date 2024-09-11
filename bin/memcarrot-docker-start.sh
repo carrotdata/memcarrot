@@ -1,9 +1,10 @@
+#!/usr/bin/env bash
 : '
   This script is used to run the memcarrot docker image.
 '
 
 show_help() {
-    echo "Usage: memcarrot-docker-stop.sh [--name NAME] [--help]"
+    echo "Usage: memcarrot-docker-start.sh [--name NAME] [--help]"
     echo
     echo "   -n, --image name Specify the container name 'carrotdata/memcarrot'"
     echo "   -h, --help       Display this help message"

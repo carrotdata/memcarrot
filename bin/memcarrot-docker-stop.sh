@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 : '
   This script is used to run the memcarrot docker image.
 '
