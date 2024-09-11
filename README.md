@@ -1,4 +1,4 @@
-[Quick start guide](https://github.com/carrotdata/memcarrot/wiki/Quick-start)  😺     [Forum & Discussions](https://github.com/carrotdata/memcarrot/discussions)
+[Quick start guide](https://github.com/carrotdata/memcarrot/wiki/Quick-start)  🥕🥕 [Forum & Discussions](https://github.com/carrotdata/memcarrot/discussions)
 
 # Memcarrot - The Memcached 2.0 You've Been Waiting For
 
