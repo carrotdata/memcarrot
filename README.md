@@ -94,7 +94,7 @@ storage.size.max=4g
 index.format.impl=com.carrotdata.cache.index.SubCompactBaseNoSizeWithExpireIndexFormat
 recycling.selector.impl=com.onecache.core.controllers.MinAliveRecyclingSelector
 tls.supported=true
-save.om.shutdown=true
+save.on.shutdown=true
 compression.enabled=true
 vacuum.cleaner.interval=30
 ```
