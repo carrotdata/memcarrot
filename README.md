@@ -132,21 +132,9 @@ storage.size.max=16g
 
 Using an environment configuration file is especially useful when dealing with complex setups that require numerous configuration options. It helps keep your `docker run` commands cleaner and more manageable, and it ensures that your environment variables can be versioned and shared across different environments (e.g., development, staging, production).
 
-## Server Configuration
+## Memcarrot configuration
 
-All server configuration parameters are contained in `conf/memcarrot.cfg`. This is the default location of this file. You can provide a custom location for the configuration file:
-
-```bash
-bin/memcarrot.sh config-full-path-name start
-```
-
-Don't forget to add this path when you run the stop command:
-
-```bash
-bin/memcarrot.sh config-full-path-name stop
-```
-
-### Configuring the Server
+All server configuration parameters are contained in `conf/memcarrot.cfg`. This is the default location of this file. 
 
 **Example 1:** In-memory cache, maximum size = 16GB, data segment size = 16MB, compression enabled, cache name = "L1", port = 123, host = 0.0.0.0
 
