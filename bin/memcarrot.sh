@@ -44,7 +44,7 @@ start() {
   fi
 
   exec_cmd="${JAVA_HOME}/bin/java ${JVM_OPTS} -jar ${MEMCARROT_RELEASE} ${MEMCARROT_APPS_PARAMS} start"
-  echo "${exec_cmd}"
+#  echo "${exec_cmd}"
   mkdir -p logs
   nohup ${exec_cmd} &
   echo "Memcarrot instance is starting, please wait..."
