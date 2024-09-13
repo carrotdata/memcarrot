@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 : '
   This script is used to pull a docker image from github.
 '
