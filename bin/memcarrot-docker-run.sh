@@ -8,7 +8,7 @@ show_help() {
     echo "Usage: memcarrot-docker-run.sh [--image IMAGE] [--tag NAME] [--name CONTAINER] [--help]"
     echo
     echo "   -i, --image docker id      Specify the image ID. Example: f277649686cb08687af03ca784afebc4e0c7a29f889ec438eefaf667f3ee1758"
-    echo "   -t, --tag                  Specify the tag of 0.14-aarch64"
+    echo "   -t, --tag                  Specify the tag of 0.14.2-arm64"
     echo "   -n  --name                 Specify the container name. Example: memcarrot"
     echo "   -h, --help                 Display this help message"
 }
