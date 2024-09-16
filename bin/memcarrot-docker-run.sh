@@ -10,6 +10,7 @@ show_help() {
     echo "   -i, --image docker id      Specify the image ID. Example: f277649686cb08687af03ca784afebc4e0c7a29f889ec438eefaf667f3ee1758"
     echo "   -t, --tag                  Specify the tag of 0.14.2-arm64"
     echo "   -n  --name                 Specify the container name. Example: memcarrot"
+    echo "   -c  --config               Specify the custom config to use in Docker container"
     echo "   -h, --help                 Display this help message"
 }
 
@@ -17,9 +18,10 @@ show_help() {
 image=""
 tag=""
 container_name=""
+custom_config=""
 
 # Parse short options with getopts
-while getopts ":hi:t:n:" opt; do
+while getopts ":hi:t:n:c:" opt; do
     case ${opt} in
         h )
             show_help
@@ -33,6 +35,9 @@ while getopts ":hi:t:n:" opt; do
             ;;
         n )
             container_name=$OPTARG
+            ;;
+        c )
+            custom_config=$OPTARG
             ;;
         \? )
             echo "Invalid option: $OPTARG" 1>&2
@@ -85,6 +90,16 @@ while [[ $# -gt 0 ]]; do
                 exit 1
             fi
             ;;
+        --config)
+            if [[ -n $2 ]]; then
+                custom_config=$2
+                shift 2
+            else
+                echo "Error: --config requires an argument." 1>&2
+                show_help
+                exit 1
+            fi
+            ;;
         *)
             echo "Invalid option: $1" 1>&2
             show_help
@@ -106,15 +121,30 @@ else
     image_name="${image}"
 fi
 
-docker network create --driver bridge memcarrot_network
+if [ -z "$custom_config" ]; then
+    echo "Uses build-in configuration"
+else
+    custom_config="${custom_config}:/users/carrotdata/memcarrot/conf/memcarrot.cfg"
+    echo "Use a customized host configuration: ${custom_config}"
+fi
 
-docker run --network memcarrot_network -d \
-  --name "${container_name}" \
-  -p 11211:11211 \
-  -e server.port=11211 \
-  -e server.address=0.0.0.0 \
-  -e save.on.shutdown=true \
-  "${image_name}"
+docker network create --driver bridge memcarrot_network 2>/dev/null
+
+docker_run_command="docker run --network memcarrot_network -d \
+-p 11211:11211 \
+-e server.port=11211"
+
+if [ -n "$custom_config" ]; then
+    docker_run_command="${docker_run_command} -v ${custom_config}"
+fi
+
+if [ -n "$container_name" ]; then
+    docker_run_command="${docker_run_command} --name ${container_name}"
+fi
+
+docker_run_command="${docker_run_command} ${image_name}"
+echo "Running: ${docker_run_command}"
+eval "$docker_run_command"
 
 sleep 1
 
