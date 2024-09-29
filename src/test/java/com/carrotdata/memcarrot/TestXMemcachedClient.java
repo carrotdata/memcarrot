@@ -793,6 +793,68 @@ public class TestXMemcachedClient {
 
   }
   
+  @Test
+  public void testFlushAll()
+      throws IOException, InterruptedException, MemcachedException, TimeoutException {
+    String key = "KEY:";
+    String value = TestUtils.randomString(200);
+    
+    for (int i = 0; i < 100; i++) {
+      int expire = 100;
+      boolean res = client.set((key + i), expire, value);
+      assertTrue(res);
+    }
+
+    client.flushAll();
+    
+    for (int i = 0; i < 100; i++) {  
+      Map<String, Object> map = client.get(key + i);
+      assertNull(map);
+    }
+
+    for (int i = 0; i < 100; i++) {
+      int expire = 100;
+      boolean res = client.set((key + i), expire, value);
+      assertTrue(res);
+    }
+
+    client.flushAll(5);
+    Thread.sleep(6000);
+
+    for (int i = 0; i < 100; i++) {  
+      Map<String, Object> map = client.get(key + i);
+      assertNull(map);
+    }
+
+    for (int i = 0; i < 100; i++) {
+      int expire = 100;
+      boolean res = client.set((key + i), expire, value);
+      assertTrue(res);
+    }
+
+    client.flushAllWithNoReply();
+
+    for (int i = 0; i < 100; i++) {  
+      Map<String, Object> map = client.get(key + i);
+      assertNull(map);
+    }
+    
+    for (int i = 0; i < 100; i++) {
+      int expire = 100;
+      boolean res = client.set((key + i), expire, value);
+      assertTrue(res);
+    }
+
+    client.flushAllWithNoReply(5);
+    Thread.sleep(6000);
+
+    for (int i = 0; i < 100; i++) {  
+      Map<String, Object> map = client.get(key + i);
+      assertNull(map);
+    }
+  }
+  
+  
   private void delete(int n) throws TimeoutException, InterruptedException, MemcachedException {
     
     String key = "KEY:";

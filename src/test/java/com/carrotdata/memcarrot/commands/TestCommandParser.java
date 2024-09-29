@@ -15,6 +15,7 @@ import java.util.Random;
 
 import org.junit.Test;
 
+import com.carrotdata.memcarrot.support.IllegalFormatException;
 import com.carrotdata.memcarrot.util.TestUtils;
 import static org.junit.Assert.*;
 
@@ -333,5 +334,43 @@ public class TestCommandParser extends TestBase {
     writeStatsCommand(FaultType.INCOMPLETE, inputBuffer);
     c = CommandParser.parse(inputPtr, inputBuffer.position());
     assertTrue(c == null);
+  }
+  
+  @Test
+  public void testFLUSHALLCommand() {
+    Random r = new Random();
+    long seed = System.currentTimeMillis();
+    r.setSeed(seed);
+    System.out.println(seed);
+    
+    FaultType[] faults = new FaultType[] {FaultType.NONE, FaultType.INCOMPLETE, FaultType.VALUE_NOT_NUMBER};
+    
+    for (int i = 0; i < 1000; i++) {
+      inputBuffer.clear();
+      boolean withNoreply = r.nextBoolean();
+      FaultType type = faults[r.nextInt(faults.length)];
+      int delay = r.nextBoolean()? 0:  r.nextInt(100);
+      writeFlushAllCommand(delay, withNoreply, type, inputBuffer);
+      int pos = inputBuffer.position();
+      
+      try {
+        MemcachedCommand c = CommandParser.parse(inputPtr, inputBuffer.position());
+        if (type == FaultType.INCOMPLETE) {
+          assertNull(c);
+          continue;
+        }
+        assertEquals(pos, c.inputConsumed());
+        assertTrue(type == FaultType.NONE);
+        assertTrue(c instanceof FLUSH_ALL);
+        FLUSH_ALL sc = (FLUSH_ALL) c;
+        assertEquals(delay, sc.delay);
+        if (withNoreply) {
+          assertEquals(withNoreply, sc.noreply);
+        }
+      
+      } catch (IllegalFormatException e) {
+        assertTrue(type == FaultType.VALUE_NOT_NUMBER);
+      }
+    }
   }
 }

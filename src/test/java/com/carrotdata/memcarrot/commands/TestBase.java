@@ -459,6 +459,24 @@ public class TestBase {
     }
   }
   
+  public static void writeFlushAllCommand(int delay, boolean noreply, FaultType fault, ByteBuffer b) {
+    byte[] cmd = "flush_all".getBytes();
+    b.put(cmd);
+    String s = fault != FaultType.VALUE_NOT_NUMBER ? Long.toString(delay) : "some";
+    if (delay > 0 || fault == FaultType.VALUE_NOT_NUMBER) {
+      space(b);
+      b.put(s.getBytes());
+    }
+    if (noreply) {
+      space(b);
+      b.put("noreply".getBytes());
+    }
+    crlf(b);
+    if (fault == FaultType.INCOMPLETE) {
+      makeIncomplete(b);
+    }
+  }
+  
   /**
    * Utility methods
    */

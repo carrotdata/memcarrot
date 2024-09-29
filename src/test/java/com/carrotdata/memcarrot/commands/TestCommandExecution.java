@@ -1296,4 +1296,20 @@ public class TestCommandExecution extends TestBase {
     assertTrue(s.endsWith("END"));
     log.info(s);
   }
+  
+  @Test
+  public void testFLUSHALLCommand() throws BufferOverflowException, IOException {    
+    inputBuffer.clear();
+    writeFlushAllCommand(0, false, FaultType.NONE, inputBuffer);
+    int bufSize = inputBuffer.position();
+    MemcachedCommand c = CommandParser.parse(inputPtr, inputBuffer.position());
+    assertEquals(bufSize, c.inputConsumed());
+    assertTrue(c instanceof FLUSH_ALL);
+    int size = c.execute(support, outputPtr, bufferSize, null);
+    byte[] buf = new byte[size];
+    UnsafeAccess.copy(outputPtr, buf, 0 , buf.length);
+    String s = new String(buf);
+    assertTrue(s.startsWith("OK\r\n"));
+    log.info(s);
+  }
 }

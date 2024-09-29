@@ -37,6 +37,7 @@ public interface MemcachedCommand {
   public final static byte[] DECRCMD = "decr".getBytes();
   public final static byte[] DELETECMD = "delete".getBytes();
   public final static byte[] SHUTDOWNCMD = "shutdown".getBytes();
+  
 
   public final static long NOREPLY = UnsafeAccess.allocAndCopy("noreply", 0, 7);
 
@@ -47,6 +48,8 @@ public interface MemcachedCommand {
   public final static long ERROR = UnsafeAccess.allocAndCopy("ERROR\r\n", 0, 11);
   public final static long TOUCHED = UnsafeAccess.allocAndCopy("TOUCHED\r\n", 0, 9);
   public final static long DELETED = UnsafeAccess.allocAndCopy("DELETED\r\n", 0, 9);
+  public final static long OK = UnsafeAccess.allocAndCopy("OK\r\n", 0, 4);
+  
 
   public final static String CLIENT_ERROR = "CLIENT_ERROR ";
   public final static String SERVER_ERROR = "SERVER_ERROR ";
@@ -91,4 +94,19 @@ public interface MemcachedCommand {
    * @return length
    */
   public int commandLength();
+  
+  public default void throwIfNotEquals(long n, int v, String msg) throws IllegalFormatException {
+    if (n != v) throw new IllegalFormatException(msg);
+  }
+
+  public default void throwIfEquals(long n, int v, String msg) throws IllegalFormatException {
+    if (n == v) throw new IllegalFormatException(msg);
+  }
+  
+  public default void ok(long ptr) {
+    UnsafeAccess.putByte(ptr, (byte) 'O');
+    UnsafeAccess.putByte(ptr + 1, (byte) 'K');
+    UnsafeAccess.putByte(ptr + 2, (byte) '\r');
+    UnsafeAccess.putByte(ptr + 3, (byte) '\n');
+  }
 }

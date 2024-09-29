@@ -47,13 +47,6 @@ public abstract class AbstractMemcachedCommand implements MemcachedCommand {
     UnsafeAccess.putByte(ptr + 1, (byte) '\n');
   }
 
-  protected final void throwIfNotEquals(long n, int v, String msg) throws IllegalFormatException {
-    if (n != v) throw new IllegalFormatException(msg);
-  }
-
-  protected final void throwIfEquals(long n, int v, String msg) throws IllegalFormatException {
-    if (n == v) throw new IllegalFormatException(msg);
-  }
 
   public boolean isMemorySafe(long memptr, int memsize) {
     boolean safe = this.keyPtr > 0 && this.keySize > 0;

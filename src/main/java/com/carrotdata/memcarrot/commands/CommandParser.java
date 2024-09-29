@@ -66,6 +66,7 @@ public class CommandParser {
 
   private static long replace_cmd = UnsafeAccess.allocAndCopy("replace", 0, 7);
   private static int replace_cmd_len = 7;
+  
   private static long prepend_cmd = UnsafeAccess.allocAndCopy("prepend", 0, 7);
   private static int prepend_cmd_len = 7;
 
@@ -80,6 +81,9 @@ public class CommandParser {
 
   private static long stats_cmd = UnsafeAccess.allocAndCopy("stats", 0, 5);
   private static int stats_cmd_len = 5;
+  
+  private static long flushall_cmd = UnsafeAccess.allocAndCopy("flush_all", 0, 9);
+  private static int flushall_cmd_len = 9;
   
   /**
    * TODO: Add new commands support Parse input memory buffer
@@ -170,11 +174,20 @@ public class CommandParser {
       } else {
         throw new UnsupportedCommand(new String(toBytes(buf, len)));
       }
+    } else if (len == 9) {
+      if (compareTo(buf, len, flushall_cmd, len) == 0) {
+        cmd = new FLUSH_ALL();
+      } else {
+        throw new UnsupportedCommand(new String(toBytes(buf, len)));
+      }
     } else {
       throw new UnsupportedCommand(new String(toBytes(buf, len)));
     }
 
     start = Utils.nextTokenStart(buf + len, size - len);
+    if (start == -1 && cmd != null) {
+      return null;
+    }
     if (start > 1) {
       throw new IllegalFormatException("malformed request");
     }
