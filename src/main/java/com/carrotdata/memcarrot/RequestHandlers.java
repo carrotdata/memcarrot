@@ -17,7 +17,6 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 import java.util.Arrays;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.LockSupport;
@@ -387,8 +386,7 @@ class WorkThread extends Thread {
           }
         } catch (IOException e) {
           String msg = e.getMessage();
-          log.error("Error:", e);
-          if ( msg != null && !msg.equals("Connection reset by peer") && !msg.equals("Broken pipe")) {
+          if ( msg != null && msg.indexOf("Connection reset") < 0 && msg.indexOf("Broken pipe") < 0) {
             log.error("Error:", e);
           }
           if (channel.isOpen()) {
@@ -420,7 +418,7 @@ class WorkThread extends Thread {
       }
     } catch (Throwable t) {
       // This is where we can hit OOM error
-      log.error("PANIC: thread died due to uncaught exception", t);
+      log.fatal("PANIC: thread died due to uncaught exception", t);
     }
   }
 }
