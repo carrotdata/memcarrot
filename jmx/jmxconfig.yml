@@ -1,0 +1,6 @@
+startDelaySeconds: 0
+ssl: false
+
+rules:
+  # Metrics related to data operations (PUTs, GETs, etc.)
+  - pattern: 'memcarrot_*'
