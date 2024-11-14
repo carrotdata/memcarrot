@@ -4,12 +4,12 @@ services:
     image: carrotdata/memcarrot:latest-arm64
     container_name: memcarrot
     environment:
-      - JMX_EXPORTER_ENABLED=true
+      - JMX_EXPORTER_ENABLED=false
       - server.address=0.0.0.0
     volumes:
       - ./bin/setenv_4docker.sh:/users/carrotdata/memcarrot/bin/setenv.sh
       - ./conf/memcarrot.cfg:/users/carrotdata/memcarrot/conf/memcarrot.cfg
-      - ./jmx/jmxconfig.yml:/users/carrotdata/memcarrot/conf/jmxconfig.yml
+      - ./conf/jmxconfig.yml:/users/carrotdata/memcarrot/conf/jmxconfig.yml
       - ./data:/users/carrotdata/memcarrot/data
       - ./logs:/users/carrotdata/memcarrot/logs
     ports:
