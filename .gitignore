@@ -30,4 +30,3 @@ logs/
 nohup.out
 data/
 .DS_Store
-bin/java_home.sh
