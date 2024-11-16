@@ -1,0 +1,47 @@
+services:
+  memcarrot:
+    build: docker
+    image: carrotdata/memcarrot:latest-arm64
+    container_name: memcarrot
+    environment:
+      - JMX_EXPORTER_ENABLED=false
+      - server.address=0.0.0.0
+    volumes:
+      - ./bin/setenv_4docker.sh:/users/carrotdata/memcarrot/bin/setenv.sh
+      - ./conf/memcarrot.cfg:/users/carrotdata/memcarrot/conf/memcarrot.cfg
+      - ./conf/jmxconfig.yml:/users/carrotdata/memcarrot/conf/jmxconfig.yml
+      - ./data:/users/carrotdata/memcarrot/data
+      - ./logs:/users/carrotdata/memcarrot/logs
+    ports:
+      - "11211:11211"  # Application port
+      - "9191:9191"  # Memcached exporter port
+    networks:
+      - monitoring
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    volumes:
+      - ./conf/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"  # Prometheus web UI
+    networks:
+      - monitoring
+    depends_on:
+      - memcarrot
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"  # Grafana web UI
+    volumes:
+      - ./grafana:/var/lib/grafana  # Persist Grafana data
+    networks:
+      - monitoring
+    depends_on:
+      - prometheus
+
+networks:
+  monitoring:
+    driver: bridge

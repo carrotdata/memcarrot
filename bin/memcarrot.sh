@@ -10,7 +10,7 @@ echo "Memcarrot server home directory is ${APP_DIR}"
 
 cd "${APP_DIR}" || exit
 
-. ./bin/setenv.sh
+source ./bin/setenv.sh
 
 if [ -z "${JAVA_HOME}" ]; then
   echo "Please set the environment variables JAVA_HOME"
@@ -18,17 +18,15 @@ if [ -z "${JAVA_HOME}" ]; then
 fi
 
 #===== set JVM options =====
-export JVM_OPTS="-Xmx${MAX_HEAP_SIZE} -XX:MaxDirectMemorySize=256m --add-opens java.base/jdk.internal.misc=ALL-UNNAMED --add-opens java.base/java.nio=ALL-UNNAMED \
-        --add-opens java.base/java.security=ALL-UNNAMED --add-opens jdk.unsupported/sun.misc=ALL-UNNAMED \
-        --add-opens java.base/sun.security.action=ALL-UNNAMED --add-opens jdk.naming.rmi/com.sun.jndi.rmi.registry=ALL-UNNAMED \
-        --add-opens=java.base/java.lang.invoke=ALL-UNNAMED \
-        --add-opens=java.base/java.io=ALL-UNNAMED \
-        --add-opens=java.base/java.net=ALL-UNNAMED \
-        --add-opens=java.base/java.util=ALL-UNNAMED \
-        --add-opens=java.base/java.util.concurrent=ALL-UNNAMED \
-        --add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED \
-        --add-opens=java.base/sun.nio.ch=ALL-UNNAMED \
-        --add-opens java.base/sun.net=ALL-UNNAMED --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED ${MEMCARROT_APP_OPTS}"
+export JVM_OPTS="--add-opens java.base/jdk.internal.misc=ALL-UNNAMED --add-opens java.base/java.nio=ALL-UNNAMED \
+--add-opens java.base/java.security=ALL-UNNAMED --add-opens jdk.unsupported/sun.misc=ALL-UNNAMED \
+--add-opens java.base/sun.security.action=ALL-UNNAMED --add-opens jdk.naming.rmi/com.sun.jndi.rmi.registry=ALL-UNNAMED \
+--add-opens=java.base/java.lang.invoke=ALL-UNNAMED --add-opens=java.base/java.io=ALL-UNNAMED \
+--add-opens=java.base/java.net=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED \
+--add-opens=java.base/java.util.concurrent=ALL-UNNAMED --add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED \
+--add-opens=java.base/sun.nio.ch=ALL-UNNAMED --add-opens java.base/sun.net=ALL-UNNAMED \
+--add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED \
+${MEMCARROT_APP_OPTS}"
 
 #===== find pid =====
 pid() {
@@ -43,8 +41,15 @@ start() {
     exit 1
   fi
 
-  exec_cmd="${JAVA_HOME}/bin/java ${JVM_OPTS} -jar ${MEMCARROT_RELEASE} ${MEMCARROT_APPS_PARAMS} start"
-#  echo "${exec_cmd}"
+  if [ "${JMX_EXPORTER_ENABLED}" == "true" ]; then
+    echo "JMX exporter enabled"
+  else
+    JMX_EXPORTER=""
+    echo "JMX exporter disabled"
+  fi
+
+  exec_cmd="${JAVA_HOME}/bin/java ${JVM_OPTS} ${JMX_EXPORTER} -jar ${MEMCARROT_RELEASE} ${MEMCARROT_APPS_PARAMS} start"
+  echo "${exec_cmd}"
   mkdir -p logs
   nohup ${exec_cmd} &
   echo "Memcarrot instance is starting, please wait..."
@@ -80,6 +85,13 @@ stop() {
   fi
 }
 
+#======= restart Memcarrot =====
+restart() {
+    echo "Restarting the service..."
+    stop
+    start
+}
+
 # Add the call to start or stop functions based on arguments
 case "$1" in
   start)
@@ -88,8 +100,11 @@ case "$1" in
   stop)
     stop
     ;;
+  restart)
+    restart
+    ;;
   *)
-    echo "Usage: $0 {start|stop}"
+    echo "Usage: $0 {start|stop|restart}"
     exit 1
     ;;
 esac
