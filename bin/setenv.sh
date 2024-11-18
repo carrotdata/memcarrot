@@ -4,7 +4,7 @@
 # JAVA_HOME variable could be set on stand alone not-dev server.
 # export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk-11.0.11.jdk/Contents/Home
 
-export MEMCARROT_RELEASE="lib/memcarrot-0.15.2-bundle.jar"
+export MEMCARROT_RELEASE="lib/memcarrot-0.16-bundle.jar"
 export MEMCARROT_APPS_PARAMS="./conf/memcarrot.cfg"
 export MEMCARROT_INSTANCE_NAME=I_$(pwd)
 
