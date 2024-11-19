@@ -7,7 +7,7 @@
     <artifactId>memcarrot</artifactId>
     <packaging>jar</packaging>
     <name>Memcarrot Server</name>
-    <version>0.15.2</version>
+    <version>0.16</version>
     <url>http://www.server.com</url>
     <build>
         <resources>
@@ -184,7 +184,7 @@
         <dependency>
             <groupId>com.carrotdata</groupId>
             <artifactId>carrot-cache</artifactId>
-            <version>0.15.2</version>
+            <version>0.16</version>
         </dependency>
         <dependency>
             <groupId>com.googlecode.xmemcached</groupId>

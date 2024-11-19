@@ -28,6 +28,14 @@
             <includes>
                 <include>*.xml</include>
                 <include>*.cfg</include>
+                <include>*.yml</include>
+            </includes>
+        </fileSet>
+        <fileSet>
+            <directory>lib</directory>
+            <outputDirectory>/lib</outputDirectory>
+            <includes>
+                <include>jmx_prometheus_javaagent-*.jar</include>
             </includes>
         </fileSet>
     </fileSets>
