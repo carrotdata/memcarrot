@@ -10,7 +10,5 @@ export MEMCARROT_INSTANCE_NAME=I_$(pwd)
 
 export MEMCARROT_APP_OPTS="-Xmx200m -XX:MaxDirectMemorySize=256m -DSTATS_TASK -DSTATS_TASK_INTERVAL=30 \
 -Dlocation=${MEMCARROT_INSTANCE_NAME} -Dlog4j2.configurationFile=./conf/log4j2.xml"
-if [ -z "${JMX_EXPORTER_ENABLED}" ]; then
-  export JMX_EXPORTER_ENABLED=false
-fi
+export JMX_EXPORTER_ENABLED=false
 export JMX_EXPORTER="-javaagent:lib/jmx_prometheus_javaagent-1.0.1.jar=9191:jmx/jmxconfig.yml"
