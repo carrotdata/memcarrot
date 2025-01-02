@@ -28,12 +28,6 @@ Prometheus and Grafana as external services, and combined with Prometheus and Gr
 
 To run Memcarrot independently using Docker Compose, use the default `docker-compose.yml` provided.
 
-## Getting Started
-
-### Running Memcarrot Standalone
-
-To run Memcarrot independently using Docker Compose, use the default `docker-compose.yml` provided.
-
 #### Start Memcarrot:
 
 ```bash
