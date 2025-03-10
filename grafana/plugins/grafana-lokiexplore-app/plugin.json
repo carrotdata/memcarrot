@@ -1,0 +1,109 @@
+{
+  "$schema": "https://raw.githubusercontent.com/grafana/grafana/main/docs/sources/developers/plugins/plugin.schema.json",
+  "autoEnabled": true,
+  "dependencies": {
+    "extensions": {
+      "exposedComponents": [
+        "grafana-adaptivelogs-app/temporary-exemptions/v1"
+      ]
+    },
+    "grafanaDependency": "\u003e=11.3.0",
+    "plugins": []
+  },
+  "extensions": {
+    "addedLinks": [
+      {
+        "description": "Open current query in the Grafana Logs Drilldown view",
+        "targets": [
+          "grafana/dashboard/panel/menu",
+          "grafana/explore/toolbar/action"
+        ],
+        "title": "Open in Grafana Logs Drilldown"
+      }
+    ],
+    "exposedComponents": [
+      {
+        "description": "A button that opens a logs view in the Explore Logs app.",
+        "id": "grafana-lokiexplore-app/open-in-explore-logs-button/v1",
+        "title": "Open in Explore Logs button"
+      }
+    ],
+    "extensionPoints": [
+      {
+        "id": "grafana-lokiexplore-app/investigation/v1"
+      },
+      {
+        "id": "grafana-lokiexplore-app/toolbar-open-related/v1",
+        "title": "Open related signals like metrics/traces/profiles"
+      }
+    ]
+  },
+  "id": "grafana-lokiexplore-app",
+  "includes": [
+    {
+      "action": "datasources:explore",
+      "addToNav": true,
+      "defaultNav": true,
+      "name": "Grafana Logs Drilldown",
+      "path": "/a/grafana-lokiexplore-app/explore",
+      "type": "page"
+    }
+  ],
+  "info": {
+    "author": {
+      "name": "Grafana"
+    },
+    "build": {
+      "time": 1740134020946,
+      "repo": "https://github.com/grafana/logs-drilldown",
+      "branch": "main",
+      "hash": "84cc8e7106244c4c8817587c5faa779aec20d025",
+      "build": 1855
+    },
+    "description": "Query-less exploration of log data stored in Loki",
+    "keywords": [
+      "app",
+      "loki",
+      "explore",
+      "logs",
+      "drilldown",
+      "drill",
+      "down",
+      "drill-down"
+    ],
+    "links": [
+      {
+        "name": "Github",
+        "url": "https://github.com/grafana/explore-logs"
+      },
+      {
+        "name": "Report bug",
+        "url": "https://github.com/grafana/explore-logs/issues/new"
+      }
+    ],
+    "logos": {
+      "large": "img/logo.svg",
+      "small": "img/logo.svg"
+    },
+    "screenshots": [
+      {
+        "name": "patterns",
+        "path": "img/patterns.png"
+      },
+      {
+        "name": "fields",
+        "path": "img/fields.png"
+      },
+      {
+        "name": "table",
+        "path": "img/table.png"
+      }
+    ],
+    "updated": "2025-02-21",
+    "version": "1.0.8"
+  },
+  "name": "Grafana Logs Drilldown",
+  "preload": true,
+  "roles": [],
+  "type": "app"
+}
