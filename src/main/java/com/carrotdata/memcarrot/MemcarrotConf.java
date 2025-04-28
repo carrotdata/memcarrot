@@ -1,13 +1,19 @@
 /*
- * Copyright (C) 2024-present Carrot Data, Inc.
- * <p>This program is free software: you can redistribute it
- * and/or modify it under the terms of the Server Side Public License, version 1, as published by
- * MongoDB, Inc.
- * <p>This program is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- * PURPOSE. See the Server Side Public License for more details.
- * <p>You should have received a copy of the Server Side Public License along with this program. If not, see
- * <http://www.mongodb.com/licensing/server-side-public-license>.
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package com.carrotdata.memcarrot;
 
@@ -25,6 +31,8 @@ public class MemcarrotConf {
   public static final String CONF_THREAD_POOL_SIZE = "workers.pool.size";
   public static final String CONF_KV_SIZE_MAX = "kv.size.max";
   public static final String CONF_SND_RCV_BUFFER_SIZE = "tcp.buffer.size";
+  public static final String CONF_USER_NAME = "user.name";
+  public static final String CONF_USER_PASSWORD_SHA256 = "user.password.sha256";
 
 
   public static final int DEFAULT_SERVER_PORT = 11211;
@@ -199,4 +207,23 @@ public class MemcarrotConf {
   public String getNode() {
     return getServerAddress() + ":" + getServerPort();
   }
+  
+  public String getUserLoginName() {
+    String name = System.getenv(CONF_USER_NAME);
+    if (name == null) {
+      Properties props = this.cacheConfig.getProperties();
+      name = (String) props.getOrDefault(CONF_USER_NAME, "");
+    }
+    return name;
+  }
+  
+  public String getUserPasswordSHA256() {
+    String pass = System.getenv(CONF_USER_PASSWORD_SHA256);
+    if (pass == null) {
+      Properties props = this.cacheConfig.getProperties();
+      pass = (String) props.getOrDefault(CONF_USER_PASSWORD_SHA256, "");
+    }
+    return pass;
+  }
+  
 }
